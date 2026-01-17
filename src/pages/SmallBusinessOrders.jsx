@@ -143,27 +143,14 @@ const OrderList = ({ orders, onSelectOrder }) => {
 const OrderDetails = ({ order }) => {
     const handleTrackDelivery = () => {
         alert(`Tracking delivery for order ${order.id}`);
-        console.log(`Track delivery: ${order.id}`);
     };
 
     const handleReorder = () => {
         alert(`Reordering items from order ${order.id}`);
-        console.log(`Reorder: ${order.id}`);
     };
 
     const handleContactSupplier = () => {
         alert(`Contacting ${order.supplier}...`);
-        console.log(`Contact supplier: ${order.supplier}`);
-    };
-
-    const handleCall = () => {
-        alert(`Calling +1 555-0123...`);
-        console.log(`Call supplier contact`);
-    };
-
-    const handleEmail = () => {
-        alert(`Opening email to ${order.supplier}...`);
-        console.log(`Email supplier`);
     };
 
     return (
@@ -213,16 +200,10 @@ const OrderDetails = ({ order }) => {
                 <div className="lg:col-span-2 space-y-8">
                     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
                         <div className="flex border-b border-gray-200 dark:border-gray-800 px-6 gap-8">
-                            <a
-                                className="flex items-center border-b-[3px] border-primary text-primary pb-4 pt-5 px-1 font-bold text-sm tracking-wide"
-                                href="#"
-                            >
+                            <a className="flex items-center border-b-[3px] border-primary text-primary pb-4 pt-5 px-1 font-bold text-sm tracking-wide" href="#">
                                 Items ({order.items})
                             </a>
-                            <a
-                                className="flex items-center border-b-[3px] border-transparent text-gray-500 dark:text-gray-400 pb-4 pt-5 px-1 font-bold text-sm hover:text-primary transition-colors"
-                                href="#"
-                            >
+                            <a className="flex items-center border-b-[3px] border-transparent text-gray-500 dark:text-gray-400 pb-4 pt-5 px-1 font-bold text-sm hover:text-primary transition-colors" href="#">
                                 Delivery Info
                             </a>
                         </div>
@@ -241,164 +222,15 @@ const OrderDetails = ({ order }) => {
                                     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                         <td className="px-6 py-4 flex items-center gap-3">
                                             <div className="w-10 h-10 rounded bg-background-light dark:bg-[#1f262e] border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-blue-100 to-blue-200"></div>
-                                            <span className="font-bold text-sm">
-                                                Organic Flour (25kg)
-                                            </span>
+                                            <span className="font-bold text-sm">Organic Flour (25kg)</span>
                                         </td>
-                                        <td className="px-6 py-4 font-mono text-xs text-gray-500">
-                                            FLR-ORG-001
-                                        </td>
+                                        <td className="px-6 py-4 font-mono text-xs text-gray-500">FLR-ORG-001</td>
                                         <td className="px-6 py-4 text-center font-bold">50</td>
                                         <td className="px-6 py-4 text-right text-sm">$18.00</td>
-                                        <td className="px-6 py-4 text-right font-bold text-sm">
-                                            $900.00
-                                        </td>
-                                    </tr>
-                                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                        <td className="px-6 py-4 flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded bg-background-light dark:bg-[#1f262e] border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-amber-100 to-amber-200"></div>
-                                            <span className="font-bold text-sm">
-                                                Olive Oil (20L)
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 font-mono text-xs text-gray-500">
-                                            OIL-OLV-045
-                                        </td>
-                                        <td className="px-6 py-4 text-center font-bold">20</td>
-                                        <td className="px-6 py-4 text-right text-sm">$12.50</td>
-                                        <td className="px-6 py-4 text-right font-bold text-sm">
-                                            $250.00
-                                        </td>
+                                        <td className="px-6 py-4 text-right font-bold text-sm">$900.00</td>
                                     </tr>
                                 </tbody>
                             </table>
-                        </div>
-                        <div className="p-6 bg-background-light/30 dark:bg-background-dark flex justify-end">
-                            <div className="w-64 space-y-2">
-                                <div className="flex justify-between text-gray-500 dark:text-gray-400 text-sm">
-                                    <span>Subtotal</span>
-                                    <span>$1,150.00</span>
-                                </div>
-                                <div className="flex justify-between text-gray-500 dark:text-gray-400 text-sm">
-                                    <span>Delivery Fee</span>
-                                    <span>$50.00</span>
-                                </div>
-                                <div className="flex justify-between text-gray-500 dark:text-gray-400 text-sm">
-                                    <span>Tax (8%)</span>
-                                    <span>$40.50</span>
-                                </div>
-                                <div className="flex justify-between text-[#121714] dark:text-white font-black text-xl border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
-                                    <span>Total</span>
-                                    <span>{order.total}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 flex items-center gap-4">
-                            <div className="bg-primary/10 p-3 rounded-lg text-primary">
-                                <span className="material-symbols-outlined">local_shipping</span>
-                            </div>
-                            <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-black tracking-widest">
-                                    Delivery ETA
-                                </p>
-                                <p className="font-bold">{order.eta}</p>
-                            </div>
-                        </div>
-                        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 flex items-center gap-4">
-                            <div className="bg-primary/10 p-3 rounded-lg text-primary">
-                                <span className="material-symbols-outlined">payments</span>
-                            </div>
-                            <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-black tracking-widest">
-                                    Payment Status
-                                </p>
-                                <p className="font-bold">Paid</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="space-y-6">
-                    <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-                        <h3 className="text-sm font-black uppercase tracking-widest mb-4">
-                            Supplier Info
-                        </h3>
-                        <div className="space-y-6">
-                            <div className="flex gap-3">
-                                <span className="material-symbols-outlined text-gray-500">
-                                    store
-                                </span>
-                                <div>
-                                    <p className="text-sm font-bold">Supplier Name</p>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mt-1">
-                                        {order.supplier}
-                                    </p>
-                                </div>
-                            </div>
-                            <hr className="border-gray-200 dark:border-gray-700" />
-                            <div className="flex gap-3">
-                                <span className="material-symbols-outlined text-gray-500">
-                                    person
-                                </span>
-                                <div className="flex-1">
-                                    <p className="text-sm font-bold">Contact Person</p>
-                                    <p className="text-sm font-medium mt-1">Sarah Johnson</p>
-                                    <div className="mt-3 flex flex-col gap-2">
-                                        <button onClick={handleCall} className="flex items-center gap-2 text-xs font-bold text-primary bg-primary/10 px-3 py-2 rounded-lg w-full justify-center border border-primary/20 hover:bg-primary/20 transition-colors">
-                                            <span className="material-symbols-outlined text-sm">
-                                                call
-                                            </span>
-                                            +1 555-0123
-                                        </button>
-                                        <button onClick={handleEmail} className="flex items-center gap-2 text-xs font-bold text-gray-500 bg-background-light dark:bg-[#2c353d] px-3 py-2 rounded-lg w-full justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                                            <span className="material-symbols-outlined text-sm">
-                                                mail
-                                            </span>
-                                            Send Email
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-                        <h3 className="text-sm font-black uppercase tracking-widest mb-6">
-                            Order Timeline
-                        </h3>
-                        <div className="relative space-y-8 pl-8 before:content-[''] before:absolute before:left-[11px] before:top-1 before:h-[calc(100%-12px)] before:w-0.5 before:bg-gray-200 dark:before:bg-gray-700">
-                            <div className="relative">
-                                <div className="absolute -left-[30px] top-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white border-4 border-white dark:border-background-dark z-10">
-                                    <span className="material-symbols-outlined text-xs font-bold">
-                                        check
-                                    </span>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold">Order Confirmed</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        {order.date} • 10:30 AM
-                                    </p>
-                                    <p className="text-xs mt-1 text-gray-500">
-                                        Confirmed by {order.supplier}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="relative">
-                                <div className="absolute -left-[30px] top-0 w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary border-4 border-white dark:border-background-dark z-10">
-                                    <span className="material-symbols-outlined text-xs font-bold">
-                                        shopping_cart
-                                    </span>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold">Order Placed</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        {order.date} • 9:00 AM
-                                    </p>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -407,8 +239,124 @@ const OrderDetails = ({ order }) => {
     );
 };
 
+const NewOrderForm = ({ onSubmit, onCancel }) => {
+    const products = [
+        { id: 1, name: "Organic Flour (25kg)", supplier: "Fresh Farm Supplies Co." },
+        { id: 2, name: "Olive Oil (20L)", supplier: "Fresh Farm Supplies Co." },
+        { id: 3, name: "Whole Milk (1L)", supplier: "Dairy Distributors Ltd" },
+        { id: 4, name: "Salted Butter (1kg)", supplier: "Dairy Distributors Ltd" },
+        { id: 5, name: "Espresso Beans (1kg)", supplier: "Premium Coffee Roasters" },
+        { id: 6, name: "Colombian Blend (1kg)", supplier: "Premium Coffee Roasters" },
+    ];
+
+    const [formData, setFormData] = useState({
+        item: products[0].name,
+        quantity: 1,
+        urgency: "Normal",
+        notes: ""
+    });
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const selectedProduct = products.find(p => p.name === formData.item);
+        onSubmit({ ...formData, supplier: selectedProduct.supplier });
+    };
+
+    return (
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden max-w-2xl mx-auto shadow-xl">
+            <div className="p-8">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-black text-[#121714] dark:text-white">Place New Order</h2>
+                    <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                        <span className="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div>
+                        <label className="block text-sm font-black uppercase tracking-widest text-gray-500 mb-2">Items to Order</label>
+                        <select
+                            value={formData.item}
+                            onChange={(e) => setFormData({ ...formData, item: e.target.value })}
+                            className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#121715] text-[#121714] dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                            required
+                        >
+                            {products.map(product => (
+                                <option key={product.id} value={product.name}>
+                                    {product.name} ({product.supplier})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-black uppercase tracking-widest text-gray-500 mb-2">Quantity</label>
+                        <input
+                            type="number"
+                            min="1"
+                            value={formData.quantity}
+                            onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })}
+                            className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#121715] text-[#121714] dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                            required
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-black uppercase tracking-widest text-gray-500 mb-2">Urgency Level</label>
+                            <select
+                                value={formData.urgency}
+                                onChange={(e) => setFormData({ ...formData, urgency: e.target.value })}
+                                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#121715] text-[#121714] dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                            >
+                                <option value="Normal">Normal</option>
+                                <option value="Urgent">Urgent</option>
+                                <option value="Critical">Critical</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-black uppercase tracking-widest text-gray-500 mb-2">Desired Delivery Date</label>
+                            <input
+                                type="date"
+                                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#121715] text-[#121714] dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-black uppercase tracking-widest text-gray-500 mb-2">Delivery Notes</label>
+                        <textarea
+                            value={formData.notes}
+                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                            placeholder="Gate code, specific dock number, etc."
+                            className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#121715] text-[#121714] dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all h-24"
+                        />
+                    </div>
+
+                    <div className="flex gap-4 pt-4">
+                        <button
+                            type="button"
+                            onClick={onCancel}
+                            className="flex-1 h-12 rounded-lg border border-gray-200 dark:border-gray-700 text-[#121714] dark:text-white font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            className="flex-1 h-12 rounded-lg bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:brightness-105 transition-all"
+                        >
+                            Submit to Supplier
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
 const SmallBusinessOrders = () => {
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [showForm, setShowForm] = useState(false);
     const [selectedMonth, setSelectedMonth] = useState("All");
     const [selectedSupplier, setSelectedSupplier] = useState("All Suppliers");
 
@@ -426,73 +374,65 @@ const SmallBusinessOrders = () => {
     });
 
     const handleNewOrder = () => {
-        alert("Opening new order form...");
-        console.log("New order clicked");
+        setSelectedOrder(null);
+        setShowForm(true);
+    };
+
+    const handleFormSubmit = (data) => {
+        alert(`Order submitted successfully to ${data.supplier}!\nItem: ${data.item}\nQuantity: ${data.quantity}`);
+        setShowForm(false);
     };
 
     return (
         <Layout>
             <div className="max-w-[1280px] mx-auto">
-                {/* Breadcrumbs */}
                 <nav className="flex items-center gap-2 mb-6">
                     <button
-                        className={`text-sm font-medium transition-colors ${selectedOrder
-                            ? "text-gray-500 dark:text-gray-400 hover:text-primary"
-                            : "text-[#121714] dark:text-white font-bold"
+                        className={`text-sm font-medium transition-colors ${!selectedOrder && !showForm
+                            ? "text-[#121714] dark:text-white font-bold"
+                            : "text-gray-500 dark:text-gray-400 hover:text-primary"
                             }`}
-                        onClick={() => setSelectedOrder(null)}
+                        onClick={() => {
+                            setSelectedOrder(null);
+                            setShowForm(false);
+                        }}
                     >
                         My Orders
                     </button>
-
-                    {selectedOrder && (
+                    {(selectedOrder || showForm) && (
                         <>
-                            <span className="text-gray-500 dark:text-gray-500 text-sm">
-                                /
-                            </span>
+                            <span className="text-gray-500 dark:text-gray-500 text-sm">/</span>
                             <span className="text-[#121714] dark:text-white text-sm font-bold">
-                                Order #{selectedOrder.id}
+                                {showForm ? "Place New Order" : `Order #${selectedOrder.id}`}
                             </span>
                         </>
                     )}
                 </nav>
 
-                {!selectedOrder ? (
+                {showForm ? (
+                    <NewOrderForm onSubmit={handleFormSubmit} onCancel={() => setShowForm(false)} />
+                ) : !selectedOrder ? (
                     <>
                         <div className="flex justify-between items-end mb-8">
                             <div>
-                                <h1 className="text-[#121714] dark:text-white text-3xl lg:text-4xl font-black tracking-tight mb-2">
-                                    My Orders
-                                </h1>
-                                <p className="text-gray-500 dark:text-gray-400 text-lg">
-                                    Track and manage your orders from suppliers
-                                </p>
+                                <h1 className="text-[#121714] dark:text-white text-3xl lg:text-4xl font-black tracking-tight mb-2">My Orders</h1>
+                                <p className="text-gray-500 dark:text-gray-400 text-lg">Track and manage your orders from suppliers</p>
                             </div>
                             <div className="flex items-center gap-3">
-                                <label className="text-sm font-bold text-gray-500 dark:text-gray-400">
-                                    Filter by:
-                                </label>
+                                <label className="text-sm font-bold text-gray-500 dark:text-gray-400">Filter by:</label>
                                 <select
                                     value={selectedSupplier}
                                     onChange={(e) => setSelectedSupplier(e.target.value)}
                                     className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2c353d] text-[#121714] dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                                 >
-                                    {availableSuppliers.map((supplier) => (
-                                        <option key={supplier} value={supplier}>
-                                            {supplier}
-                                        </option>
-                                    ))}
+                                    {availableSuppliers.map(s => <option key={s} value={s}>{s}</option>)}
                                 </select>
                                 <select
                                     value={selectedMonth}
                                     onChange={(e) => setSelectedMonth(e.target.value)}
                                     className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2c353d] text-[#121714] dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                                 >
-                                    {availableMonths.map((month) => (
-                                        <option key={month} value={month}>
-                                            {month}
-                                        </option>
-                                    ))}
+                                    {availableMonths.map(m => <option key={m} value={m}>{m}</option>)}
                                 </select>
                                 <button onClick={handleNewOrder} className="flex items-center justify-center rounded-lg h-12 px-6 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:brightness-105 transition-all">
                                     <span className="material-symbols-outlined mr-2">add</span>
@@ -500,10 +440,7 @@ const SmallBusinessOrders = () => {
                                 </button>
                             </div>
                         </div>
-                        <OrderList
-                            orders={filteredOrders}
-                            onSelectOrder={setSelectedOrder}
-                        />
+                        <OrderList orders={filteredOrders} onSelectOrder={setSelectedOrder} />
                     </>
                 ) : (
                     <OrderDetails order={selectedOrder} />
