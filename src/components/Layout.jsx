@@ -1,13 +1,24 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Determine if user is small business
+  const isSmallBusiness = user?.type === 'small-business';
+  const baseRoute = isSmallBusiness ? '/small-business' : '';
 
   // Helper to determine active state for nav items
   const isActive = (path) => location.pathname === path;
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <div className="bg-background-light dark:bg-background-dark font-display text-[#121615] dark:text-white min-h-screen flex flex-row overflow-hidden">
@@ -54,8 +65,8 @@ const Layout = ({ children }) => {
         </div>
 
         <button
-          onClick={() => navigate("/dashboard")}
-          className={`p-2 rounded-lg flex items-center gap-3 w-full ${isSidebarOpen ? "justify-start" : "justify-center"} ${isActive("/dashboard") ? "bg-primary/10 text-primary" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+          onClick={() => navigate(`${baseRoute}/dashboard`)}
+          className={`p-2 rounded-lg flex items-center gap-3 w-full ${isSidebarOpen ? "justify-start" : "justify-center"} ${isActive(`${baseRoute}/dashboard`) ? "bg-primary/10 text-primary" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
         >
           <span className="material-symbols-outlined">dashboard</span>
           {isSidebarOpen && (
@@ -63,8 +74,8 @@ const Layout = ({ children }) => {
           )}
         </button>
         <button
-          onClick={() => navigate("/orders")}
-          className={`p-2 rounded-lg flex items-center gap-3 w-full ${isSidebarOpen ? "justify-start" : "justify-center"} ${isActive("/orders") ? "bg-primary/10 text-primary" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+          onClick={() => navigate(`${baseRoute}/orders`)}
+          className={`p-2 rounded-lg flex items-center gap-3 w-full ${isSidebarOpen ? "justify-start" : "justify-center"} ${isActive(`${baseRoute}/orders`) ? "bg-primary/10 text-primary" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
         >
           <span className="material-symbols-outlined">local_shipping</span>
           {isSidebarOpen && (
@@ -72,8 +83,8 @@ const Layout = ({ children }) => {
           )}
         </button>
         <button
-          onClick={() => navigate("/inventory")}
-          className={`p-2 rounded-lg flex items-center gap-3 w-full ${isSidebarOpen ? "justify-start" : "justify-center"} ${isActive("/inventory") ? "bg-primary/10 text-primary" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+          onClick={() => navigate(`${baseRoute}/inventory`)}
+          className={`p-2 rounded-lg flex items-center gap-3 w-full ${isSidebarOpen ? "justify-start" : "justify-center"} ${isActive(`${baseRoute}/inventory`) ? "bg-primary/10 text-primary" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
         >
           <span className="material-symbols-outlined">inventory_2</span>
           {isSidebarOpen && (
@@ -91,7 +102,7 @@ const Layout = ({ children }) => {
 
         {/* Logout Button */}
         <button
-          onClick={() => navigate("/")}
+          onClick={handleLogout}
           className={`p-2 rounded-lg flex items-center gap-3 w-full ${isSidebarOpen ? "justify-start" : "justify-center"} text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 mt-auto`}
         >
           <span className="material-symbols-outlined">logout</span>
@@ -111,12 +122,14 @@ const Layout = ({ children }) => {
             </button>
             <div className="flex items-center gap-3 pl-4 border-l border-gray-200 dark:border-gray-800">
               <div className="hidden sm:flex flex-col text-right">
-                <span className="text-sm font-bold">Nature's Best Ltd</span>
-                <span className="text-xs text-gray-500">Supplier Account</span>
+                <span className="text-sm font-bold">{user?.name || 'User'}</span>
+                <span className="text-xs text-gray-500">
+                  {isSmallBusiness ? 'Small Business' : 'Supplier Account'}
+                </span>
               </div>
               <div
                 className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-primary/20"
-                data-alt="Portrait of supplier account manager"
+                data-alt="User avatar"
                 style={{
                   backgroundImage:
                     'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCgl1LL2EVHoZFwZ4AQfL3F2k8y1aNpRXhF9u1v9ljOr0r8qHIig0az1sR_OFeivDudTp-FS8Mb-C8iWKvzND_oqauaiFyX5vLGaFhzkzgJe8Jdqp_Xjz4HCbE7wMWj0koDSUIz4ugZt6inWd6w9q9HQZtTOZ8gPfkWpZdj9bPVHeL53usgQm1_PAv922cmnRnGhTTjpf_ztoTXfhJSpobJLQ17jc1aHe_9VO1-a14Mo3rfvL6S9_UMfDdXBNfDTb-7EbiHuHwSC_pV")',
@@ -136,3 +149,4 @@ const Layout = ({ children }) => {
 };
 
 export default Layout;
+

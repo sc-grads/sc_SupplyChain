@@ -176,7 +176,7 @@ const Inventory = () => {
                       <div className="flex items-end justify-between">
                         <span className="text-sm font-black">
                           15{" "}
-                          <span class="text-gray-400 font-normal">/ 100</span>
+                          <span className="text-gray-400 font-normal">/ 100</span>
                         </span>
                       </div>
                       <div className="w-32 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">

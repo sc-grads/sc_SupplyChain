@@ -1,9 +1,48 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import "./Dashboard.css";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleAcceptOrder = (orderId) => {
+    alert(`Order ${orderId} accepted!`);
+    console.log(`Accepted order: ${orderId}`);
+  };
+
+  const handleDeclineOrder = (orderId) => {
+    if (window.confirm(`Are you sure you want to decline order ${orderId}?`)) {
+      alert(`Order ${orderId} declined`);
+      console.log(`Declined order: ${orderId}`);
+    }
+  };
+
+  const handleUpdateStatus = (orderId) => {
+    alert(`Opening status update for order ${orderId}`);
+    console.log(`Update status for: ${orderId}`);
+  };
+
+  const handleCallRetailer = (retailer) => {
+    alert(`Calling ${retailer}...`);
+    console.log(`Call retailer: ${retailer}`);
+  };
+
+  const handleTrackVehicle = (orderId) => {
+    alert(`Opening vehicle tracking for order ${orderId}`);
+    console.log(`Track vehicle for: ${orderId}`);
+  };
+
+  const handleStockUpdate = (product, status) => {
+    alert(`${product} stock updated to: ${status}`);
+    console.log(`Stock update - ${product}: ${status}`);
+  };
+
+  const handleBulkInventory = () => {
+    navigate("/inventory");
+  };
+
   return (
     <Layout>
       <div className="max-w-[1200px] mx-auto">
@@ -17,7 +56,13 @@ const Dashboard = () => {
 
         {/* Bento Grid Status */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div className="bento-card flex flex-col gap-4 rounded-xl p-6 bg-white dark:bg-gray-900 border border-new-blue/30 shadow-sm">
+          <div
+            className="bento-card flex flex-col gap-4 rounded-xl p-6 bg-white dark:bg-gray-900 border border-new-blue/30 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => {
+              alert("Viewing new orders");
+              navigate("/orders");
+            }}
+          >
             <div className="flex justify-between items-start">
               <span className="text-new-blue material-symbols-outlined text-3xl">
                 fiber_new
@@ -33,7 +78,13 @@ const Dashboard = () => {
               <p className="text-3xl font-bold leading-tight">2</p>
             </div>
           </div>
-          <div className="bento-card flex flex-col gap-4 rounded-xl p-6 bg-white dark:bg-gray-900 border border-primary/30 shadow-sm">
+          <div
+            className="bento-card flex flex-col gap-4 rounded-xl p-6 bg-white dark:bg-gray-900 border border-primary/30 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => {
+              alert("Viewing active orders");
+              navigate("/orders");
+            }}
+          >
             <div className="flex justify-between items-start">
               <span className="text-primary material-symbols-outlined text-3xl">
                 pending_actions
@@ -49,7 +100,13 @@ const Dashboard = () => {
               <p className="text-3xl font-bold leading-tight">8</p>
             </div>
           </div>
-          <div className="bento-card flex flex-col gap-4 rounded-xl p-6 bg-white dark:bg-gray-900 border border-risk-amber/30 shadow-lg shadow-risk-amber/5">
+          <div
+            className="bento-card flex flex-col gap-4 rounded-xl p-6 bg-white dark:bg-gray-900 border border-risk-amber/30 shadow-lg shadow-risk-amber/5 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => {
+              alert("Viewing at-risk orders");
+              console.log("Show at-risk orders");
+            }}
+          >
             <div className="flex justify-between items-start">
               <span className="text-risk-amber material-symbols-outlined text-3xl">
                 warning_amber
@@ -73,7 +130,10 @@ const Dashboard = () => {
             <div className="flex items-center justify-between px-2">
               <h2 className="text-lg font-bold">Live Order Feed</h2>
               <div className="flex gap-2">
-                <button className="text-sm font-medium text-primary hover:underline">
+                <button
+                  onClick={() => navigate("/new-orders")}
+                  className="text-sm font-medium text-primary hover:underline"
+                >
                   View all
                 </button>
               </div>
@@ -104,13 +164,19 @@ const Dashboard = () => {
                   12x Organic Milk, 24x Eggs, 5kg Fresh Spinach
                 </p>
                 <div className="flex items-center gap-3 pt-2">
-                  <button className="flex-1 bg-risk-amber text-white h-11 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2">
+                  <button
+                    onClick={() => handleUpdateStatus("ORD-8821")}
+                    className="flex-1 bg-risk-amber text-white h-11 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all"
+                  >
                     <span className="material-symbols-outlined text-lg">
                       report_problem
                     </span>
                     Update Status
                   </button>
-                  <button className="px-4 h-11 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-bold hover:bg-gray-50">
+                  <button
+                    onClick={() => handleCallRetailer("Green Grocer - Downtown")}
+                    className="px-4 h-11 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  >
                     Call Retailer
                   </button>
                 </div>
@@ -147,10 +213,16 @@ const Dashboard = () => {
                   30x Artisan Sourdough, 10kg Salted Butter
                 </p>
                 <div className="flex items-center gap-3 pt-2">
-                  <button className="flex-1 bg-primary text-white h-11 px-4 rounded-lg font-bold text-sm">
+                  <button
+                    onClick={() => handleAcceptOrder("ORD-9104")}
+                    className="flex-1 bg-primary text-white h-11 px-4 rounded-lg font-bold text-sm hover:brightness-110 transition-all"
+                  >
                     Accept Order
                   </button>
-                  <button className="px-4 h-11 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-bold hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors">
+                  <button
+                    onClick={() => handleDeclineOrder("ORD-9104")}
+                    className="px-4 h-11 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-bold hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
+                  >
                     Decline
                   </button>
                 </div>
@@ -186,7 +258,10 @@ const Dashboard = () => {
                   50x Avocados, 10x Case of Kale
                 </p>
                 <div className="flex items-center gap-3 pt-2">
-                  <button className="flex-1 bg-gray-100 dark:bg-gray-800 text-[#121615] dark:text-white h-11 px-4 rounded-lg font-bold text-sm">
+                  <button
+                    onClick={() => handleTrackVehicle("ORD-7752")}
+                    className="flex-1 bg-gray-100 dark:bg-gray-800 text-[#121615] dark:text-white h-11 px-4 rounded-lg font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                  >
                     Track Vehicle
                   </button>
                 </div>
@@ -211,6 +286,8 @@ const Dashboard = () => {
                   className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20"
                   placeholder="Search SKUs..."
                   type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               <div className="space-y-4">
@@ -226,13 +303,22 @@ const Dashboard = () => {
                     </span>
                   </div>
                   <div className="flex gap-1 p-1 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <button className="flex-1 py-1 text-[10px] font-bold rounded bg-white dark:bg-gray-700 shadow-sm text-primary">
+                    <button
+                      onClick={() => handleStockUpdate("Whole Milk 1L", "Available")}
+                      className="flex-1 py-1 text-[10px] font-bold rounded bg-white dark:bg-gray-700 shadow-sm text-primary hover:bg-gray-100 transition-colors"
+                    >
                       AVL
                     </button>
-                    <button className="flex-1 py-1 text-[10px] font-bold rounded text-gray-400 hover:text-risk-amber transition-colors">
+                    <button
+                      onClick={() => handleStockUpdate("Whole Milk 1L", "Low Stock")}
+                      className="flex-1 py-1 text-[10px] font-bold rounded text-gray-400 hover:text-risk-amber hover:bg-white dark:hover:bg-gray-700 transition-colors"
+                    >
                       LOW
                     </button>
-                    <button className="flex-1 py-1 text-[10px] font-bold rounded text-gray-400 hover:text-red-500 transition-colors">
+                    <button
+                      onClick={() => handleStockUpdate("Whole Milk 1L", "Out of Stock")}
+                      className="flex-1 py-1 text-[10px] font-bold rounded text-gray-400 hover:text-red-500 hover:bg-white dark:hover:bg-gray-700 transition-colors"
+                    >
                       OUT
                     </button>
                   </div>
@@ -249,13 +335,22 @@ const Dashboard = () => {
                     </span>
                   </div>
                   <div className="flex gap-1 p-1 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <button className="flex-1 py-1 text-[10px] font-bold rounded text-gray-400">
+                    <button
+                      onClick={() => handleStockUpdate("Organic Eggs 12pk", "Available")}
+                      className="flex-1 py-1 text-[10px] font-bold rounded text-gray-400 hover:bg-white dark:hover:bg-gray-700 transition-colors"
+                    >
                       AVL
                     </button>
-                    <button className="flex-1 py-1 text-[10px] font-bold rounded bg-white dark:bg-gray-700 shadow-sm text-risk-amber">
+                    <button
+                      onClick={() => handleStockUpdate("Organic Eggs 12pk", "Low Stock")}
+                      className="flex-1 py-1 text-[10px] font-bold rounded bg-white dark:bg-gray-700 shadow-sm text-risk-amber hover:bg-gray-100 transition-colors"
+                    >
                       LOW
                     </button>
-                    <button className="flex-1 py-1 text-[10px] font-bold rounded text-gray-400">
+                    <button
+                      onClick={() => handleStockUpdate("Organic Eggs 12pk", "Out of Stock")}
+                      className="flex-1 py-1 text-[10px] font-bold rounded text-gray-400 hover:bg-white dark:hover:bg-gray-700 transition-colors"
+                    >
                       OUT
                     </button>
                   </div>
@@ -272,19 +367,31 @@ const Dashboard = () => {
                     </span>
                   </div>
                   <div className="flex gap-1 p-1 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <button className="flex-1 py-1 text-[10px] font-bold rounded text-gray-400">
+                    <button
+                      onClick={() => handleStockUpdate("Salted Butter 250g", "Available")}
+                      className="flex-1 py-1 text-[10px] font-bold rounded text-gray-400 hover:bg-white dark:hover:bg-gray-700 transition-colors"
+                    >
                       AVL
                     </button>
-                    <button className="flex-1 py-1 text-[10px] font-bold rounded text-gray-400">
+                    <button
+                      onClick={() => handleStockUpdate("Salted Butter 250g", "Low Stock")}
+                      className="flex-1 py-1 text-[10px] font-bold rounded text-gray-400 hover:bg-white dark:hover:bg-gray-700 transition-colors"
+                    >
                       LOW
                     </button>
-                    <button className="flex-1 py-1 text-[10px] font-bold rounded bg-white dark:bg-gray-700 shadow-sm text-red-500">
+                    <button
+                      onClick={() => handleStockUpdate("Salted Butter 250g", "Out of Stock")}
+                      className="flex-1 py-1 text-[10px] font-bold rounded bg-white dark:bg-gray-700 shadow-sm text-red-500 hover:bg-gray-100 transition-colors"
+                    >
                       OUT
                     </button>
                   </div>
                 </div>
               </div>
-              <button className="w-full mt-6 py-3 border border-primary/30 text-primary font-bold text-sm rounded-lg hover:bg-primary/5 transition-colors">
+              <button
+                onClick={handleBulkInventory}
+                className="w-full mt-6 py-3 border border-primary/30 text-primary font-bold text-sm rounded-lg hover:bg-primary/5 transition-colors"
+              >
                 Manage Bulk Inventory
               </button>
             </div>
@@ -308,3 +415,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
