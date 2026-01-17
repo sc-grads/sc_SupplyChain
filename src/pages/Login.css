@@ -1,0 +1,107 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 16px;
+  background-color: #f9fafb;
+}
+
+.login-card {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  width: 100%;
+  max-width: 440px;
+  text-align: center;
+}
+
+.logo-section {
+  margin-bottom: 32px;
+}
+
+.logo-placeholder {
+  font-weight: 700;
+  font-size: 24px;
+  color: #3b82f6;
+  margin-bottom: 8px;
+}
+
+h1 {
+  font-size: 24px;
+  color: #111827;
+  font-weight: 600;
+}
+
+.input-group {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.primary-button {
+  width: 100%;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.15s ease;
+}
+
+.primary-button:hover {
+  background-color: #2563eb;
+}
+
+.info-text {
+  margin-top: 24px;
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.create-account-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.create-account-link {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.create-account-link:hover {
+  text-decoration: underline;
+}

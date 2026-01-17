@@ -1,0 +1,22 @@
+.accent-button {
+  background-color: #10b981; /* Accent color: Emerald Green to differentiate from Supplier Blue */
+}
+
+.accent-button:hover {
+  background-color: #059669;
+}
+
+.back-link {
+  align-self: flex-start;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.back-link:hover {
+  color: #111827;
+}
