@@ -156,10 +156,38 @@ export async function getOrdersBySupplier(supplierId: string) {
       vendor: { select: { name: true, email: true } },
       visibility: {
         where: { supplierId },
-        select: { status: true, acceptedAt: true },
+        select: { status: true },
       },
     },
     orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function getActiveOrdersForSupplier(supplierId: string) {
+  return await prisma.order.findMany({
+    where: {
+      visibility: {
+        some: {
+          supplierId,
+          status: "ACCEPTED",
+        },
+      },
+      orderState: "ACCEPTED",
+      deliveryState: {
+        in: ["ON_TRACK", "AT_RISK"],
+      },
+    },
+    include: {
+      vendor: {
+        select: { name: true, email: true },
+      },
+      visibility: {
+        where: { supplierId },
+        select: { status: true },
+      },
+      // Optional: items, events for more detail
+    },
+    orderBy: [{ requiredDeliveryDate: "asc" }, { createdAt: "desc" }],
   });
 }
 

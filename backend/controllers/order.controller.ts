@@ -42,10 +42,10 @@ export const createOrder = async (req: Request, res: Response) => {
     // CRITICAL FIX: Validate SKU codes exist in database
     // This prevents orders with invalid SKUs from being created
     const skuCodes = items.map((item: any) => item.sku).filter(Boolean);
-    
+
     if (skuCodes.length === 0) {
-      return res.status(400).json({ 
-        message: "Invalid order: all items must have valid SKU codes." 
+      return res.status(400).json({
+        message: "Invalid order: all items must have valid SKU codes.",
       });
     }
 
@@ -55,7 +55,9 @@ export const createOrder = async (req: Request, res: Response) => {
     });
 
     const existingSkuCodes = new Set(existingSkus.map((s) => s.code));
-    const missingSkus = skuCodes.filter((code: string) => !existingSkuCodes.has(code));
+    const missingSkus = skuCodes.filter(
+      (code: string) => !existingSkuCodes.has(code),
+    );
 
     if (missingSkus.length > 0) {
       return res.status(400).json({
@@ -148,6 +150,23 @@ export const declineOrder = async (req: Request, res: Response) => {
   } catch (error: any) {
     res.status(500).json({
       message: "Failed to decline order.",
+      details: error.message,
+    });
+  }
+};
+
+export const getSupplierActiveOrders = async (req: Request, res: Response) => {
+  try {
+    const authReq = req as AuthRequest;
+    const supplierId = authReq.user?.id;
+    if (!supplierId) return res.status(401).json({ message: "Unauthorized" });
+
+    const orders = await orderService.getActiveOrdersForSupplier(supplierId);
+
+    res.json(orders);
+  } catch (error: any) {
+    res.status(500).json({
+      message: "Failed to load your active orders. Please refresh.",
       details: error.message,
     });
   }

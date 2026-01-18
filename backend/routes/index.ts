@@ -23,6 +23,12 @@ router.get("/catalog", authenticate, inventoryController.getCatalog);
 
 // Supplier Profile Routes
 router.patch("/supplier/profile/service-areas", authenticate, inventoryController.updateServiceAreas);
+router.get("/orders/supplier/active", authenticate, orderController.getSupplierActiveOrders);
+// router.get("/supplier/orders/:id", authenticate, orderController.getSupplierOrderById);
+// router.patch("/supplier/orders/:id/accept", authenticate, orderController.acceptOrder);
+// router.patch("/supplier/orders/:id/decline", authenticate, orderController.declineOrder);
+// router.patch("/supplier/orders/:id/cancel", authenticate, orderController.cancelOrder);
+// router.patch("/supplier/orders/:id/complete", authenticate, orderController.completeOrder);
 
 // Order Routes
 router.get("/orders", authenticate, orderController.getOrders);

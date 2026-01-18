@@ -16,6 +16,7 @@ export const OrderProvider = ({ children }) => {
   const [newRequests, setNewRequests] = useState([]);
   const [catalog, setCatalog] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [activeOrders, setActiveOrders] = useState([]);
   const [error, setError] = useState(null);
   const { token } = useAuth();
 
@@ -59,6 +60,29 @@ export const OrderProvider = ({ children }) => {
       setOrders(data);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [token, getHeaders]);
+
+  const fetchActiveOrders = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_BASE}/orders/supplier/active`, {
+        headers: getHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error(
+          (await response.text()) || "Failed to load active orders",
+        );
+      }
+      const data = await response.json();
+      setActiveOrders(data);
+    } catch (err) {
+      setError(err.message);
+      console.error("Active orders fetch failed:", err);
     } finally {
       setLoading(false);
     }
@@ -120,6 +144,7 @@ export const OrderProvider = ({ children }) => {
       // Update local state
       setNewRequests((prev) => prev.filter((o) => o.id !== orderId));
       setOrders((prev) => [data.order, ...prev]);
+      await fetchActiveOrders();
 
       return { success: true };
     } catch (err) {
@@ -194,6 +219,8 @@ export const OrderProvider = ({ children }) => {
         cancelOrder,
         acceptOrder,
         declineOrder,
+        activeOrders,
+        fetchActiveOrders,
         catalog,
       }}
     >
