@@ -19,6 +19,10 @@ router.post("/auth/logout", authController.logout);
 // Inventory Routes
 router.get("/inventory", authenticate, inventoryController.getInventory);
 router.post("/inventory", authenticate, inventoryController.updateInventory);
+router.get("/catalog", authenticate, inventoryController.getCatalog);
+
+// Supplier Profile Routes
+router.patch("/supplier/profile/service-areas", authenticate, inventoryController.updateServiceAreas);
 
 // Order Routes
 router.get("/orders", authenticate, orderController.getOrders);

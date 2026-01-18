@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
 import StatusBadge from "../../components/common/StatusBadge";
 import { useOrders } from "../../context/OrderContext";
+import { formatRelativeTime } from "../../utils/formatRelativeTime";
 
 // Mock data for new/pending orders
 
@@ -142,7 +143,7 @@ const NewOrders = () => {
                         <span className="font-bold text-gray-700 dark:text-gray-200">
                           {order.vendor?.name || "Retailer"}
                         </span>{" "}
-                        • {new Date(order.createdAt).toLocaleDateString()}
+                        • {formatRelativeTime(order.createdAt)}
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
                         {order.items

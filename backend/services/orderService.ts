@@ -27,7 +27,8 @@ export async function createOrder(data: {
   });
 
   // Run Automation #1
-  const eligibleSupplierIds = await findEligibleSuppliers(order.id);
+  const { eligibleSuppliers: eligibleSupplierIds } =
+    await findEligibleSuppliers(order.id);
 
   if (eligibleSupplierIds.length === 0) {
     // Graceful degradation: Mark at risk, log event, notify vendor (stub for now)
@@ -62,7 +63,9 @@ export async function getOrdersByVendor(vendorId: string) {
     where: { vendorId },
     include: {
       vendor: true,
-      visibility: true,
+      visibility: {
+        include: { supplier: true },
+      },
     },
   });
 }
@@ -135,6 +138,28 @@ export async function getNewRequests(supplierId: string) {
       orderState: "PENDING",
     },
     include: { vendor: { select: { name: true } } },
+  });
+}
+
+export async function getOrdersBySupplier(supplierId: string) {
+  // Get all orders where this supplier has accepted the order
+  return await prisma.order.findMany({
+    where: {
+      visibility: {
+        some: {
+          supplierId,
+          status: "ACCEPTED",
+        },
+      },
+    },
+    include: {
+      vendor: { select: { name: true, email: true } },
+      visibility: {
+        where: { supplierId },
+        select: { status: true, acceptedAt: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
   });
 }
 

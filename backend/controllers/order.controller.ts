@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as orderService from "../services/orderService.js";
 import { AuthRequest } from "../middlewares/authMiddleware.js";
+import prisma from "../config/db.js";
 
 export const getOrders = async (req: Request, res: Response) => {
   try {
@@ -36,6 +37,31 @@ export const createOrder = async (req: Request, res: Response) => {
       return res
         .status(400)
         .json({ message: "Missing required fields: items, location, date." });
+    }
+
+    // CRITICAL FIX: Validate SKU codes exist in database
+    // This prevents orders with invalid SKUs from being created
+    const skuCodes = items.map((item: any) => item.sku).filter(Boolean);
+    
+    if (skuCodes.length === 0) {
+      return res.status(400).json({ 
+        message: "Invalid order: all items must have valid SKU codes." 
+      });
+    }
+
+    const existingSkus = await prisma.sku.findMany({
+      where: { code: { in: skuCodes } },
+      select: { code: true },
+    });
+
+    const existingSkuCodes = new Set(existingSkus.map((s) => s.code));
+    const missingSkus = skuCodes.filter((code: string) => !existingSkuCodes.has(code));
+
+    if (missingSkus.length > 0) {
+      return res.status(400).json({
+        message: `Invalid SKU codes: ${missingSkus.join(", ")}. Please use valid SKU codes from the catalog.`,
+        invalidSkus: missingSkus,
+      });
     }
 
     // Create order

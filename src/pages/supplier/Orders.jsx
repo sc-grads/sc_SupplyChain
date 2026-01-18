@@ -1,74 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "../../components/Layout";
-
-// Mock Data
-const mockOrders = [
-  {
-    id: "ES-4029",
-    customer: "Riverside Cafe",
-    date: "Oct 12, 2023",
-    total: "$567.00",
-    status: "Confirmed",
-    items: 5,
-    paymentStatus: "paid",
-  },
-  {
-    id: "ES-4030",
-    customer: "Urban Barista",
-    date: "Oct 13, 2023",
-    total: "$1,240.50",
-    status: "Processing",
-    items: 12,
-    paymentStatus: "pending",
-  },
-  {
-    id: "ES-4031",
-    customer: "Coastal Coffee",
-    date: "Oct 14, 2023",
-    total: "$325.00",
-    status: "Delivered",
-    items: 3,
-    paymentStatus: "paid",
-  },
-  {
-    id: "ES-4032",
-    customer: "Mountain Brew",
-    date: "Sep 28, 2023",
-    total: "$892.00",
-    status: "Delivered",
-    items: 8,
-    paymentStatus: "paid",
-  },
-  {
-    id: "ES-4033",
-    customer: "Downtown Deli",
-    date: "Nov 5, 2023",
-    total: "$445.50",
-    status: "Processing",
-    items: 6,
-    paymentStatus: "pending",
-  },
-  {
-    id: "ES-4034",
-    customer: "Sunset Cafe",
-    date: "Nov 12, 2023",
-    total: "$678.00",
-    status: "Confirmed",
-    items: 7,
-    paymentStatus: "paid",
-  },
-];
+import { useOrders } from "../../context/OrderContext";
+import { formatRelativeTime } from "../../utils/formatRelativeTime";
 
 // Helper function to extract unique months from orders
 const getUniqueMonths = (orders) => {
   const months = orders.map((order) => {
-    const dateParts = order.date.split(" ");
-    return `${dateParts[0]} ${dateParts[2]}`;
+    const date = new Date(order.createdAt);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      year: "numeric",
+    });
   });
   return ["All", ...new Set(months)];
 };
 
 const OrderList = ({ orders, onSelectOrder }) => {
+  // Helper function to map order states to display status
+  const getOrderStatus = (order) => {
+    if (order.deliveryState === "DELIVERED") return "Delivered";
+    if (order.orderState === "ACCEPTED") return "Processing";
+    if (order.orderState === "PENDING") return "Confirmed";
+    return order.orderState;
+  };
+
+  // Helper function to get status styling
+  const getStatusClass = (status) => {
+    switch (status) {
+      case "Delivered":
+        return "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800";
+      case "Processing":
+        return "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800";
+      case "Confirmed":
+        return "bg-primary/10 text-primary border-primary/20";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-400 dark:border-gray-800";
+    }
+  };
+
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
       <div className="overflow-x-auto">
@@ -85,49 +54,59 @@ const OrderList = ({ orders, onSelectOrder }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-            {orders.map((order) => (
-              <tr
-                key={order.id}
-                className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
-                onClick={() => onSelectOrder(order)}
-              >
-                <td className="px-6 py-4 font-bold text-sm text-[#121714] dark:text-white">
-                  #{order.id}
-                </td>
-                <td className="px-6 py-4 text-sm font-medium">
-                  {order.customer}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-500">
-                  {order.date}
-                </td>
-                <td className="px-6 py-4 text-center font-bold text-sm">
-                  {order.items}
-                </td>
-                <td className="px-6 py-4 text-right font-bold text-sm">
-                  {order.total}
-                </td>
-                <td className="px-6 py-4 text-center">
-                  <span
-                    className={`px-3 py-1 text-xs font-bold rounded-full border uppercase tracking-wider ${
-                      order.status === "Confirmed"
-                        ? "bg-primary/10 text-primary border-primary/20"
-                        : order.status === "Processing"
-                          ? "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800"
-                          : "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
-                    }`}
-                  >
-                    {order.status}
+            {orders.length === 0 ? (
+              <tr>
+                <td colSpan="7" className="px-6 py-12 text-center">
+                  <span className="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700 mb-4 block">
+                    inbox
                   </span>
-                </td>
-                <td className="px-6 py-4 text-center">
-                  <button className="text-gray-400 hover:text-primary transition-colors">
-                    <span className="material-symbols-outlined">
-                      arrow_forward
-                    </span>
-                  </button>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    No orders found
+                  </p>
                 </td>
               </tr>
-            ))}
+            ) : (
+              orders.map((order) => {
+                const status = getOrderStatus(order);
+                return (
+                  <tr
+                    key={order.id}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                    onClick={() => onSelectOrder(order)}
+                  >
+                    <td className="px-6 py-4 font-bold text-sm text-[#121714] dark:text-white">
+                      #{order.orderNumber}
+                    </td>
+                    <td className="px-6 py-4 text-sm font-medium">
+                      {order.vendor?.name || "Unknown"}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {formatRelativeTime(order.createdAt)}
+                    </td>
+                    <td className="px-6 py-4 text-center font-bold text-sm">
+                      {order.items?.length || 0}
+                    </td>
+                    <td className="px-6 py-4 text-right font-bold text-sm">
+                      ZAR {order.subtotal || 0}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span
+                        className={`px-3 py-1 text-xs font-bold rounded-full border uppercase tracking-wider ${getStatusClass(status)}`}
+                      >
+                        {status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <button className="text-gray-400 hover:text-primary transition-colors">
+                        <span className="material-symbols-outlined">
+                          arrow_forward
+                        </span>
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
@@ -137,13 +116,13 @@ const OrderList = ({ orders, onSelectOrder }) => {
 
 const OrderDetails = ({ order }) => {
   const handleDeliveryRisk = () => {
-    alert(`Marking order ${order.id} as at risk`);
-    console.log(`Delivery at risk: ${order.id}`);
+    alert(`Marking order ${order.orderNumber} as at risk`);
+    console.log(`Delivery at risk: ${order.orderNumber}`);
   };
 
   const handleMarkDelivered = () => {
-    alert(`Marking order ${order.id} as delivered`);
-    console.log(`Mark delivered: ${order.id}`);
+    alert(`Marking order ${order.orderNumber} as delivered`);
+    console.log(`Mark delivered: ${order.orderNumber}`);
   };
 
   return (
@@ -152,14 +131,15 @@ const OrderDetails = ({ order }) => {
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-4">
             <h1 className="text-[#121714] dark:text-white text-3xl lg:text-4xl font-black tracking-tight">
-              Order #{order.id}
+              Order #{order.orderNumber}
             </h1>
             <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full border border-primary/20 uppercase tracking-wider">
               {order.status}
             </span>
           </div>
           <p className="text-gray-500 dark:text-gray-400 text-lg">
-            {order.customer} • Placed on {order.date}
+            {order.vendor?.name || "Unknown"} • Placed{" "}
+            {formatRelativeTime(order.createdAt)}
           </p>
         </div>
         <div className="flex gap-3">
@@ -384,17 +364,25 @@ const OrderDetails = ({ order }) => {
 };
 
 const Orders = () => {
+  const { orders, fetchOrders, loading } = useOrders();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState("All");
 
-  const availableMonths = getUniqueMonths(mockOrders);
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  const availableMonths = getUniqueMonths(orders);
 
   const filteredOrders =
     selectedMonth === "All"
-      ? mockOrders
-      : mockOrders.filter((order) => {
-          const dateParts = order.date.split(" ");
-          const orderMonth = `${dateParts[0]} ${dateParts[2]}`;
+      ? orders
+      : orders.filter((order) => {
+          const date = new Date(order.createdAt);
+          const orderMonth = date.toLocaleDateString("en-US", {
+            month: "short",
+            year: "numeric",
+          });
           return orderMonth === selectedMonth;
         });
 

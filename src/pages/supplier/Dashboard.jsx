@@ -4,12 +4,19 @@ import Layout from "../../components/Layout";
 import BentoCard from "../../components/dashboard/BentoCard";
 import { useOrders } from "../../context/OrderContext";
 import { useInventory } from "../../context/InventoryContext";
+import { formatRelativeTime } from "../../utils/formatRelativeTime";
 import "./Dashboard.css";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { orders, newRequests, fetchOrders, fetchNewRequests, acceptOrder } =
-    useOrders();
+  const {
+    orders,
+    newRequests,
+    fetchOrders,
+    fetchNewRequests,
+    acceptOrder,
+    declineOrder,
+  } = useOrders();
   const { inventory, fetchInventory, updateStock } = useInventory();
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -25,19 +32,36 @@ const Dashboard = () => {
   const atRiskCount = orders.filter(
     (o) => o.deliveryState === "AT_RISK",
   ).length;
-  const latestNewRequest = newRequests[0];
-  const atRiskOrder = orders.find((o) => o.deliveryState === "AT_RISK");
-  const activeOrder = orders.find((o) => o.orderState === "ACCEPTED");
 
-  const handleAcceptOrder = (orderId) => {
-    alert(`Order ${orderId} accepted!`);
-    console.log(`Accepted order: ${orderId}`);
+  // Get orders for live feed - limit to 3 total
+  const atRiskOrders = orders.filter((o) => o.deliveryState === "AT_RISK");
+  const newRequestsOrders = newRequests;
+  const activeOrders = orders.filter((o) => o.orderState === "ACCEPTED");
+
+  // Combine and limit to 3 orders for live feed
+  const liveFeedOrders = [
+    ...atRiskOrders.map((o) => ({ ...o, feedType: "at-risk" })),
+    ...newRequestsOrders.map((o) => ({ ...o, feedType: "new" })),
+    ...activeOrders.map((o) => ({ ...o, feedType: "active" })),
+  ].slice(0, 3);
+
+  const handleAcceptOrder = async (orderId) => {
+    const result = await acceptOrder(orderId);
+    if (result.success) {
+      console.log(`Accepted order: ${orderId}`);
+    } else {
+      alert(`Error accepting order: ${result.error}`);
+    }
   };
 
-  const handleDeclineOrder = (orderId) => {
+  const handleDeclineOrder = async (orderId) => {
     if (window.confirm(`Are you sure you want to decline order ${orderId}?`)) {
-      alert(`Order ${orderId} declined`);
-      console.log(`Declined order: ${orderId}`);
+      const result = await declineOrder(orderId);
+      if (result.success) {
+        console.log(`Declined order: ${orderId}`);
+      } else {
+        alert(`Error declining order: ${result.error}`);
+      }
     }
   };
 
@@ -164,127 +188,127 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Pinned Risk Card */}
-            {atRiskOrder && (
-              <div className="group relative flex items-stretch bg-white dark:bg-gray-900 rounded-xl overflow-hidden border-l-4 border-risk-amber shadow-[0_4px_20px_rgba(242,184,0,0.1)] transition-all">
-                <div className="p-6 flex-1 flex flex-col gap-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[10px] font-bold tracking-widest text-risk-amber uppercase">
-                        Delivery at Risk
-                      </span>
-                      <h3 className="text-lg font-bold">
-                        {atRiskOrder.vendor?.name}
-                      </h3>
-                    </div>
-                    <span className="bg-risk-amber/10 text-risk-amber p-1.5 rounded-full">
-                      <span className="material-symbols-outlined text-sm">
-                        schedule
-                      </span>
-                    </span>
-                  </div>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                    <span className="font-bold text-gray-700 dark:text-gray-200">
-                      Order #{atRiskOrder.orderNumber}:
-                    </span>{" "}
-                    {atRiskOrder.items
-                      ?.map((i) => `${i.quantity}x ${i.name || i.sku}`)
-                      .join(", ")}
-                  </p>
-                  <div className="flex items-center gap-3 pt-2">
-                    <button
-                      onClick={() => handleUpdateStatus(atRiskOrder.id)}
-                      className="flex-1 bg-risk-amber text-white h-11 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all"
-                    >
-                      <span className="material-symbols-outlined text-lg">
-                        report_problem
-                      </span>
-                      Update Status
-                    </button>
-                  </div>
-                </div>
+            {/* Live Feed Orders - Limited to 3 */}
+            {liveFeedOrders.length === 0 ? (
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center">
+                <span className="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700 mb-4">
+                  inbox
+                </span>
+                <h3 className="text-lg font-bold mb-2">No Active Orders</h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                  All orders have been processed!
+                </p>
               </div>
-            )}
+            ) : (
+              liveFeedOrders.map((order) => {
+                const isAtRisk = order.feedType === "at-risk";
+                const isNew = order.feedType === "new";
+                const isActive = order.feedType === "active";
 
-            {/* New Order Card */}
-            {latestNewRequest && (
-              <div className="group relative flex items-stretch bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-new-blue/20 shadow-sm">
-                <div className="p-6 flex-1 flex flex-col gap-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-new-blue uppercase">
-                        <span className="size-2 rounded-full bg-new-blue animate-pulse"></span>
-                        New Order Received
-                      </span>
-                      <h3 className="text-lg font-bold">
-                        {latestNewRequest.vendor?.name}
-                      </h3>
+                return (
+                  <div
+                    key={order.id}
+                    className={`group relative flex items-stretch bg-white dark:bg-gray-900 rounded-xl overflow-hidden ${
+                      isAtRisk
+                        ? "border-l-4 border-risk-amber shadow-[0_4px_20px_rgba(242,184,0,0.1)]"
+                        : isNew
+                          ? "border border-new-blue/20 shadow-sm"
+                          : "border border-gray-100 dark:border-gray-800 shadow-sm"
+                    } transition-all`}
+                  >
+                    <div className="p-6 flex-1 flex flex-col gap-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex flex-col gap-0.5">
+                          <span
+                            className={`text-[10px] font-bold tracking-widest uppercase ${
+                              isAtRisk
+                                ? "text-risk-amber"
+                                : isNew
+                                  ? "text-new-blue flex items-center gap-1.5"
+                                  : "text-gray-400"
+                            }`}
+                          >
+                            {isNew && (
+                              <span className="size-2 rounded-full bg-new-blue animate-pulse"></span>
+                            )}
+                            {isAtRisk
+                              ? "Delivery at Risk"
+                              : isNew
+                                ? "New Order Received"
+                                : "In Progress"}
+                          </span>
+                          <h3 className="text-lg font-bold">
+                            {order.vendor?.name}
+                          </h3>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          {isAtRisk ? (
+                            <span className="bg-risk-amber/10 text-risk-amber p-1.5 rounded-full">
+                              <span className="material-symbols-outlined text-sm">
+                                schedule
+                              </span>
+                            </span>
+                          ) : isNew ? (
+                            <span className="bg-new-blue/10 text-new-blue px-2 py-0.5 rounded text-[10px] font-bold">
+                              NEW
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 material-symbols-outlined">
+                              local_shipping
+                            </span>
+                          )}
+                          <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                            {formatRelativeTime(order.createdAt)}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+                        <span className="font-bold text-gray-700 dark:text-gray-200">
+                          Order #{order.orderNumber}:
+                        </span>{" "}
+                        {order.items
+                          ?.map((i) => `${i.quantity}x ${i.name || i.sku}`)
+                          .join(", ")}
+                      </p>
+                      <div className="flex items-center gap-3 pt-2">
+                        {isAtRisk ? (
+                          <button
+                            onClick={() => handleUpdateStatus(order.id)}
+                            className="flex-1 bg-risk-amber text-white h-11 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all"
+                          >
+                            <span className="material-symbols-outlined text-lg">
+                              report_problem
+                            </span>
+                            Update Status
+                          </button>
+                        ) : isNew ? (
+                          <>
+                            <button
+                              onClick={() => handleAcceptOrder(order.id)}
+                              className="flex-1 bg-primary text-white h-11 px-4 rounded-lg font-bold text-sm hover:brightness-110 transition-all"
+                            >
+                              Accept Order
+                            </button>
+                            <button
+                              onClick={() => handleDeclineOrder(order.id)}
+                              className="px-4 h-11 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                            >
+                              Decline
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => handleTrackVehicle(order.id)}
+                            className="flex-1 bg-gray-100 dark:bg-gray-800 text-[#121615] dark:text-white h-11 px-4 rounded-lg font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                          >
+                            Track Delivery
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <span className="bg-new-blue/10 text-new-blue px-2 py-0.5 rounded text-[10px] font-bold">
-                      NEW
-                    </span>
                   </div>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                    <span className="font-bold text-gray-700 dark:text-gray-200">
-                      Order #{latestNewRequest.orderNumber}:
-                    </span>{" "}
-                    {latestNewRequest.items
-                      ?.map((i) => `${i.quantity}x ${i.name || i.sku}`)
-                      .join(", ")}
-                  </p>
-                  <div className="flex items-center gap-3 pt-2">
-                    <button
-                      onClick={() => handleAcceptOrder(latestNewRequest.id)}
-                      className="flex-1 bg-primary text-white h-11 px-4 rounded-lg font-bold text-sm hover:brightness-110 transition-all"
-                    >
-                      Accept Order
-                    </button>
-                    <button
-                      onClick={() => navigate("/new-orders")}
-                      className="px-4 h-11 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                    >
-                      View All
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Active Order Card */}
-            {activeOrder && (
-              <div className="group relative flex items-stretch bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm">
-                <div className="p-6 flex-1 flex flex-col gap-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-                        In Progress
-                      </span>
-                      <h3 className="text-lg font-bold">
-                        {activeOrder.vendor?.name}
-                      </h3>
-                    </div>
-                    <span className="text-gray-400 material-symbols-outlined">
-                      local_shipping
-                    </span>
-                  </div>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                    <span className="font-bold text-gray-700 dark:text-gray-200">
-                      Order #{activeOrder.orderNumber}:
-                    </span>{" "}
-                    {activeOrder.items
-                      ?.map((i) => `${i.quantity}x ${i.name || i.sku}`)
-                      .join(", ")}
-                  </p>
-                  <div className="flex items-center gap-3 pt-2">
-                    <button
-                      onClick={() => handleTrackVehicle(activeOrder.id)}
-                      className="flex-1 bg-gray-100 dark:bg-gray-800 text-[#121615] dark:text-white h-11 px-4 rounded-lg font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      Track Delivery
-                    </button>
-                  </div>
-                </div>
-              </div>
+                );
+              })
             )}
           </div>
 

@@ -19,6 +19,7 @@ export const register = async (req: Request, res: Response) => {
       primaryGoods,
       contactPersonName,
       businessType,
+      serviceAreas, // Accept service areas from request
     } = req.body;
 
     // Aliases for form matching
@@ -59,12 +60,46 @@ export const register = async (req: Request, res: Response) => {
 
     // Create supplier profile if role is SUPPLIER
     if (user.role === "SUPPLIER") {
+      // Use provided address as the default service area, or fallback to "Johannesburg CBD"
+      let finalServiceAreas: string[] = [];
+      if (address && typeof address === "string" && address.trim()) {
+        finalServiceAreas.push(address.trim());
+      }
+
+      if (serviceAreas) {
+        if (typeof serviceAreas === "string") {
+          // Single string: parse comma-separated or use as single area
+          const additional = serviceAreas.includes(",")
+            ? serviceAreas
+                .split(",")
+                .map((area: string) => area.trim())
+                .filter(Boolean)
+            : [serviceAreas.trim()];
+          finalServiceAreas = [
+            ...new Set([...finalServiceAreas, ...additional]),
+          ];
+        } else if (Array.isArray(serviceAreas)) {
+          // Array: use as-is, filtering empty values
+          const additional = serviceAreas.filter(
+            (area: string) => area && area.trim(),
+          );
+          finalServiceAreas = [
+            ...new Set([...finalServiceAreas, ...additional]),
+          ];
+        }
+      }
+
+      // If no valid service areas or address provided, keep default
+      if (finalServiceAreas.length === 0) {
+        finalServiceAreas = ["Johannesburg CBD"];
+      }
+
       await prisma.supplierProfile.create({
         data: {
           supplierId: user.id,
           address, // Supplier-specific address
           primaryGoods,
-          serviceAreas: ["Johannesburg CBD"], // Default for prototype
+          serviceAreas: finalServiceAreas,
         },
       });
     }

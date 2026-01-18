@@ -239,48 +239,9 @@ const OrderDetails = ({ order }) => {
   );
 };
 
-const NewOrderForm = ({ onSubmit, onCancel }) => {
-  const products = [
-    {
-      id: 1,
-      name: "Organic Flour (25kg)",
-      sku: "FLR-ORG-25",
-      supplier: "Fresh Farm Supplies Co.",
-    },
-    {
-      id: 2,
-      name: "Olive Oil (20L)",
-      sku: "OIL-OLV-20",
-      supplier: "Fresh Farm Supplies Co.",
-    },
-    {
-      id: 3,
-      name: "Whole Milk (1L)",
-      sku: "MLK-WHL-01",
-      supplier: "Dairy Distributors Ltd",
-    },
-    {
-      id: 4,
-      name: "Salted Butter (1kg)",
-      sku: "BTR-SLT-01",
-      supplier: "Dairy Distributors Ltd",
-    },
-    {
-      id: 5,
-      name: "Espresso Beans (1kg)",
-      sku: "CFE-ESP-01",
-      supplier: "Premium Coffee Roasters",
-    },
-    {
-      id: 6,
-      name: "Colombian Blend (1kg)",
-      sku: "CFE-COL-01",
-      supplier: "Premium Coffee Roasters",
-    },
-  ];
-
+const NewOrderForm = ({ onSubmit, onCancel, catalog }) => {
   const [formData, setFormData] = useState({
-    item: products[0].name,
+    item: catalog.length > 0 ? catalog[0].skuName : "",
     quantity: 1,
     urgency: "Normal",
     deliveryDate: "",
@@ -291,14 +252,16 @@ const NewOrderForm = ({ onSubmit, onCancel }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const selectedProduct = products.find((p) => p.name === formData.item);
+    const selectedProduct = catalog.find((p) => p.skuName === formData.item);
+    if (!selectedProduct) return;
+
     // Map to backend schema
     const orderData = {
       items: [
         {
-          sku: selectedProduct.sku,
+          sku: selectedProduct.skuCode,
           quantity: formData.quantity,
-          name: selectedProduct.name,
+          name: selectedProduct.skuName,
         },
       ],
       deliveryLocation: formData.deliveryLocation,
@@ -339,9 +302,9 @@ const NewOrderForm = ({ onSubmit, onCancel }) => {
               className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#121715] text-[#121714] dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
               required
             >
-              {products.map((product) => (
-                <option key={product.id} value={product.name}>
-                  {product.name} ({product.supplier})
+              {catalog.map((product, idx) => (
+                <option key={idx} value={product.skuName}>
+                  {product.skuName} ({product.supplierName})
                 </option>
               ))}
             </select>
@@ -468,7 +431,8 @@ const NewOrderForm = ({ onSubmit, onCancel }) => {
 };
 
 const SmallBusinessOrders = () => {
-  const { orders, loading, fetchOrders, createOrder } = useOrders();
+  const { orders, loading, fetchOrders, createOrder, catalog, fetchCatalog } =
+    useOrders();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("All");
@@ -476,7 +440,8 @@ const SmallBusinessOrders = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, [fetchOrders]);
+    fetchCatalog();
+  }, [fetchOrders, fetchCatalog]);
 
   const availableMonths = getUniqueMonths(orders);
   const availableSuppliers = getUniqueSuppliers(orders);
@@ -551,6 +516,7 @@ const SmallBusinessOrders = () => {
           <NewOrderForm
             onSubmit={handleFormSubmit}
             onCancel={() => setShowForm(false)}
+            catalog={catalog}
           />
         ) : !selectedOrder ? (
           <>

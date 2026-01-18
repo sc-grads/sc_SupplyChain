@@ -14,6 +14,7 @@ export const useOrders = () => {
 export const OrderProvider = ({ children }) => {
   const [orders, setOrders] = useState([]);
   const [newRequests, setNewRequests] = useState([]);
+  const [catalog, setCatalog] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { token } = useAuth();
@@ -26,6 +27,24 @@ export const OrderProvider = ({ children }) => {
       Authorization: `Bearer ${token}`,
     };
   }, [token]);
+
+  const fetchCatalog = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_BASE}/catalog`, {
+        headers: getHeaders(),
+      });
+      if (!response.ok) throw new Error("Failed to fetch product catalog");
+      const data = await response.json();
+      setCatalog(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [token, getHeaders]);
 
   const fetchOrders = useCallback(async () => {
     if (!token) return;
@@ -170,10 +189,12 @@ export const OrderProvider = ({ children }) => {
         error,
         fetchOrders,
         fetchNewRequests,
+        fetchCatalog,
         createOrder,
         cancelOrder,
         acceptOrder,
         declineOrder,
+        catalog,
       }}
     >
       {children}
