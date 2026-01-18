@@ -1,0 +1,215 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL") // Optional: for migrations/Prisma Studio with Supabase
+}
+
+// ── Core Users (Suppliers + Vendors/Retailers) ──
+model User {
+  id                String   @id @default(uuid())
+  email             String?  @unique
+  phone             String?  @unique
+  name              String?  // Store company name here
+  contactPersonName String?
+  address           String?
+  businessType      String?
+  password          String   // To be hashed
+  role              Role     @default(SUPPLIER) // SUPPLIER or VENDOR/RETAILER
+
+  // Supplier-specific profile (optional for vendors)
+  supplierProfile SupplierProfile?
+
+  // Orders placed (as vendor) or visible (as supplier)
+  ordersPlaced  Order[]   @relation("PlacedBy")
+  ordersVisible OrderVisibility[] @relation("VisibleTo")
+
+  events    Event[]  // Activity log for this user
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([role])
+  @@index([email])
+}
+
+// Role enum for clarity
+enum Role {
+  SUPPLIER
+  VENDOR // Retailer / Light Manufacturer
+}
+
+// Supplier-specific data (service area, catalog relation)
+model SupplierProfile {
+  id           String   @id @default(uuid())
+  supplierId   String   @unique
+  address      String?
+  primaryGoods String?
+  serviceAreas String[] // e.g. ["Johannesburg", "Gauteng", "Pretoria"] — string match for prototype
+
+  supplier     User     @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  // Catalog: SKUs this supplier carries
+  catalog      SupplierSku[]
+
+  // Per-supplier inventory status
+  inventory    Inventory[]
+
+  @@index([supplierId])
+}
+
+// Global SKU catalog (shared reference)
+model Sku {
+  id          String        @id @default(uuid())
+  code        String        @unique // e.g. "M8-BOLT-20"
+  name        String
+  description String?
+
+  // Suppliers who carry this SKU
+  suppliers   SupplierSku[]
+
+  // Inventory records per supplier
+  inventory   Inventory[]
+
+  @@index([code])
+}
+
+// Many-to-many: Supplier ↔ SKU (catalog)
+model SupplierSku {
+  supplierId String
+  skuId      String
+
+  supplier   SupplierProfile @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  sku        Sku             @relation(fields: [skuId], references: [id], onDelete: Cascade)
+
+  // Optional future fields: price, minOrderQty, leadTimeDays
+
+  @@id([supplierId, skuId])
+  @@index([supplierId])
+  @@index([skuId])
+}
+
+// Per-supplier inventory status (critical for eligibility)
+model Inventory {
+  id         String          @id @default(uuid())
+  supplierId String
+  skuId      String
+  status     InventoryStatus @default(AVAILABLE)
+  quantity   Int?            // Optional — SMEs may not track exact qty
+
+  supplier   SupplierProfile @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  sku        Sku             @relation(fields: [skuId], references: [id])
+
+  @@unique([supplierId, skuId])
+  @@index([supplierId, status]) // Fast filter for available/low
+}
+
+enum InventoryStatus {
+  AVAILABLE
+  LOW
+  UNAVAILABLE
+}
+
+// ── Orders ──
+model Order {
+  id                   String           @id @default(uuid())
+  orderNumber          String           @unique // Human-readable, e.g. ORD-2026-001
+
+  vendorId             String           // Who placed the order (retailer/manufacturer)
+  vendor               User             @relation("PlacedBy", fields: [vendorId], references: [id])
+
+  items                Json[]           // [{sku: "M8-BOLT-20", name: "Steel Bolts", quantity: 500, price: 0.5}, ...]
+  subtotal             Float?
+
+  partialAllowed       Boolean          @default(false)
+  deliveryLocation     String           // e.g. "Johannesburg CBD" — string match for prototype
+  requiredDeliveryDate DateTime
+  requiredDeliveryTime String?          // e.g. "17:00"
+
+  orderState           OrderState       @default(PENDING)
+  deliveryState        DeliveryState    @default(ON_TRACK)
+
+  committedETA         DateTime?        // Supplier-confirmed ETA
+  deliveryAddress      String
+
+  placedAt             DateTime         @default(now())
+
+  // Visibility: which suppliers see this order
+  visibility           OrderVisibility[]
+
+  // Proof of delivery (when completed)
+  proofOfDelivery      Json?            // {photos: [urls], signature: base64?, deliveredAt: timestamp}
+
+  // Activity log
+  events               Event[]
+
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  @@index([vendorId])
+  @@index([orderState, deliveryState])
+  @@index([deliveryLocation])
+}
+
+enum OrderState {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+}
+
+enum DeliveryState {
+  ON_TRACK
+  AT_RISK
+  DELIVERED
+  FAILED
+}
+
+// Targeted visibility (core of Automation #1)
+model OrderVisibility {
+  id         String           @id @default(uuid())
+  orderId    String
+  supplierId String
+  status     VisibilityStatus @default(VISIBLE)
+  viewedAt   DateTime?        // For silence detection
+  createdAt  DateTime         @default(now())
+
+  order      Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  supplier   User             @relation("VisibleTo", fields: [supplierId], references: [id])
+
+  @@unique([orderId, supplierId])
+  @@index([supplierId, status]) // Fast "new requests" query for supplier dashboard
+  @@index([orderId])
+}
+
+enum VisibilityStatus {
+  VISIBLE
+  VIEWED
+  ACCEPTED
+  DECLINED
+  EXPIRED // For silence timeout
+}
+
+// ── Events / Activity Log (Observability & Resilience) ──
+model Event {
+  id        String   @id @default(uuid())
+  type      String   // e.g. "order_received", "delay_reported", "status_changed", "visibility_created"
+  timestamp DateTime @default(now())
+  details   Json?    // {reason: "Stock issue", revisedETA: "...", affectedOrders: []}
+
+  // Optional relations
+  orderId   String?
+  order     Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([type, timestamp])
+  @@index([orderId])
+  @@index([userId])
+}

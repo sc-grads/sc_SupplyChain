@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import "./RegisterSupplier.css";
 
 const RegisterSupplier = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     companyName: "",
     businessEmail: "",
@@ -13,6 +15,8 @@ const RegisterSupplier = () => {
     password: "",
     confirmPassword: "",
   });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,12 +26,29 @@ const RegisterSupplier = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle registration logic here
-    console.log("Registering supplier:", formData);
-    alert("Registration successful! Redirecting to dashboard...");
-    navigate("/dashboard");
+    setError("");
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match!");
+      return;
+    }
+
+    setLoading(true);
+
+    const result = await register({
+      ...formData,
+      role: "SUPPLIER",
+    });
+
+    if (result.success) {
+      alert("Registration successful! Redirecting to dashboard...");
+      navigate("/dashboard");
+    } else {
+      setError(result.error);
+    }
+    setLoading(false);
   };
 
   return (
@@ -45,6 +66,24 @@ const RegisterSupplier = () => {
         </div>
 
         <form onSubmit={handleSubmit}>
+          {error && (
+            <div
+              className="error-message"
+              style={{
+                padding: "12px",
+                marginBottom: "16px",
+                backgroundColor: "#fee",
+                border: "1px solid #fcc",
+                borderRadius: "8px",
+                color: "#c33",
+                fontSize: "14px",
+                fontWeight: "500",
+              }}
+            >
+              {error}
+            </div>
+          )}
+
           <div className="form-group">
             <label htmlFor="companyName">Company Name</label>
             <input
@@ -55,6 +94,7 @@ const RegisterSupplier = () => {
               onChange={handleChange}
               required
               placeholder="e.g. Acme Supplies Ltd."
+              disabled={loading}
             />
           </div>
 
@@ -69,6 +109,7 @@ const RegisterSupplier = () => {
                 onChange={handleChange}
                 required
                 placeholder="contact@company.com"
+                disabled={loading}
               />
             </div>
 
@@ -81,7 +122,8 @@ const RegisterSupplier = () => {
                 value={formData.phone}
                 onChange={handleChange}
                 required
-                placeholder="+1 (555) 000-0000"
+                placeholder="+27 00 000 0000"
+                disabled={loading}
               />
             </div>
           </div>
@@ -95,6 +137,7 @@ const RegisterSupplier = () => {
               onChange={handleChange}
               required
               rows="3"
+              disabled={loading}
             />
           </div>
 
@@ -107,6 +150,7 @@ const RegisterSupplier = () => {
               onChange={handleChange}
               required
               className="form-select"
+              disabled={loading}
             >
               <option value="">Select your primary goods...</option>
               <option value="Hardware">Hardware</option>
@@ -128,6 +172,7 @@ const RegisterSupplier = () => {
                 value={formData.password}
                 onChange={handleChange}
                 required
+                disabled={loading}
               />
             </div>
 
@@ -140,12 +185,13 @@ const RegisterSupplier = () => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
+                disabled={loading}
               />
             </div>
           </div>
 
-          <button type="submit" className="submit-button">
-            Create Supplier Account
+          <button type="submit" className="submit-button" disabled={loading}>
+            {loading ? "Creating Account..." : "Create Supplier Account"}
           </button>
         </form>
 

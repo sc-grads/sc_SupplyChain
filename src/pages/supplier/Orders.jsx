@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Layout from "../components/Layout";
+import Layout from "../../components/Layout";
 
 // Mock Data
 const mockOrders = [
@@ -61,11 +61,11 @@ const mockOrders = [
 
 // Helper function to extract unique months from orders
 const getUniqueMonths = (orders) => {
-  const months = orders.map(order => {
-    const dateParts = order.date.split(' ');
+  const months = orders.map((order) => {
+    const dateParts = order.date.split(" ");
     return `${dateParts[0]} ${dateParts[2]}`;
   });
-  return ['All', ...new Set(months)];
+  return ["All", ...new Set(months)];
 };
 
 const OrderList = ({ orders, onSelectOrder }) => {
@@ -108,12 +108,13 @@ const OrderList = ({ orders, onSelectOrder }) => {
                 </td>
                 <td className="px-6 py-4 text-center">
                   <span
-                    className={`px-3 py-1 text-xs font-bold rounded-full border uppercase tracking-wider ${order.status === "Confirmed"
-                      ? "bg-primary/10 text-primary border-primary/20"
-                      : order.status === "Processing"
-                        ? "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800"
-                        : "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
-                      }`}
+                    className={`px-3 py-1 text-xs font-bold rounded-full border uppercase tracking-wider ${
+                      order.status === "Confirmed"
+                        ? "bg-primary/10 text-primary border-primary/20"
+                        : order.status === "Processing"
+                          ? "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800"
+                          : "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
+                    }`}
                   >
                     {order.status}
                   </span>
@@ -162,12 +163,17 @@ const OrderDetails = ({ order }) => {
           </p>
         </div>
         <div className="flex gap-3">
-
-          <button onClick={handleDeliveryRisk} className="flex items-center justify-center rounded-lg h-12 px-6 bg-risk-amber text-black text-sm font-bold shadow-lg shadow-risk-amber/20 hover:brightness-105 transition-all">
+          <button
+            onClick={handleDeliveryRisk}
+            className="flex items-center justify-center rounded-lg h-12 px-6 bg-risk-amber text-black text-sm font-bold shadow-lg shadow-risk-amber/20 hover:brightness-105 transition-all"
+          >
             <span className="material-symbols-outlined mr-2">warning</span>
             <span>Delivery at Risk</span>
           </button>
-          <button onClick={handleMarkDelivered} className="flex items-center justify-center rounded-lg h-12 px-6 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:brightness-105 transition-all">
+          <button
+            onClick={handleMarkDelivered}
+            className="flex items-center justify-center rounded-lg h-12 px-6 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:brightness-105 transition-all"
+          >
             <span className="material-symbols-outlined mr-2">check_circle</span>
             <span>Mark Delivered</span>
           </button>
@@ -257,7 +263,9 @@ const OrderDetails = ({ order }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 flex items-center gap-4">
               <div className="bg-primary/10 p-3 rounded-lg text-primary">
-                <span className="material-symbols-outlined">local_shipping</span>
+                <span className="material-symbols-outlined">
+                  local_shipping
+                </span>
               </div>
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-black tracking-widest">
@@ -377,17 +385,18 @@ const OrderDetails = ({ order }) => {
 
 const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [selectedMonth, setSelectedMonth] = useState('All');
+  const [selectedMonth, setSelectedMonth] = useState("All");
 
   const availableMonths = getUniqueMonths(mockOrders);
 
-  const filteredOrders = selectedMonth === 'All'
-    ? mockOrders
-    : mockOrders.filter(order => {
-      const dateParts = order.date.split(' ');
-      const orderMonth = `${dateParts[0]} ${dateParts[2]}`;
-      return orderMonth === selectedMonth;
-    });
+  const filteredOrders =
+    selectedMonth === "All"
+      ? mockOrders
+      : mockOrders.filter((order) => {
+          const dateParts = order.date.split(" ");
+          const orderMonth = `${dateParts[0]} ${dateParts[2]}`;
+          return orderMonth === selectedMonth;
+        });
 
   return (
     <Layout>
@@ -395,10 +404,11 @@ const Orders = () => {
         {/* Breadcrumbs */}
         <nav className="flex items-center gap-2 mb-6">
           <button
-            className={`text-sm font-medium transition-colors ${selectedOrder
-              ? "text-gray-500 dark:text-gray-400 hover:text-primary"
-              : "text-[#121714] dark:text-white font-bold"
-              }`}
+            className={`text-sm font-medium transition-colors ${
+              selectedOrder
+                ? "text-gray-500 dark:text-gray-400 hover:text-primary"
+                : "text-[#121714] dark:text-white font-bold"
+            }`}
             onClick={() => setSelectedOrder(null)}
           >
             Orders

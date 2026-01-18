@@ -11,3 +11,10 @@ logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+order_test_payload.json
+order_test_response.json
+SUPPLIER_UI_SPECIFICATION.md
+BACKEND_TESTING_GUIDE.md
+automations.txt
+TARGETED_ORDER_DISTRIBUTION_GAPS.md
+seed_data/

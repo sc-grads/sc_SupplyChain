@@ -1,11 +1,26 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import "./Sidebar.css";
 
 const Sidebar = () => {
   const location = useLocation();
+  const { user, logout } = useAuth();
 
   const isActive = (path) => location.pathname === path;
+
+  // Initials for avatar
+  const getInitials = (name) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
+  };
+
+  const isSmallBusiness = user?.role === "VENDOR";
 
   return (
     <div className="sidebar">
@@ -46,15 +61,27 @@ const Sidebar = () => {
 
       <div className="sidebar-footer">
         <div className="user-profile">
-          <div className="avatar">JD</div>
+          <div className="avatar">{getInitials(user?.name)}</div>
           <div className="user-info">
-            <span className="user-name">John Doe</span>
-            <span className="user-role">Supplier</span>
+            <span className="user-name">{user?.name || "User"}</span>
+            <span className="user-role">
+              {isSmallBusiness ? "Small Business Account" : "Supplier Account"}
+            </span>
           </div>
         </div>
-        <Link to="/" className="logout-btn">
+        <button
+          onClick={logout}
+          className="logout-btn"
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            width: "100%",
+            textAlign: "left",
+          }}
+        >
           Log out
-        </Link>
+        </button>
       </div>
     </div>
   );

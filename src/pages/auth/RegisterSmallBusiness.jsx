@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import "./RegisterSmallBusiness.css";
 
 const RegisterSmallBusiness = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -14,6 +16,8 @@ const RegisterSmallBusiness = () => {
     address: "",
     businessType: "",
   });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,15 +27,29 @@ const RegisterSmallBusiness = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+      setError("Passwords do not match!");
       return;
     }
-    console.log("Registering small business:", formData);
-    alert("Registration successful! Redirecting to dashboard...");
-    navigate("/dashboard");
+
+    setLoading(true);
+
+    const result = await register({
+      ...formData,
+      role: "VENDOR",
+    });
+
+    if (result.success) {
+      alert("Registration successful! Redirecting to dashboard...");
+      navigate("/small-business/dashboard");
+    } else {
+      setError(result.error);
+    }
+    setLoading(false);
   };
 
   return (
@@ -49,6 +67,24 @@ const RegisterSmallBusiness = () => {
         </div>
 
         <form onSubmit={handleSubmit}>
+          {error && (
+            <div
+              className="error-message"
+              style={{
+                padding: "12px",
+                marginBottom: "16px",
+                backgroundColor: "#fee",
+                border: "1px solid #fcc",
+                borderRadius: "8px",
+                color: "#c33",
+                fontSize: "14px",
+                fontWeight: "500",
+              }}
+            >
+              {error}
+            </div>
+          )}
+
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
             <input
@@ -59,6 +95,7 @@ const RegisterSmallBusiness = () => {
               onChange={handleChange}
               required
               placeholder="name@business.com"
+              disabled={loading}
             />
           </div>
 
@@ -72,6 +109,7 @@ const RegisterSmallBusiness = () => {
                 value={formData.password}
                 onChange={handleChange}
                 required
+                disabled={loading}
               />
             </div>
             <div className="form-group">
@@ -83,6 +121,7 @@ const RegisterSmallBusiness = () => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -97,6 +136,7 @@ const RegisterSmallBusiness = () => {
               onChange={handleChange}
               required
               placeholder="e.g. Joe's Hardware"
+              disabled={loading}
             />
           </div>
 
@@ -110,6 +150,7 @@ const RegisterSmallBusiness = () => {
               onChange={handleChange}
               required
               placeholder="Full Name"
+              disabled={loading}
             />
           </div>
 
@@ -122,7 +163,8 @@ const RegisterSmallBusiness = () => {
               value={formData.phone}
               onChange={handleChange}
               required
-              placeholder="+1 (555) 000-0000"
+              placeholder="+27 00 000 0000"
+              disabled={loading}
             />
           </div>
 
@@ -135,6 +177,7 @@ const RegisterSmallBusiness = () => {
               onChange={handleChange}
               required
               rows="2"
+              disabled={loading}
             />
           </div>
 
@@ -147,6 +190,7 @@ const RegisterSmallBusiness = () => {
               onChange={handleChange}
               required
               className="form-select"
+              disabled={loading}
             >
               <option value="">Select business type...</option>
               <option value="Retailer">Retailer</option>
@@ -156,8 +200,12 @@ const RegisterSmallBusiness = () => {
             </select>
           </div>
 
-          <button type="submit" className="submit-button accent-button">
-            Create Business Account
+          <button
+            type="submit"
+            className="submit-button accent-button"
+            disabled={loading}
+          >
+            {loading ? "Creating Account..." : "Create Business Account"}
           </button>
         </form>
 

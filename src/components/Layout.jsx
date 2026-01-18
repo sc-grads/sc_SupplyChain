@@ -6,11 +6,10 @@ const Layout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Determine if user is small business
-  const isSmallBusiness = user?.type === 'small-business';
-  const baseRoute = isSmallBusiness ? '/small-business' : '';
+  const isSmallBusiness = user?.role === "VENDOR";
+  const baseRoute = isSmallBusiness ? "/small-business" : "";
 
   // Helper to determine active state for nav items
   const isActive = (path) => location.pathname === path;
@@ -23,20 +22,9 @@ const Layout = ({ children }) => {
   return (
     <div className="bg-background-light dark:bg-background-dark font-display text-[#121615] dark:text-white min-h-screen flex flex-row overflow-hidden">
       {/* Sidebar Navigation */}
-      <nav
-        className={`${isSidebarOpen ? "w-64 items-start px-4" : "w-20 items-center"} transition-all duration-300 flex flex-col py-6 gap-2 border-r border-[#dde3e1] dark:border-gray-800 bg-white dark:bg-background-dark h-screen z-50`}
-      >
-        {/* Toggle Button & Logo Area */}
-        <div
-          className={`flex items-center gap-3 mb-8 w-full ${isSidebarOpen ? "pl-2" : "justify-center flex-col-reverse gap-4"}`}
-        >
-          <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-primary"
-          >
-            <span className="material-symbols-outlined">menu_open</span>
-          </button>
-
+      <nav className="w-64 items-start px-4 transition-all duration-300 flex flex-col py-6 gap-2 border-r border-[#dde3e1] dark:border-gray-800 bg-white dark:bg-background-dark h-screen z-50">
+        {/* Logo Area */}
+        <div className="flex items-center gap-3 mb-8 w-full pl-2">
           <div className="flex items-center gap-3 text-primary">
             <div className="size-8 min-w-8">
               <svg
@@ -56,59 +44,47 @@ const Layout = ({ children }) => {
                 ></path>
               </svg>
             </div>
-            {isSidebarOpen && (
-              <h2 className="text-xl font-bold leading-tight tracking-[-0.015em] dark:text-white whitespace-nowrap">
-                EasyStock
-              </h2>
-            )}
+            <h2 className="text-xl font-bold leading-tight tracking-[-0.015em] dark:text-white whitespace-nowrap">
+              EasyStock
+            </h2>
           </div>
         </div>
 
         <button
           onClick={() => navigate(`${baseRoute}/dashboard`)}
-          className={`p-2 rounded-lg flex items-center gap-3 w-full ${isSidebarOpen ? "justify-start" : "justify-center"} ${isActive(`${baseRoute}/dashboard`) ? "bg-primary/10 text-primary" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+          className={`p-2 rounded-lg flex items-center gap-3 w-full justify-start ${isActive(`${baseRoute}/dashboard`) ? "bg-primary/10 text-primary" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
         >
           <span className="material-symbols-outlined">dashboard</span>
-          {isSidebarOpen && (
-            <span className="font-medium whitespace-nowrap">Dashboard</span>
-          )}
+          <span className="font-medium whitespace-nowrap">Dashboard</span>
         </button>
         <button
           onClick={() => navigate(`${baseRoute}/orders`)}
-          className={`p-2 rounded-lg flex items-center gap-3 w-full ${isSidebarOpen ? "justify-start" : "justify-center"} ${isActive(`${baseRoute}/orders`) ? "bg-primary/10 text-primary" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+          className={`p-2 rounded-lg flex items-center gap-3 w-full justify-start ${isActive(`${baseRoute}/orders`) ? "bg-primary/10 text-primary" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
         >
           <span className="material-symbols-outlined">local_shipping</span>
-          {isSidebarOpen && (
-            <span className="font-medium whitespace-nowrap">Orders</span>
-          )}
+          <span className="font-medium whitespace-nowrap">Orders</span>
         </button>
         <button
           onClick={() => navigate(`${baseRoute}/inventory`)}
-          className={`p-2 rounded-lg flex items-center gap-3 w-full ${isSidebarOpen ? "justify-start" : "justify-center"} ${isActive(`${baseRoute}/inventory`) ? "bg-primary/10 text-primary" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+          className={`p-2 rounded-lg flex items-center gap-3 w-full justify-start ${isActive(`${baseRoute}/inventory`) ? "bg-primary/10 text-primary" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
         >
           <span className="material-symbols-outlined">inventory_2</span>
-          {isSidebarOpen && (
-            <span className="font-medium whitespace-nowrap">Inventory</span>
-          )}
+          <span className="font-medium whitespace-nowrap">Inventory</span>
         </button>
         <button
-          className={`p-2 rounded-lg flex items-center gap-3 w-full ${isSidebarOpen ? "justify-start" : "justify-center"} text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800`}
+          className={`p-2 rounded-lg flex items-center gap-3 w-full justify-start text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800`}
         >
           <span className="material-symbols-outlined">analytics</span>
-          {isSidebarOpen && (
-            <span className="font-medium whitespace-nowrap">Analytics</span>
-          )}
+          <span className="font-medium whitespace-nowrap">Analytics</span>
         </button>
 
         {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className={`p-2 rounded-lg flex items-center gap-3 w-full ${isSidebarOpen ? "justify-start" : "justify-center"} text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 mt-auto`}
+          className={`p-2 rounded-lg flex items-center gap-3 w-full justify-start text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 mt-auto`}
         >
           <span className="material-symbols-outlined">logout</span>
-          {isSidebarOpen && (
-            <span className="font-medium whitespace-nowrap">Logout</span>
-          )}
+          <span className="font-medium whitespace-nowrap">Logout</span>
         </button>
       </nav>
 
@@ -122,19 +98,18 @@ const Layout = ({ children }) => {
             </button>
             <div className="flex items-center gap-3 pl-4 border-l border-gray-200 dark:border-gray-800">
               <div className="hidden sm:flex flex-col text-right">
-                <span className="text-sm font-bold">{user?.name || 'User'}</span>
+                <span className="text-sm font-bold">
+                  {user?.name || "User"}
+                </span>
                 <span className="text-xs text-gray-500">
-                  {isSmallBusiness ? 'Small Business' : 'Supplier Account'}
+                  {isSmallBusiness
+                    ? "Small Business Account"
+                    : "Supplier Account"}
                 </span>
               </div>
-              <div
-                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-primary/20"
-                data-alt="User avatar"
-                style={{
-                  backgroundImage:
-                    'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCgl1LL2EVHoZFwZ4AQfL3F2k8y1aNpRXhF9u1v9ljOr0r8qHIig0az1sR_OFeivDudTp-FS8Mb-C8iWKvzND_oqauaiFyX5vLGaFhzkzgJe8Jdqp_Xjz4HCbE7wMWj0koDSUIz4ugZt6inWd6w9q9HQZtTOZ8gPfkWpZdj9bPVHeL53usgQm1_PAv922cmnRnGhTTjpf_ztoTXfhJSpobJLQ17jc1aHe_9VO1-a14Mo3rfvL6S9_UMfDdXBNfDTb-7EbiHuHwSC_pV")',
-                }}
-              ></div>
+              <div className="flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-full size-10 ring-2 ring-primary/20 text-gray-400">
+                <span className="material-symbols-outlined">person</span>
+              </div>
             </div>
           </div>
         </header>
@@ -149,4 +124,3 @@ const Layout = ({ children }) => {
 };
 
 export default Layout;
-
