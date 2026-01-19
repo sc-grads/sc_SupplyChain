@@ -36,6 +36,28 @@ const getUniqueSuppliers = (orders) => {
   return ["All Suppliers", ...new Set(suppliers)];
 };
 
+// Helper to replicate backend price simulation
+const getMockPrice = (sku) => {
+  if (!sku) return 50;
+  let hash = 0;
+  for (let i = 0; i < sku.length; i++) {
+    hash = sku.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const price = (Math.abs(hash) % 500) + 50;
+  return price;
+};
+
+// Helper to format date
+const formatDisplayDate = (dateStr) => {
+  if (!dateStr) return "N/A";
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
+
 const OrderList = ({ orders, onSelectOrder }) => {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
@@ -66,15 +88,22 @@ const OrderList = ({ orders, onSelectOrder }) => {
                   {getSupplierName(order)}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-500">
-                  {order.placedAt
-                    ? new Date(order.placedAt).toLocaleDateString()
-                    : order.date}
+                  {formatDisplayDate(order.placedAt || order.date)}
                 </td>
                 <td className="px-6 py-4 text-center font-bold text-sm">
                   {order.items?.length || 0}
                 </td>
                 <td className="px-6 py-4 text-right font-bold text-sm">
-                  ZAR {order.subtotal || 0}
+                  ZAR{" "}
+                  {(
+                    (order.items?.reduce(
+                      (sum, item) =>
+                        sum +
+                        (item.price || getMockPrice(item.sku)) *
+                          (item.quantity || 0),
+                      0,
+                    ) || 0) * 1.08
+                  ).toFixed(2)}
                 </td>
                 <td className="px-6 py-4 text-center">
                   <span
@@ -116,16 +145,6 @@ const OrderDetails = ({ order }) => {
 
   const handleContactSupplier = () => {
     alert(`Contacting ${order.supplier}...`);
-  };
-
-  // Helper to replicate backend price simulation
-  const getMockPrice = (sku) => {
-    let hash = 0;
-    for (let i = 0; i < sku.length; i++) {
-      hash = sku.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const price = (Math.abs(hash) % 500) + 50;
-    return price;
   };
 
   const calculatedSubtotal =

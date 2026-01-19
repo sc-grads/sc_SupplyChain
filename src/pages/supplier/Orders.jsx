@@ -46,6 +46,17 @@ const getUniqueMonths = (orders) => {
   return ["All", ...new Set(months)];
 };
 
+// Helper to replicate backend price simulation
+const getMockPrice = (sku) => {
+  if (!sku) return 50;
+  let hash = 0;
+  for (let i = 0; i < sku.length; i++) {
+    hash = sku.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const price = (Math.abs(hash) % 500) + 50;
+  return price;
+};
+
 const OrderList = ({ orders, onSelectOrder }) => {
   const getOrderStatus = (order) => {
     if (order.deliveryState === "DELIVERED") return "Delivered";
@@ -110,13 +121,22 @@ const OrderList = ({ orders, onSelectOrder }) => {
                       {order.vendor?.name || "Unknown"}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      {formatRelativeTime(order.createdAt)}
+                      {formatFullDate(order.createdAt || order.placedAt)}
                     </td>
                     <td className="px-6 py-4 text-center font-bold text-sm">
                       {order.items?.length || 0}
                     </td>
                     <td className="px-6 py-4 text-right font-bold text-sm">
-                      ZAR {order.subtotal?.toFixed(2) || "0.00"}
+                      ZAR{" "}
+                      {(
+                        (order.items?.reduce(
+                          (sum, item) =>
+                            sum +
+                            (item.price || getMockPrice(item.sku)) *
+                              (item.quantity || 0),
+                          0,
+                        ) || 0) * 1.08
+                      ).toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
@@ -144,16 +164,6 @@ const OrderList = ({ orders, onSelectOrder }) => {
 };
 
 const OrderDetails = ({ order, updateDeliveryStatus, fetchActiveOrders }) => {
-  // Helper to replicate backend price simulation
-  const getMockPrice = (sku) => {
-    let hash = 0;
-    for (let i = 0; i < sku.length; i++) {
-      hash = sku.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const price = (Math.abs(hash) % 500) + 50;
-    return price;
-  };
-
   const calculatedSubtotal =
     order.items?.reduce(
       (sum, item) =>
