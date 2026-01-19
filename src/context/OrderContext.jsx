@@ -205,6 +205,39 @@ export const OrderProvider = ({ children }) => {
     }
   };
 
+  const updateDeliveryStatus = async (orderId, status) => {
+    // status: "OUT_FOR_DELIVERY", "IN_TRANSIT", "DELIVERED"
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `${API_BASE}/orders/${orderId}/delivery-status`,
+        {
+          method: "PATCH",
+          headers: getHeaders(),
+          body: JSON.stringify({ status }),
+        },
+      );
+      if (!response.ok) throw new Error("Failed to update delivery status");
+      const data = await response.json();
+
+      // If delivered, update local state
+      if (status === "DELIVERED") {
+        setActiveOrders((prev) =>
+          prev.map((o) =>
+            o.id === orderId ? { ...o, deliveryState: "DELIVERED" } : o,
+          ),
+        );
+      }
+      return { success: true };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, error: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <OrderContext.Provider
       value={{
@@ -222,6 +255,7 @@ export const OrderProvider = ({ children }) => {
         activeOrders,
         fetchActiveOrders,
         catalog,
+        updateDeliveryStatus,
       }}
     >
       {children}

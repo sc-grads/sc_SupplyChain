@@ -191,6 +191,28 @@ export async function getActiveOrdersForSupplier(supplierId: string) {
   });
 }
 
+export async function updateDeliveryStatus(orderId: string, status: string) {
+  // 1. Log Event for all statuses
+  await logEvent({
+    type: status, // "OUT_FOR_DELIVERY", "IN_TRANSIT", "DELIVERED"
+    orderId,
+    details: { message: `Order is ${status.replace(/_/g, " ").toLowerCase()}` },
+  });
+
+  // 2. If delivered, update the actual order state
+  if (status === "DELIVERED") {
+    const order = await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        deliveryState: "DELIVERED",
+      },
+    });
+    return order;
+  }
+
+  return { success: true };
+}
+
 // Helper for events (observability)
 async function logEvent(data: {
   type: string;

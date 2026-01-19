@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import Timeline from "../../components/Timeline";
 import Layout from "../../components/Layout";
 import { useOrders } from "../../context/OrderContext";
 
@@ -11,7 +13,11 @@ const formatRelativeTime = (dateStr) => {
   if (diffMins < 60) return `${diffMins} minutes ago`;
   const diffHours = Math.floor(diffMins / 60);
   if (diffHours < 24) return `${diffHours} hours ago`;
-  return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 };
 
 // Helper to format full date nicely (e.g., "20 January 2026")
@@ -83,7 +89,9 @@ const OrderList = ({ orders, onSelectOrder }) => {
                   <span className="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700 mb-4 block">
                     inbox
                   </span>
-                  <p className="text-gray-500 dark:text-gray-400">No orders found</p>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    No orders found
+                  </p>
                 </td>
               </tr>
             ) : (
@@ -119,7 +127,9 @@ const OrderList = ({ orders, onSelectOrder }) => {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <button className="text-gray-400 hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined">arrow_forward</span>
+                        <span className="material-symbols-outlined">
+                          arrow_forward
+                        </span>
                       </button>
                     </td>
                   </tr>
@@ -133,13 +143,64 @@ const OrderList = ({ orders, onSelectOrder }) => {
   );
 };
 
-const OrderDetails = ({ order }) => {
-  const handleDeliveryRisk = () => {
-    alert(`Marking order ${order.orderNumber} as at risk`);
+const OrderDetails = ({ order, updateDeliveryStatus, fetchActiveOrders }) => {
+  // Adapter Logic: Determine Timeline Status
+  const getTimelineStatus = () => {
+    if (order.deliveryState === "DELIVERED") return "DELIVERED";
+    if (
+      order.events?.some(
+        (e) => e.type === "OUT_FOR_DELIVERY" || e.type === "IN_TRANSIT",
+      )
+    ) {
+      // Treat IN_TRANSIT as part of the OUT_FOR_DELIVERY phase for this strict 3-step view
+      // unless we want to map it to delivered? No, user said valid statuses are PLACED, OUT, DELIVERED.
+      return "OUT_FOR_DELIVERY";
+    }
+    return "PLACED";
   };
 
-  const handleMarkDelivered = () => {
-    alert(`Marking order ${order.orderNumber} as delivered`);
+  const getTimestamps = () => {
+    const placed = order.placedAt || order.createdAt;
+    const out = order.events?.find(
+      (e) => e.type === "OUT_FOR_DELIVERY",
+    )?.timestamp;
+    const delivered =
+      order.events?.find((e) => e.type === "DELIVERED")?.timestamp ||
+      (order.deliveryState === "DELIVERED" ? order.updatedAt : null);
+
+    return {
+      placedAt: placed,
+      outForDeliveryAt: out,
+      deliveredAt: delivered,
+    };
+  };
+
+  const timelineStatus = getTimelineStatus();
+  const timelineTimestamps = getTimestamps();
+
+  const handleOutForDelivery = async () => {
+    // Simulation Sequence
+    try {
+      // 1. Out for Delivery
+      await updateDeliveryStatus(order.id, "OUT_FOR_DELIVERY");
+      await fetchActiveOrders(); // Refresh timeline
+
+      // 2. Wait 3 seconds -> In Transit
+      setTimeout(async () => {
+        await updateDeliveryStatus(order.id, "IN_TRANSIT");
+        await fetchActiveOrders();
+
+        // 3. Wait 3 seconds -> Delivered
+        setTimeout(async () => {
+          await updateDeliveryStatus(order.id, "DELIVERED");
+          await fetchActiveOrders();
+          alert(`Order ${order.orderNumber} has been delivered!`);
+        }, 3000);
+      }, 3000);
+    } catch (error) {
+      console.error("Simulation failed:", error);
+      alert("Failed to update delivery status");
+    }
   };
 
   return (
@@ -161,18 +222,13 @@ const OrderDetails = ({ order }) => {
         </div>
         <div className="flex gap-3">
           <button
-            onClick={handleDeliveryRisk}
-            className="flex items-center justify-center rounded-lg h-12 px-6 bg-risk-amber text-black text-sm font-bold shadow-lg shadow-risk-amber/20 hover:brightness-105 transition-all"
-          >
-            <span className="material-symbols-outlined mr-2">warning</span>
-            <span>Delivery at Risk</span>
-          </button>
-          <button
-            onClick={handleMarkDelivered}
+            onClick={handleOutForDelivery}
             className="flex items-center justify-center rounded-lg h-12 px-6 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:brightness-105 transition-all"
           >
-            <span className="material-symbols-outlined mr-2">check_circle</span>
-            <span>Mark Delivered</span>
+            <span className="material-symbols-outlined mr-2">
+              local_shipping
+            </span>
+            <span>Out for Delivery</span>
           </button>
         </div>
       </div>
@@ -215,7 +271,10 @@ const OrderDetails = ({ order }) => {
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {order.items && order.items.length > 0 ? (
                     order.items.map((item, index) => (
-                      <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <tr
+                        key={index}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      >
                         <td className="px-6 py-4 flex items-center gap-3">
                           {/* Static placeholder image – matches screenshot style */}
                           <div
@@ -239,13 +298,19 @@ const OrderDetails = ({ order }) => {
                           ZAR {(item.price || 0).toFixed(2)}
                         </td>
                         <td className="px-6 py-4 text-right font-bold text-sm">
-                          ZAR {((item.quantity || 0) * (item.price || 0)).toFixed(2)}
+                          ZAR{" "}
+                          {((item.quantity || 0) * (item.price || 0)).toFixed(
+                            2,
+                          )}
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                      <td
+                        colSpan={5}
+                        className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
+                      >
                         No items in this order
                       </td>
                     </tr>
@@ -260,14 +325,24 @@ const OrderDetails = ({ order }) => {
                   <span>Subtotal</span>
                   <span>
                     ZAR{" "}
-                    {order.items?.reduce((sum, item) => sum + ((item.quantity || 0) * (item.price || 0)), 0).toFixed(2) || "0.00"}
+                    {order.items
+                      ?.reduce(
+                        (sum, item) =>
+                          sum + (item.quantity || 0) * (item.price || 0),
+                        0,
+                      )
+                      .toFixed(2) || "0.00"}
                   </span>
                 </div>
                 <div className="flex justify-between text-gray-500 dark:text-gray-400 text-sm">
                   <span>Tax (15%)</span>
                   <span>
                     ZAR{" "}
-                    {order.items?.reduce((sum, item) => sum + ((item.quantity || 0) * (item.price || 0)), 0) * 0.15.toFixed(2) || "0.00"}
+                    {order.items?.reduce(
+                      (sum, item) =>
+                        sum + (item.quantity || 0) * (item.price || 0),
+                      0,
+                    ) * (0.15).toFixed(2) || "0.00"}
                   </span>
                 </div>
                 <div className="flex justify-between text-[#121714] dark:text-white font-black text-xl border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
@@ -281,7 +356,9 @@ const OrderDetails = ({ order }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 flex items-center gap-4">
               <div className="bg-primary/10 p-3 rounded-lg text-primary">
-                <span className="material-symbols-outlined">local_shipping</span>
+                <span className="material-symbols-outlined">
+                  local_shipping
+                </span>
               </div>
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-black tracking-widest">
@@ -293,7 +370,9 @@ const OrderDetails = ({ order }) => {
 
             <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 flex items-center gap-4">
               <div className="bg-primary/10 p-3 rounded-lg text-primary">
-                <span className="material-symbols-outlined">calendar_today</span>
+                <span className="material-symbols-outlined">
+                  calendar_today
+                </span>
               </div>
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-black tracking-widest">
@@ -301,7 +380,9 @@ const OrderDetails = ({ order }) => {
                 </p>
                 <p className="font-bold">
                   {formatFullDate(order.requiredDeliveryDate)}
-                  {order.requiredDeliveryTime ? ` (${order.requiredDeliveryTime})` : ""}
+                  {order.requiredDeliveryTime
+                    ? ` (${order.requiredDeliveryTime})`
+                    : ""}
                 </p>
               </div>
             </div>
@@ -315,7 +396,9 @@ const OrderDetails = ({ order }) => {
             </h3>
             <div className="space-y-6">
               <div className="flex gap-3">
-                <span className="material-symbols-outlined text-gray-500">location_on</span>
+                <span className="material-symbols-outlined text-gray-500">
+                  location_on
+                </span>
                 <div>
                   <p className="text-sm font-bold">Shipping Address</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mt-1">
@@ -323,7 +406,9 @@ const OrderDetails = ({ order }) => {
                     <br />
                     {order.deliveryAddress || "No address provided"}
                     <br />
-                    {order.deliveryLocation ? `${order.deliveryLocation}, South Africa` : ""}
+                    {order.deliveryLocation
+                      ? `${order.deliveryLocation}, South Africa`
+                      : ""}
                   </p>
                 </div>
               </div>
@@ -331,7 +416,9 @@ const OrderDetails = ({ order }) => {
               <hr className="border-gray-200 dark:border-gray-700" />
 
               <div className="flex gap-3">
-                <span className="material-symbols-outlined text-gray-500">person</span>
+                <span className="material-symbols-outlined text-gray-500">
+                  person
+                </span>
                 <div className="flex-1">
                   <p className="text-sm font-bold">Point of Contact</p>
                   <p className="text-sm font-medium mt-1">
@@ -339,11 +426,15 @@ const OrderDetails = ({ order }) => {
                   </p>
                   <div className="mt-3 flex flex-col gap-2">
                     <button className="flex items-center gap-2 text-xs font-bold text-primary bg-primary/10 px-3 py-2 rounded-lg w-full justify-center border border-primary/20">
-                      <span className="material-symbols-outlined text-sm">call</span>
+                      <span className="material-symbols-outlined text-sm">
+                        call
+                      </span>
                       {order.vendor?.phone || "+27 000 000 000"}
                     </button>
                     <button className="flex items-center gap-2 text-xs font-bold text-gray-500 bg-background-light dark:bg-[#2c353d] px-3 py-2 rounded-lg w-full justify-center border border-gray-200 dark:border-gray-700">
-                      <span className="material-symbols-outlined text-sm">mail</span>
+                      <span className="material-symbols-outlined text-sm">
+                        mail
+                      </span>
                       {order.vendor?.email || "Contact via Email"}
                     </button>
                   </div>
@@ -356,43 +447,11 @@ const OrderDetails = ({ order }) => {
             <h3 className="text-sm font-black uppercase tracking-widest mb-6">
               Activity Timeline
             </h3>
-            <div className="relative space-y-8 pl-8 before:content-[''] before:absolute before:left-[11px] before:top-1 before:h-[calc(100%-12px)] before:w-0.5 before:bg-gray-200 dark:before:bg-gray-700">
-              {order.events && order.events.length > 0 ? (
-                order.events.map((event, index) => (
-                  <div key={index} className="relative">
-                    <div className="absolute -left-[30px] top-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white border-4 border-white dark:border-background-dark z-10">
-                      <span className="material-symbols-outlined text-xs font-bold">
-                        check
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold">
-                        {event.type.replace("_", " ").toUpperCase()}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {formatRelativeTime(event.timestamp)}
-                      </p>
-                      <p className="text-xs mt-1 text-gray-500">
-                        {event.details?.message || "No additional details"}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="relative">
-                  <div className="absolute -left-[30px] top-0 w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary border-4 border-white dark:border-background-dark z-10">
-                    <span className="material-symbols-outlined text-xs font-bold">
-                      shopping_cart
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold">No activity recorded yet</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Updates will appear here
-                    </p>
-                  </div>
-                </div>
-              )}
+            <div className="relative space-y-8 pl-4">
+              <Timeline
+                status={timelineStatus}
+                timestamps={timelineTimestamps}
+              />
             </div>
           </div>
         </div>
@@ -402,13 +461,37 @@ const OrderDetails = ({ order }) => {
 };
 
 const Orders = () => {
-  const { activeOrders, fetchActiveOrders } = useOrders();
+  const { activeOrders, fetchActiveOrders, updateDeliveryStatus } = useOrders();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState("All");
+
+  const location = useLocation();
 
   useEffect(() => {
     fetchActiveOrders();
   }, [fetchActiveOrders]);
+
+  useEffect(() => {
+    if (location.state?.orderId && activeOrders.length > 0) {
+      const orderToSelect = activeOrders.find(
+        (o) => o.id === location.state.orderId,
+      );
+      if (orderToSelect) {
+        setSelectedOrder(orderToSelect);
+        // Clear state to prevent re-selection on refresh (optional but good practice)
+        window.history.replaceState({}, document.title);
+      }
+    }
+  }, [location.state, activeOrders]);
+
+  useEffect(() => {
+    if (selectedOrder) {
+      const updatedOrder = activeOrders.find((o) => o.id === selectedOrder.id);
+      if (updatedOrder && updatedOrder !== selectedOrder) {
+        setSelectedOrder(updatedOrder);
+      }
+    }
+  }, [activeOrders]);
 
   const availableMonths = getUniqueMonths(activeOrders);
 
@@ -442,7 +525,9 @@ const Orders = () => {
 
           {selectedOrder && (
             <>
-              <span className="text-gray-500 dark:text-gray-500 text-sm">/</span>
+              <span className="text-gray-500 dark:text-gray-500 text-sm">
+                /
+              </span>
               <span className="text-[#121714] dark:text-white text-sm font-bold">
                 Order #{selectedOrder.orderNumber}
               </span>
@@ -479,10 +564,17 @@ const Orders = () => {
               </div>
             </div>
 
-            <OrderList orders={filteredOrders} onSelectOrder={setSelectedOrder} />
+            <OrderList
+              orders={filteredOrders}
+              onSelectOrder={setSelectedOrder}
+            />
           </>
         ) : (
-          <OrderDetails order={selectedOrder} />
+          <OrderDetails
+            order={selectedOrder}
+            updateDeliveryStatus={updateDeliveryStatus}
+            fetchActiveOrders={fetchActiveOrders}
+          />
         )}
       </div>
     </Layout>

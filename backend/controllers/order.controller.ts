@@ -171,3 +171,25 @@ export const getSupplierActiveOrders = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const updateDeliveryStatus = async (req: Request, res: Response) => {
+  try {
+    const authReq = req as AuthRequest;
+    const supplierId = authReq.user?.id;
+    if (!supplierId) return res.status(401).json({ message: "Unauthorized" });
+
+    const { id } = req.params;
+    const { status } = req.body; // "OUT_FOR_DELIVERY", "IN_TRANSIT", "DELIVERED"
+
+    const result = await orderService.updateDeliveryStatus(
+      id as string,
+      status,
+    );
+    res.json({ message: "Status updated", result });
+  } catch (error: any) {
+    res.status(500).json({
+      message: "Failed to update delivery status.",
+      details: error.message,
+    });
+  }
+};

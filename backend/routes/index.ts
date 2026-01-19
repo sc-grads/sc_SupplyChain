@@ -22,8 +22,16 @@ router.post("/inventory", authenticate, inventoryController.updateInventory);
 router.get("/catalog", authenticate, inventoryController.getCatalog);
 
 // Supplier Profile Routes
-router.patch("/supplier/profile/service-areas", authenticate, inventoryController.updateServiceAreas);
-router.get("/orders/supplier/active", authenticate, orderController.getSupplierActiveOrders);
+router.patch(
+  "/supplier/profile/service-areas",
+  authenticate,
+  inventoryController.updateServiceAreas,
+);
+router.get(
+  "/orders/supplier/active",
+  authenticate,
+  orderController.getSupplierActiveOrders,
+);
 // router.get("/supplier/orders/:id", authenticate, orderController.getSupplierOrderById);
 // router.patch("/supplier/orders/:id/accept", authenticate, orderController.acceptOrder);
 // router.patch("/supplier/orders/:id/decline", authenticate, orderController.declineOrder);
@@ -41,5 +49,10 @@ router.get(
 router.patch("/orders/:id/cancel", authenticate, orderController.cancelOrder);
 router.patch("/orders/:id/accept", authenticate, orderController.acceptOrder);
 router.patch("/orders/:id/decline", authenticate, orderController.declineOrder);
+router.patch(
+  "/orders/:id/delivery-status",
+  authenticate,
+  orderController.updateDeliveryStatus,
+);
 
 export default router;

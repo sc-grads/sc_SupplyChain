@@ -16,6 +16,8 @@ const Dashboard = () => {
     fetchNewRequests,
     acceptOrder,
     declineOrder,
+    activeOrders,
+    fetchActiveOrders,
   } = useOrders();
   const { inventory, fetchInventory, updateStock } = useInventory();
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,11 +26,10 @@ const Dashboard = () => {
     fetchOrders();
     fetchNewRequests();
     fetchInventory();
-  }, [fetchOrders, fetchNewRequests, fetchInventory]);
+    fetchActiveOrders();
+  }, [fetchOrders, fetchNewRequests, fetchInventory, fetchActiveOrders]);
 
-  const activeOrdersCount = orders.filter(
-    (o) => o.orderState === "ACCEPTED",
-  ).length;
+  const activeOrdersCount = activeOrders.length;
   const atRiskCount = orders.filter(
     (o) => o.deliveryState === "AT_RISK",
   ).length;
@@ -36,7 +37,6 @@ const Dashboard = () => {
   // Get orders for live feed - limit to 3 total
   const atRiskOrders = orders.filter((o) => o.deliveryState === "AT_RISK");
   const newRequestsOrders = newRequests;
-  const activeOrders = orders.filter((o) => o.orderState === "ACCEPTED");
 
   // Combine and limit to 3 orders for live feed
   const liveFeedOrders = [
@@ -76,8 +76,7 @@ const Dashboard = () => {
   };
 
   const handleTrackVehicle = (orderId) => {
-    alert(`Opening vehicle tracking for order ${orderId}`);
-    console.log(`Track vehicle for: ${orderId}`);
+    navigate("/orders", { state: { orderId } });
   };
 
   const handleStockUpdate = async (skuId, status) => {
