@@ -258,13 +258,13 @@ const SmallBusinessOrderDetails = () => {
             </div>
             <div className="space-y-1">
               <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                Total Cost
+                Total Cost (Inc. Tax)
               </p>
               <p className="text-xl font-bold text-primary">
                 {new Intl.NumberFormat("en-ZA", {
                   style: "currency",
                   currency: "ZAR",
-                }).format(totalCost)}
+                }).format(totalCost * 1.08)}
               </p>
             </div>
           </section>
@@ -319,16 +319,48 @@ const SmallBusinessOrderDetails = () => {
                         {item.quantity} units
                       </td>
                       <td className="px-6 py-4 text-right text-slate-600 dark:text-slate-400">
-                        {/* Mock price if missing, assuming backend might not send it per item yet */}
-                        R {item.price || 50}
+                        R {(item.price || getMockPrice(item.sku)).toFixed(2)}
                       </td>
                       <td className="px-6 py-4 text-right font-semibold text-slate-900 dark:text-white">
-                        R {(item.price || 50) * item.quantity}
+                        R{" "}
+                        {(
+                          (item.price || getMockPrice(item.sku)) * item.quantity
+                        ).toFixed(2)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Bottom Summary Box */}
+            <div className="p-6 bg-slate-50/50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+              <div className="w-64 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">
+                    Subtotal
+                  </span>
+                  <span className="text-slate-900 dark:text-white font-bold">
+                    R {totalCost.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">
+                    Tax (8%)
+                  </span>
+                  <span className="text-slate-900 dark:text-white font-bold">
+                    R {(totalCost * 0.08).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center pt-3 border-t border-slate-200 dark:border-slate-700">
+                  <span className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                    Total
+                  </span>
+                  <span className="text-2xl font-black text-primary">
+                    R {(totalCost * 1.08).toFixed(2)}
+                  </span>
+                </div>
+              </div>
             </div>
           </section>
         </div>

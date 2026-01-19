@@ -118,6 +118,23 @@ const OrderDetails = ({ order }) => {
     alert(`Contacting ${order.supplier}...`);
   };
 
+  // Helper to replicate backend price simulation
+  const getMockPrice = (sku) => {
+    let hash = 0;
+    for (let i = 0; i < sku.length; i++) {
+      hash = sku.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const price = (Math.abs(hash) % 500) + 50;
+    return price;
+  };
+
+  const calculatedSubtotal =
+    order.items?.reduce(
+      (sum, item) =>
+        sum + (item.price || getMockPrice(item.sku)) * (item.quantity || 0),
+      0,
+    ) || 0;
+
   return (
     <>
       <div className="flex flex-wrap justify-between items-end gap-6 mb-8">
@@ -179,18 +196,12 @@ const OrderDetails = ({ order }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-            <div className="flex border-b border-gray-200 dark:border-gray-800 px-6 gap-8">
+            <div className="flex border-b border-gray-200 dark:border-gray-800 px-6">
               <a
                 className="flex items-center border-b-[3px] border-primary text-primary pb-4 pt-5 px-1 font-bold text-sm tracking-wide"
                 href="#"
               >
                 Items ({order.items?.length || 0})
-              </a>
-              <a
-                className="flex items-center border-b-[3px] border-transparent text-gray-500 dark:text-gray-400 pb-4 pt-5 px-1 font-bold text-sm hover:text-primary transition-colors"
-                href="#"
-              >
-                Delivery Info
               </a>
             </div>
             <div className="overflow-x-auto">
@@ -223,15 +234,35 @@ const OrderDetails = ({ order }) => {
                         {item.quantity}
                       </td>
                       <td className="px-6 py-4 text-right text-sm">
-                        ZAR {item.price || 0}
+                        ZAR {(item.price || getMockPrice(item.sku)).toFixed(2)}
                       </td>
                       <td className="px-6 py-4 text-right font-bold text-sm">
-                        ZAR {(item.price || 0) * item.quantity}
+                        ZAR{" "}
+                        {(
+                          (item.price || getMockPrice(item.sku)) * item.quantity
+                        ).toFixed(2)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            <div className="p-6 bg-background-light/30 dark:bg-background-dark flex justify-end">
+              <div className="w-64 space-y-2">
+                <div className="flex justify-between text-gray-500 dark:text-gray-400 text-sm">
+                  <span>Subtotal</span>
+                  <span>ZAR {calculatedSubtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-gray-500 dark:text-gray-400 text-sm">
+                  <span>Tax (8%)</span>
+                  <span>ZAR {(calculatedSubtotal * 0.08).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-[#121714] dark:text-white font-black text-xl border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
+                  <span>Total</span>
+                  <span>ZAR {(calculatedSubtotal * 1.08).toFixed(2)}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
