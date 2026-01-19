@@ -370,32 +370,6 @@ const Dashboard = () => {
                           {statusLabels[derivedStatus] || derivedStatus}
                         </span>
                       </div>
-                      <div className="mt-1">
-                        {derivedStatus === "AVAILABLE" && (
-                          <div
-                            style={{ backgroundColor: "rgb(51 153 119)" }}
-                            className="px-3 py-1.5 text-white rounded-[8px] text-[10px] font-black uppercase w-full text-center shadow-sm"
-                          >
-                            In Stock
-                          </div>
-                        )}
-                        {derivedStatus === "LOW" && (
-                          <div
-                            style={{ backgroundColor: "#ECBD6C" }}
-                            className="px-3 py-1.5 text-black rounded-[8px] text-[10px] font-black uppercase w-full text-center shadow-sm"
-                          >
-                            Low Stock
-                          </div>
-                        )}
-                        {derivedStatus === "UNAVAILABLE" && (
-                          <div
-                            style={{ backgroundColor: "rgb(185 28 28)" }}
-                            className="px-3 py-1.5 text-white rounded-[8px] text-[10px] font-black uppercase w-full text-center shadow-sm"
-                          >
-                            Unavailable
-                          </div>
-                        )}
-                      </div>
                     </div>
                   );
                 })}

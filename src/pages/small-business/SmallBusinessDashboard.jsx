@@ -1,49 +1,154 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
+import { useOrders } from "../../context/OrderContext";
 
 const SmallBusinessDashboard = () => {
   const navigate = useNavigate();
+  const { orders, fetchOrders } = useOrders();
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  // Active orders are Accepted by supplier but not yet Delivered
+  const activeOrdersCount = orders.filter(
+    (order) =>
+      order.orderState === "ACCEPTED" && order.deliveryState !== "DELIVERED",
+  ).length;
+
+  // Helper to replicate backend price simulation
+  const getMockPrice = (sku) => {
+    let hash = 0;
+    for (let i = 0; i < sku.length; i++) {
+      hash = sku.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const price = (Math.abs(hash) % 500) + 50;
+    return price;
+  };
+
+  const calculateOrderTotal = (order) => {
+    return order.items.reduce((total, item) => {
+      const price = item.price || getMockPrice(item.sku || "UNKNOWN");
+      return total + price * item.quantity;
+    }, 0);
+  };
+
+  // Logic: Sum of all ACCEPTED orders (which are active financial commitments)
+  // Logic Note: The user said "when supplier cancels ... price should be back".
+  // This implies we ONLY count accepted orders. Pending or Cancelled don't count.
+  const estimatedExpenditureVal = orders
+    .filter((o) => o.orderState === "ACCEPTED")
+    .reduce((sum, order) => sum + calculateOrderTotal(order), 0);
+
+  // Format as Rands
+  const estimatedExpenditure = new Intl.NumberFormat("en-ZA", {
+    style: "currency",
+    currency: "ZAR",
+    maximumFractionDigits: 0,
+  }).format(estimatedExpenditureVal);
+
+  // Total Spending: Sum of all DELIVERED orders (Completed transactions)
+  const totalSpendingVal = orders
+    .filter((o) => o.deliveryState === "DELIVERED")
+    .reduce((sum, order) => sum + calculateOrderTotal(order), 0);
+
+  const totalSpending = new Intl.NumberFormat("en-ZA", {
+    style: "currency",
+    currency: "ZAR",
+    maximumFractionDigits: 0,
+  }).format(totalSpendingVal);
 
   const handleTrackDelivery = (orderId) => {
     alert(`Opening delivery tracking for order ${orderId}`);
     console.log(`Track delivery: ${orderId}`);
   };
 
-  const handleViewDetails = (orderId) => {
-    alert(`Viewing details for order ${orderId}`);
-    navigate("/small-business/orders");
-  };
-
-  const handleContactSupplier = (supplier) => {
-    alert(`Contacting ${supplier}...`);
-    console.log(`Contact supplier: ${supplier}`);
-  };
-
-  const handleReorderNow = (product) => {
-    alert(`Reordering ${product}`);
-    console.log(`Reorder: ${product}`);
-  };
-
-  const handleQuickReorder = (template) => {
-    alert(`Reordering template: ${template}`);
-    console.log(`Quick reorder: ${template}`);
-  };
+  // ... (rest of handlers)
 
   const handleMetricClick = (metric) => {
     alert(`Viewing ${metric} details`);
     console.log(`Metric clicked: ${metric}`);
   };
+
+  // Modal State
+  const [selectedSupplier, setSelectedSupplier] = React.useState(null);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+  const handleContactSupplier = (order) => {
+    // Find supplier from visibility (Accepted first, then just the first target)
+    const supplierVis =
+      order.visibility?.find((v) => v.status === "ACCEPTED") ||
+      order.visibility?.[0];
+
+    // Fallback Mock Supplier if real data is missing (for demo purposes)
+    const mockSupplier = {
+      name: "Dairy Distributors Ltd",
+      address: "123 Industrial Park, Sandton",
+      city: "Johannesburg, South Africa",
+      contactPersonName: "Sarah Jenkins (Manager)",
+      phone: "+27 82 123 4567",
+      email: "orders@dairydist.co.za",
+    };
+
+    const supplier = supplierVis?.supplier || mockSupplier;
+
+    if (supplier) {
+      setSelectedSupplier(supplier);
+      setIsModalOpen(true);
+    } else {
+      alert("No supplier details available for this order.");
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedSupplier(null);
+  };
+
+  // Dynamic Incoming Deliveries
+  // 1. Arriving Today (Mock logic: First Accepted Order)
+  const arrivingTodayOrder = orders.find(
+    (o) => o.orderState === "ACCEPTED" && o.deliveryState === "ON_TRACK",
+  );
+
+  // 2. In Transit (Mock logic: Second Accepted/At Risk Order)
+  const inTransitOrder = orders.find(
+    (o) =>
+      o.id !== arrivingTodayOrder?.id &&
+      o.orderState === "ACCEPTED" &&
+      ["ON_TRACK", "AT_RISK"].includes(o.deliveryState),
+  );
+
+  // 3. Pending (Mock logic: First Pending Order)
+  const pendingOrder = orders.find((o) => o.orderState === "PENDING");
+
+  // Helper to format date
+  const formatDate = (dateString) => {
+    if (!dateString) return "Date N/A";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
   return (
     <Layout>
-      <div className="max-w-[1200px] mx-auto">
+      <div className="max-w-[1200px] mx-auto relative hidden-scrollbar">
         {/* Status Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold tracking-tight">
             Business Overview
           </h1>
           <p className="text-gray-500 dark:text-gray-400">
-            Monday, Oct 14th — 2 deliveries expected today
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "short",
+              day: "numeric",
+            })}{" "}
+            — {orders.filter((o) => o.deliveryState === "ON_TRACK").length}{" "}
+            deliveries expected soon
           </p>
         </div>
 
@@ -65,11 +170,13 @@ const SmallBusinessDashboard = () => {
               <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">
                 Total Spending
               </p>
-              <p className="text-3xl font-bold leading-tight">$12,450</p>
+              <p className="text-3xl font-bold leading-tight">
+                {totalSpending}
+              </p>
             </div>
           </div>
           <div
-            onClick={() => handleMetricClick("Budget Remaining")}
+            onClick={() => handleMetricClick("Estimated Expenditure")}
             className="bento-card flex flex-col gap-4 rounded-xl p-6 bg-white dark:bg-gray-900 border border-status-green/30 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
           >
             <div className="flex justify-between items-start">
@@ -77,14 +184,16 @@ const SmallBusinessDashboard = () => {
                 account_balance_wallet
               </span>
               <span className="text-xs font-bold px-2 py-1 rounded bg-status-green/10 text-status-green">
-                62% Used
+                Committed
               </span>
             </div>
             <div>
               <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">
-                Budget Remaining
+                Estimated Expenditure
               </p>
-              <p className="text-3xl font-bold leading-tight">$7,550</p>
+              <p className="text-3xl font-bold leading-tight">
+                {estimatedExpenditure}
+              </p>
             </div>
           </div>
           <div
@@ -103,7 +212,9 @@ const SmallBusinessDashboard = () => {
               <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">
                 Active Orders
               </p>
-              <p className="text-3xl font-bold leading-tight">5</p>
+              <p className="text-3xl font-bold leading-tight">
+                {activeOrdersCount}
+              </p>
             </div>
           </div>
         </div>
@@ -123,125 +234,131 @@ const SmallBusinessDashboard = () => {
               </div>
             </div>
 
-            {/* Expected Today - Delivery Card */}
-            <div className="group relative flex items-stretch bg-white dark:bg-gray-900 rounded-xl overflow-hidden border-l-4 border-status-green shadow-[0_4px_20px_rgba(34,197,94,0.1)] transition-all">
-              <div className="p-6 flex-1 flex flex-col gap-4">
-                <div className="flex justify-between items-start">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-status-green uppercase">
-                      <span className="size-2 rounded-full bg-status-green animate-pulse"></span>
-                      Arriving Today • Expected 2:00 PM
+            {/* Dynamic Card 1: Arriving Today (or closest Accepted Order) */}
+            {arrivingTodayOrder ? (
+              <div className="group relative flex items-stretch bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-status-green/30 shadow-sm transition-all">
+                <div className="p-6 flex-1 flex flex-col gap-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-status-green uppercase">
+                        <span className="size-2 rounded-full bg-status-green animate-pulse"></span>
+                        Expected{" "}
+                        {formatDate(arrivingTodayOrder.requiredDeliveryDate)}
+                      </span>
+                      <h3 className="text-lg font-bold">
+                        Order #{arrivingTodayOrder.orderNumber}
+                      </h3>
+                    </div>
+                    <span className="bg-status-green/10 text-status-green p-1.5 rounded-full">
+                      <span className="material-symbols-outlined text-sm">
+                        check_circle
+                      </span>
                     </span>
-                    <h3 className="text-lg font-bold">
-                      Fresh Farm Supplies Co.
-                    </h3>
                   </div>
-                  <span className="bg-status-green/10 text-status-green p-1.5 rounded-full">
-                    <span className="material-symbols-outlined text-sm">
-                      check_circle
-                    </span>
-                  </span>
-                </div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                  <span className="font-bold text-gray-700 dark:text-gray-200">
-                    Order #ORD-4521:
-                  </span>{" "}
-                  50kg Organic Flour, 20L Olive Oil, 30kg Sugar
-                </p>
-                <div className="flex items-center gap-3 pt-2">
-                  <button
-                    onClick={() => handleTrackDelivery("ORD-4521")}
-                    className="flex-1 bg-status-green text-white h-11 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all"
-                  >
-                    <span className="material-symbols-outlined text-lg">
-                      location_on
-                    </span>
-                    Track Delivery
-                  </button>
-                  <button
-                    onClick={() => handleViewDetails("ORD-4521")}
-                    className="px-4 h-11 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    View Details
-                  </button>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+                    <span className="font-bold text-gray-700 dark:text-gray-200">
+                      Items:
+                    </span>{" "}
+                    {arrivingTodayOrder.items.length} items (
+                    {arrivingTodayOrder.items[0]?.name}...)
+                  </p>
+                  <div className="flex items-center gap-3 pt-2">
+                    <button
+                      onClick={() =>
+                        navigate(
+                          `/small-business/orders/${arrivingTodayOrder.id}`,
+                        )
+                      }
+                      className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[#121615] dark:text-white h-11 px-4 rounded-lg font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      View Details
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div
-                className="hidden sm:block w-40 bg-center bg-no-repeat bg-cover"
-                style={{
-                  backgroundImage:
-                    'url("https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=300&fit=crop")',
-                }}
-              ></div>
-            </div>
+            ) : (
+              <div className="p-6 bg-white dark:bg-gray-900 rounded-xl border border-dashed border-gray-300 text-center text-gray-400 text-sm">
+                No orders arriving today.
+              </div>
+            )}
 
-            {/* In Transit Card */}
-            <div className="group relative flex items-stretch bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-new-blue/20 shadow-sm">
-              <div className="p-6 flex-1 flex flex-col gap-4">
-                <div className="flex justify-between items-start">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[10px] font-bold tracking-widest text-new-blue uppercase">
-                      In Transit • Expected Tomorrow
+            {/* Dynamic Card 2: In Transit */}
+            {inTransitOrder && (
+              <div className="group relative flex items-stretch bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-new-blue/20 shadow-sm">
+                <div className="p-6 flex-1 flex flex-col gap-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10px] font-bold tracking-widest text-new-blue uppercase">
+                        In Transit • Expected{" "}
+                        {formatDate(inTransitOrder.requiredDeliveryDate)}
+                      </span>
+                      <h3 className="text-lg font-bold">
+                        Order #{inTransitOrder.orderNumber}
+                      </h3>
+                    </div>
+                    <span className="text-new-blue material-symbols-outlined">
+                      local_shipping
                     </span>
-                    <h3 className="text-lg font-bold">
-                      Premium Coffee Roasters
-                    </h3>
                   </div>
-                  <span className="text-new-blue material-symbols-outlined">
-                    local_shipping
-                  </span>
-                </div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                  <span className="font-bold text-gray-700 dark:text-gray-200">
-                    Order #ORD-4518:
-                  </span>{" "}
-                  10kg Espresso Beans, 5kg Colombian Blend
-                </p>
-                <div className="flex items-center gap-3 pt-2">
-                  <button
-                    onClick={() => handleTrackDelivery("ORD-4518")}
-                    className="flex-1 bg-gray-100 dark:bg-gray-800 text-[#121615] dark:text-white h-11 px-4 rounded-lg font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    Track Shipment
-                  </button>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+                    <span className="font-bold text-gray-700 dark:text-gray-200">
+                      Items:
+                    </span>{" "}
+                    {inTransitOrder.items.length} items (
+                    {inTransitOrder.items[0]?.name}...)
+                  </p>
+                  <div className="flex items-center gap-3 pt-2">
+                    <button
+                      onClick={() =>
+                        handleTrackDelivery(inTransitOrder.orderNumber)
+                      }
+                      className="flex-1 bg-new-blue text-white h-11 px-4 rounded-lg font-bold text-sm hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                    >
+                      <span className="material-symbols-outlined text-lg">
+                        location_on
+                      </span>
+                      Track Delivery
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
-            {/* Pending Confirmation Card */}
-            <div className="group relative flex items-stretch bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm">
-              <div className="p-6 flex-1 flex flex-col gap-4">
-                <div className="flex justify-between items-start">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-                      Pending Confirmation
+            {/* Dynamic Card 3: Pending Confirmation */}
+            {pendingOrder && (
+              <div className="group relative flex items-stretch bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm">
+                <div className="p-6 flex-1 flex flex-col gap-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+                        Pending Confirmation
+                      </span>
+                      <h3 className="text-lg font-bold">
+                        Order #{pendingOrder.orderNumber}
+                      </h3>
+                    </div>
+                    <span className="text-gray-400 material-symbols-outlined">
+                      schedule
                     </span>
-                    <h3 className="text-lg font-bold">
-                      Dairy Distributors Ltd
-                    </h3>
                   </div>
-                  <span className="text-gray-400 material-symbols-outlined">
-                    schedule
-                  </span>
-                </div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                  <span className="font-bold text-gray-700 dark:text-gray-200">
-                    Order #ORD-4525:
-                  </span>{" "}
-                  100L Whole Milk, 50kg Butter, 200 Eggs
-                </p>
-                <div className="flex items-center gap-3 pt-2">
-                  <button
-                    onClick={() =>
-                      handleContactSupplier("Dairy Distributors Ltd")
-                    }
-                    className="flex-1 bg-gray-100 dark:bg-gray-800 text-[#121615] dark:text-white h-11 px-4 rounded-lg font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    Contact Supplier
-                  </button>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+                    <span className="font-bold text-gray-700 dark:text-gray-200">
+                      Items:
+                    </span>{" "}
+                    {pendingOrder.items.length} items (
+                    {pendingOrder.items[0]?.name}...)
+                  </p>
+                  <div className="flex items-center gap-3 pt-2">
+                    <button
+                      onClick={() => handleContactSupplier(pendingOrder)}
+                      className="flex-1 bg-gray-100 dark:bg-gray-800 text-[#121615] dark:text-white h-11 px-4 rounded-lg font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      Contact Supplier
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Right Sidebar: Low Stock & Quick Reorder */}
@@ -374,6 +491,87 @@ const SmallBusinessDashboard = () => {
           </aside>
         </div>
       </div>
+
+      {/* Supplier Information Modal */}
+      {isModalOpen && selectedSupplier && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-2xl p-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-200">
+            <button
+              onClick={closeModal}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+
+            <h2 className="text-sm font-black tracking-wider text-gray-900 dark:text-white uppercase mb-6">
+              Supplier Information
+            </h2>
+
+            <div className="space-y-8">
+              {/* Supplier Address */}
+              <div className="flex gap-4">
+                <div className="flex-shrink-0">
+                  <span className="material-symbols-outlined text-gray-400 text-2xl">
+                    location_on
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1">
+                    Supplier Address
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                    {selectedSupplier.name || "Supplier Name"}
+                    <br />
+                    {selectedSupplier.address || "123 Supplier Street"}
+                    <br />
+                    {selectedSupplier.city || "Johannesburg"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Point of Contact */}
+              <div className="flex gap-4">
+                <div className="flex-shrink-0">
+                  <span className="material-symbols-outlined text-gray-400 text-2xl">
+                    person
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1">
+                    Point of Contact
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    {selectedSupplier.contactPersonName ||
+                      selectedSupplier.name ||
+                      "Manager"}
+                  </p>
+
+                  <div className="space-y-3 w-full">
+                    <a
+                      href={`tel:${selectedSupplier.phone || ""}`}
+                      className="flex items-center justify-center gap-2 w-full py-2.5 bg-status-green/10 text-status-green rounded-lg text-sm font-bold hover:bg-status-green/20 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-lg">
+                        call
+                      </span>
+                      {selectedSupplier.phone || "+27 000 000 000"}
+                    </a>
+                    <a
+                      href={`mailto:${selectedSupplier.email || ""}`}
+                      className="flex items-center justify-center gap-2 w-full py-2.5 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-lg text-sm font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
+                    >
+                      <span className="material-symbols-outlined text-lg">
+                        mail
+                      </span>
+                      {selectedSupplier.email || "supplier@example.com"}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };

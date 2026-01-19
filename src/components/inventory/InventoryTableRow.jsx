@@ -40,6 +40,21 @@ const InventoryTableRow = ({ item }) => {
   };
   const bgGradient = `bg-gradient-to-br ${gradients[derivedStatus] || gradients.AVAILABLE}`;
 
+  // Mock Price Generation (consistent by SKU)
+  const getMockPrice = (sku) => {
+    let hash = 0;
+    for (let i = 0; i < sku.length; i++) {
+      hash = sku.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const price = (Math.abs(hash) % 500) + 50; // Price between 50 and 550
+    return new Intl.NumberFormat("en-ZA", {
+      style: "currency",
+      currency: "ZAR",
+    }).format(price);
+  };
+
+  const price = getMockPrice(skuCode);
+
   return (
     <tr
       className={`hover:bg-primary/5 transition-colors group ${derivedStatus === "UNAVAILABLE" ? "bg-red-50/20 dark:bg-red-950/5" : ""}`}
@@ -65,6 +80,11 @@ const InventoryTableRow = ({ item }) => {
       </td>
       <td className="px-4 py-3">
         <StatusBadge status={category.toLowerCase()}>{category}</StatusBadge>
+      </td>
+      <td className="px-4 py-3">
+        <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+          {price}
+        </span>
       </td>
       <td className="px-4 py-3">
         <div className="flex flex-col gap-1.5">

@@ -100,6 +100,9 @@ const Inventory = () => {
                     Category
                   </th>
                   <th className="px-4 py-3 text-xs font-black text-gray-500 uppercase tracking-widest">
+                    Price
+                  </th>
+                  <th className="px-4 py-3 text-xs font-black text-gray-500 uppercase tracking-widest">
                     Stock Level
                   </th>
                   <th className="px-4 py-3 text-xs font-black text-gray-500 uppercase tracking-widest">
@@ -128,46 +131,6 @@ const Inventory = () => {
             itemsPerPage={15}
             onPageChange={setCurrentPage}
           />
-        </div>
-
-        {/* Quick Edit Overlay Simulation (Hidden normally, here for design representation) */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 flex flex-col gap-3">
-            <div className="flex items-center gap-2 text-primary">
-              <span className="material-symbols-outlined text-lg">info</span>
-              <h3 className="text-sm font-bold">Quick Adjustment Note</h3>
-            </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-              Use the <b>Quick Edit</b> button on any row to instantly modify
-              physical inventory counts. These changes are logged and
-              synchronized with active order allocations immediately.
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-red-100 bg-red-50 dark:bg-red-950/20 dark:border-red-900/30 col-span-2">
-            <div className="flex items-center gap-3 text-red-600 dark:text-red-400 mb-2">
-              <span className="material-symbols-outlined text-xl">report</span>
-              <h3 className="text-sm font-bold uppercase tracking-wider">
-                Safety Warning: Manual Override
-              </h3>
-            </div>
-            <p className="text-xs text-red-800 dark:text-red-300 leading-relaxed mb-3">
-              Manual overrides bypass algorithmic stock safeguards. Only use
-              this if the physical count in the warehouse is verified by a floor
-              supervisor. This action will trigger a permanent log entry in the
-              compliance report.
-            </p>
-            <div className="flex items-center gap-2">
-              <div className="flex-1 h-1.5 bg-red-200 dark:bg-red-900/50 rounded-full">
-                <div
-                  className="h-full bg-red-600 rounded-full"
-                  style={{ width: "100%" }}
-                ></div>
-              </div>
-              <span className="text-[10px] font-black text-red-600">
-                CRITICAL ACTION
-              </span>
-            </div>
-          </div>
         </div>
       </div>
     </Layout>
