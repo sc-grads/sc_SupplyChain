@@ -27,7 +27,7 @@ const Timeline = ({ status, timestamps }) => {
 
     if (status === "OUT_FOR_DELIVERY") {
       if (stepId === "PLACED") return "completed";
-      if (stepId === "OUT_FOR_DELIVERY") return "active";
+      if (stepId === "OUT_FOR_DELIVERY") return "completed";
       return "pending";
     }
 

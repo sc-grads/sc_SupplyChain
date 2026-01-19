@@ -221,14 +221,14 @@ export const OrderProvider = ({ children }) => {
       if (!response.ok) throw new Error("Failed to update delivery status");
       const data = await response.json();
 
-      // If delivered, update local state
-      if (status === "DELIVERED") {
-        setActiveOrders((prev) =>
-          prev.map((o) =>
-            o.id === orderId ? { ...o, deliveryState: "DELIVERED" } : o,
-          ),
-        );
-      }
+      const updatedOrder = data.order || { id: orderId, deliveryState: status };
+
+      const updateList = (prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, ...updatedOrder } : o));
+
+      setOrders(updateList);
+      setActiveOrders(updateList);
+
       return { success: true };
     } catch (err) {
       setError(err.message);

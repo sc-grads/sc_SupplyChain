@@ -17,6 +17,8 @@ import SmallBusinessDashboard from "./pages/small-business/SmallBusinessDashboar
 import SmallBusinessOrders from "./pages/small-business/SmallBusinessOrders";
 import SmallBusinessInventory from "./pages/small-business/SmallBusinessInventory";
 
+import SmallBusinessOrderDetails from "./pages/small-business/SmallBusinessOrderDetails";
+
 function App() {
   return (
     <AuthProvider>
@@ -47,6 +49,10 @@ function App() {
               <Route
                 path="/small-business/orders"
                 element={<SmallBusinessOrders />}
+              />
+              <Route
+                path="/small-business/orders/:orderId"
+                element={<SmallBusinessOrderDetails />}
               />
               <Route
                 path="/small-business/inventory"

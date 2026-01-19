@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import Layout from "../../components/Layout";
 import { useOrders } from "../../context/OrderContext";
 
@@ -438,10 +439,24 @@ const SmallBusinessOrders = () => {
   const [selectedMonth, setSelectedMonth] = useState("All");
   const [selectedSupplier, setSelectedSupplier] = useState("All Suppliers");
 
+  const { orderId } = useParams();
+
   useEffect(() => {
     fetchOrders();
     fetchCatalog();
   }, [fetchOrders, fetchCatalog]);
+
+  // Auto-select order if present in URL
+  useEffect(() => {
+    if (orderId && orders.length > 0) {
+      const targetOrder = orders.find(
+        (o) => o.id === orderId || o.orderNumber === orderId,
+      );
+      if (targetOrder) {
+        setSelectedOrder(targetOrder);
+      }
+    }
+  }, [orderId, orders]);
 
   const availableMonths = getUniqueMonths(orders);
   const availableSuppliers = getUniqueSuppliers(orders);

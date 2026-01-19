@@ -148,12 +148,17 @@ const OrderDetails = ({ order, updateDeliveryStatus, fetchActiveOrders }) => {
   const getTimelineStatus = () => {
     if (order.deliveryState === "DELIVERED") return "DELIVERED";
     if (
+      order.deliveryState === "OUT_FOR_DELIVERY" ||
+      order.deliveryState === "IN_TRANSIT"
+    ) {
+      return "OUT_FOR_DELIVERY";
+    }
+    // Fallback to events if deliveryState is not set (backwards compatibility)
+    if (
       order.events?.some(
         (e) => e.type === "OUT_FOR_DELIVERY" || e.type === "IN_TRANSIT",
       )
     ) {
-      // Treat IN_TRANSIT as part of the OUT_FOR_DELIVERY phase for this strict 3-step view
-      // unless we want to map it to delivered? No, user said valid statuses are PLACED, OUT, DELIVERED.
       return "OUT_FOR_DELIVERY";
     }
     return "PLACED";
@@ -179,27 +184,14 @@ const OrderDetails = ({ order, updateDeliveryStatus, fetchActiveOrders }) => {
   const timelineTimestamps = getTimestamps();
 
   const handleOutForDelivery = async () => {
-    // Simulation Sequence
     try {
-      // 1. Out for Delivery
-      await updateDeliveryStatus(order.id, "OUT_FOR_DELIVERY");
-      await fetchActiveOrders(); // Refresh timeline
-
-      // 2. Wait 3 seconds -> In Transit
-      setTimeout(async () => {
-        await updateDeliveryStatus(order.id, "IN_TRANSIT");
-        await fetchActiveOrders();
-
-        // 3. Wait 3 seconds -> Delivered
-        setTimeout(async () => {
-          await updateDeliveryStatus(order.id, "DELIVERED");
-          await fetchActiveOrders();
-          alert(`Order ${order.orderNumber} has been delivered!`);
-        }, 3000);
-      }, 3000);
+      const result = await updateDeliveryStatus(order.id, "OUT_FOR_DELIVERY");
+      if (!result.success) {
+        alert("Server error: " + result.error);
+      }
     } catch (error) {
       console.error("Simulation failed:", error);
-      alert("Failed to update delivery status");
+      alert("Critical failure: Failed to update delivery status");
     }
   };
 
@@ -487,11 +479,14 @@ const Orders = () => {
   useEffect(() => {
     if (selectedOrder) {
       const updatedOrder = activeOrders.find((o) => o.id === selectedOrder.id);
-      if (updatedOrder && updatedOrder !== selectedOrder) {
-        setSelectedOrder(updatedOrder);
+      if (updatedOrder) {
+        // Only update if something actually changed (status, deliveryState, etc.)
+        if (JSON.stringify(updatedOrder) !== JSON.stringify(selectedOrder)) {
+          setSelectedOrder(updatedOrder);
+        }
       }
     }
-  }, [activeOrders]);
+  }, [activeOrders, selectedOrder]);
 
   const availableMonths = getUniqueMonths(activeOrders);
 
