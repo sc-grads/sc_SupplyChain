@@ -2,12 +2,17 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Layout from "../../components/Layout";
 import { useOrders } from "../../context/OrderContext";
+import { isOrderAtRisk } from "../../utils/orderUtils";
 
 const SmallBusinessOrderDetails = () => {
   const { orderId } = useParams();
   const { orders, fetchOrders, updateDeliveryStatus } = useOrders();
   const [order, setOrder] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    fetchOrders(); // Initial fetch
+  }, [fetchOrders]);
 
   useEffect(() => {
     const found = orders.find(
@@ -18,10 +23,8 @@ const SmallBusinessOrderDetails = () => {
       if (JSON.stringify(found) !== JSON.stringify(order)) {
         setOrder(found);
       }
-    } else if (orders.length === 0) {
-      fetchOrders();
     }
-  }, [orderId, orders, fetchOrders, order]);
+  }, [orderId, orders, order]);
 
   const handleConfirmDelivery = async () => {
     if (!order) return;
@@ -88,15 +91,33 @@ const SmallBusinessOrderDetails = () => {
   // Status mapping for Progress Bar
   // Steps: Ordered -> Out for Delivery -> Delivered
   let activeStep = 1; // 1 = Ordered (Starting point)
-  if (
+
+  const isOutForDelivery =
     order.deliveryState === "OUT_FOR_DELIVERY" ||
-    order.deliveryState === "IN_TRANSIT"
-  ) {
+    order.deliveryState === "IN_TRANSIT" ||
+    order.events?.some(
+      (e) => e.type === "OUT_FOR_DELIVERY" || e.type === "IN_TRANSIT",
+    );
+
+  const isDelivered =
+    order.deliveryState === "DELIVERED" ||
+    order.events?.some((e) => e.type === "DELIVERED");
+
+  if (isOutForDelivery) {
     activeStep = 2;
   }
-  if (order.deliveryState === "DELIVERED") {
+  if (isDelivered) {
     activeStep = 3;
   }
+
+  const getEventTimestamp = (type) => {
+    const event = order.events?.find((e) => e.type === type);
+    return event ? event.timestamp : null;
+  };
+
+  const outForDeliveryAt =
+    getEventTimestamp("OUT_FOR_DELIVERY") || getEventTimestamp("IN_TRANSIT");
+  const deliveredAt = getEventTimestamp("DELIVERED");
 
   const getStepClass = (stepIndex) => {
     if (stepIndex <= activeStep) return "bg-emerald-500 text-white"; // Completed or Active now gets a check
@@ -107,6 +128,36 @@ const SmallBusinessOrderDetails = () => {
     <Layout>
       <div className="max-w-7xl w-full mx-auto grid grid-cols-12 gap-8">
         <div className="col-span-12 lg:col-span-8 space-y-6">
+          {isOrderAtRisk(order) && (
+            <div className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-6 shadow-sm shadow-red-500/5 animate-in slide-in-from-top duration-500">
+              <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-900/20 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0">
+                <span className="material-symbols-outlined text-3xl font-bold">
+                  error
+                </span>
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <h4 className="text-lg font-bold text-red-900 dark:text-white mb-1">
+                  This delivery is at risk
+                </h4>
+                <p className="text-sm text-red-600 dark:text-red-400 font-medium">
+                  We've detected a significant delay. The predicted delivery
+                  time is more than 60 minutes later than promised.
+                </p>
+              </div>
+              <button
+                onClick={() =>
+                  handleContactSupplier?.(order) ||
+                  alert("Opening contact for " + getSupplierName(order))
+                }
+                className="w-full sm:w-auto px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-500/20 flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined text-base">
+                  call
+                </span>
+                Contact Supplier
+              </button>
+            </div>
+          )}
           {/* Header Section */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
@@ -133,9 +184,15 @@ const SmallBusinessOrderDetails = () => {
                 </button>
               )}
             </div>
-            <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-primary text-sm font-semibold rounded-full border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5">
-              <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
-              {order.deliveryState?.replace(/_/g, " ") || order.orderState}
+            <span
+              className={`px-3 py-1 ${isOrderAtRisk(order) ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800" : "bg-emerald-100 dark:bg-emerald-900/30 text-primary border-emerald-200 dark:border-emerald-800"} text-sm font-semibold rounded-full border flex items-center gap-1.5`}
+            >
+              <span
+                className={`w-2 h-2 ${isOrderAtRisk(order) ? "bg-red-500" : "bg-primary"} rounded-full animate-pulse`}
+              ></span>
+              {isOrderAtRisk(order)
+                ? "AT RISK"
+                : order.deliveryState?.replace(/_/g, " ") || order.orderState}
             </span>
           </div>
 
@@ -205,6 +262,19 @@ const SmallBusinessOrderDetails = () => {
                     >
                       Out for Delivery
                     </p>
+                    {outForDeliveryAt && (
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                        {new Date(outForDeliveryAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                        {" · "}
+                        {new Date(outForDeliveryAt).toLocaleDateString([], {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -225,6 +295,19 @@ const SmallBusinessOrderDetails = () => {
                     >
                       Delivered
                     </p>
+                    {deliveredAt && (
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                        {new Date(deliveredAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                        {" · "}
+                        {new Date(deliveredAt).toLocaleDateString([], {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -261,10 +344,7 @@ const SmallBusinessOrderDetails = () => {
                 Total Cost (Inc. Tax)
               </p>
               <p className="text-xl font-bold text-primary">
-                {new Intl.NumberFormat("en-ZA", {
-                  style: "currency",
-                  currency: "ZAR",
-                }).format(totalCost * 1.08)}
+                R {(totalCost * 1.08).toFixed(2)}
               </p>
             </div>
           </section>
@@ -369,6 +449,16 @@ const SmallBusinessOrderDetails = () => {
         <aside className="col-span-12 lg:col-span-4 space-y-6">
           <section className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 sticky top-24">
             <div className="space-y-4">
+              <button
+                onClick={handleConfirmDelivery}
+                disabled={isUpdating || order.deliveryState === "DELIVERED"}
+                className="w-full mb-4 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-100 disabled:text-slate-400 text-white py-3 rounded-xl font-bold text-sm transition-all shadow-lg shadow-emerald-500/10"
+              >
+                <span className="material-symbols-outlined text-base">
+                  task_alt
+                </span>
+                {isUpdating ? "Updating..." : "Mark as Delivered"}
+              </button>
               <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">
                 Supplier Performance
               </h4>

@@ -29,6 +29,9 @@ model User {
   ordersPlaced  Order[]   @relation("PlacedBy")
   ordersVisible OrderVisibility[] @relation("VisibleTo")
 
+  // Small Business Inventory
+  retailerInventory RetailerInventory[] @relation("VendorInventory")
+
   events    Event[]  // Activity log for this user
 
   createdAt DateTime @default(now())
@@ -76,6 +79,9 @@ model Sku {
   // Inventory records per supplier
   inventory   Inventory[]
 
+  // Inventory records per retailer
+  retailerInventory RetailerInventory[]
+
   @@index([code])
 }
 
@@ -109,6 +115,27 @@ model Inventory {
   @@index([supplierId, status]) // Fast filter for available/low
 }
 
+// Small Business (Retailer/Vendor) Inventory
+model RetailerInventory {
+  id           String   @id @default(uuid())
+  vendorId     String
+  skuId        String
+  currentStock Int      @default(0)
+  reorderLevel Int      @default(10)
+  category     String?  // Optional override or descriptive
+  unit         String?  @default("units")
+  lastOrdered  DateTime?
+
+  vendor       User     @relation("VendorInventory", fields: [vendorId], references: [id], onDelete: Cascade)
+  sku          Sku      @relation(fields: [skuId], references: [id])
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([vendorId, skuId])
+  @@index([vendorId])
+}
+
 enum InventoryStatus {
   AVAILABLE
   LOW
@@ -135,6 +162,9 @@ model Order {
   deliveryState        DeliveryState    @default(ON_TRACK)
 
   committedETA         DateTime?        // Supplier-confirmed ETA
+  promisedDeliveryAt   DateTime?
+  predictedDeliveryAt  DateTime?
+  actualDeliveredAt    DateTime?
   deliveryAddress      String
 
   placedAt             DateTime         @default(now())

@@ -30,6 +30,8 @@ export const createOrder = async (req: Request, res: Response) => {
       deliveryLocation,
       requiredDeliveryDate,
       deliveryAddress,
+      promisedDeliveryAt,
+      predictedDeliveryAt,
     } = req.body;
 
     // Validate (simple for prototype)
@@ -74,6 +76,12 @@ export const createOrder = async (req: Request, res: Response) => {
       deliveryLocation,
       requiredDeliveryDate: new Date(requiredDeliveryDate),
       deliveryAddress,
+      promisedDeliveryAt: promisedDeliveryAt
+        ? new Date(promisedDeliveryAt)
+        : undefined,
+      predictedDeliveryAt: predictedDeliveryAt
+        ? new Date(predictedDeliveryAt)
+        : undefined,
     });
 
     res.status(201).json({ message: "Order placed successfully.", order });
@@ -185,7 +193,7 @@ export const updateDeliveryStatus = async (req: Request, res: Response) => {
       id as string,
       status,
     );
-    res.json({ message: "Status updated", result });
+    res.json({ message: "Status updated", order: result });
   } catch (error: any) {
     res.status(500).json({
       message: "Failed to update delivery status.",

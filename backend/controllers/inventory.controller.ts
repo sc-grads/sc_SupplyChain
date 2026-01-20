@@ -6,22 +6,78 @@ export const getInventory = async (req: Request, res: Response) => {
   try {
     const authReq = req as AuthRequest;
     const userId = authReq.user?.id;
+    const role = authReq.user?.role;
+
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    // Find supplier profile for this user
-    const profile = await prisma.supplierProfile.findUnique({
-      where: { supplierId: userId },
-    });
+    if (role === "SUPPLIER") {
+      // Find supplier profile for this user
+      const profile = await prisma.supplierProfile.findUnique({
+        where: { supplierId: userId },
+      });
 
-    if (!profile) {
-      return res.status(404).json({ message: "Supplier profile not found." });
+      if (!profile) {
+        return res.status(404).json({ message: "Supplier profile not found." });
+      }
+
+      const inventory = await prisma.inventory.findMany({
+        where: { supplierId: profile.id },
+        include: { sku: true },
+      });
+      return res.json(inventory);
+    } else {
+      // VENDOR / RETAILER Logic
+      let inventory = await (prisma as any).retailerInventory.findMany({
+        where: { vendorId: userId },
+        include: { sku: true },
+      });
+
+      // If empty, auto-seed some demo items for the prototype
+      if (inventory.length === 0) {
+        const skus = await prisma.sku.findMany({ take: 5 });
+        if (skus.length > 0) {
+          const demoItems = skus.map((sku, index) => ({
+            vendorId: userId,
+            skuId: sku.id,
+            currentStock: index === 2 ? 0 : index === 1 ? 8 : 45,
+            reorderLevel: 15,
+            category: index % 2 === 0 ? "BAKING" : "DAIRY",
+            unit: "units",
+          }));
+
+          for (const item of demoItems) {
+            await (prisma as any).retailerInventory.upsert({
+              where: {
+                vendorId_skuId: { vendorId: userId, skuId: item.skuId },
+              },
+              update: {},
+              create: item,
+            });
+          }
+
+          inventory = await (prisma as any).retailerInventory.findMany({
+            where: { vendorId: userId },
+            include: { sku: true },
+          });
+        }
+      }
+
+      // Format for frontend expectation (mirroring supplier inventory structure if needed, or keeping as is)
+      const formatted = inventory.map((item: any) => ({
+        id: item.id,
+        name: item.sku.name,
+        sku: item.sku.code,
+        category: item.category,
+        currentStock: item.currentStock,
+        reorderLevel: item.reorderLevel,
+        unit: item.unit,
+        lastOrdered: item.lastOrdered
+          ? new Date(item.lastOrdered).toLocaleDateString()
+          : "N/A",
+      }));
+
+      res.json(formatted);
     }
-
-    const inventory = await prisma.inventory.findMany({
-      where: { supplierId: profile.id },
-      include: { sku: true },
-    });
-    res.json(inventory);
   } catch (error: any) {
     res.status(500).json({
       message: "Failed to fetch inventory",
@@ -127,7 +183,11 @@ export const updateServiceAreas = async (req: Request, res: Response) => {
 
     const { serviceAreas } = req.body;
 
-    if (!serviceAreas || !Array.isArray(serviceAreas) || serviceAreas.length === 0) {
+    if (
+      !serviceAreas ||
+      !Array.isArray(serviceAreas) ||
+      serviceAreas.length === 0
+    ) {
       return res.status(400).json({
         message: "serviceAreas must be a non-empty array of strings.",
       });

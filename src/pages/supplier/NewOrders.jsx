@@ -159,7 +159,7 @@ const NewOrders = () => {
                           •
                         </span>
                         <span className="font-bold text-lg">
-                          ZAR {order.subtotal || 0}
+                          R {order.subtotal || 0}
                         </span>
                       </div>
                     </div>

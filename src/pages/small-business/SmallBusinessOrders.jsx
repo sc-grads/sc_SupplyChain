@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Layout from "../../components/Layout";
 import { useOrders } from "../../context/OrderContext";
+import { isOrderAtRisk } from "../../utils/orderUtils";
 
 // Helper to get formatted supplier name
 const getSupplierName = (order) => {
@@ -94,7 +95,7 @@ const OrderList = ({ orders, onSelectOrder }) => {
                   {order.items?.length || 0}
                 </td>
                 <td className="px-6 py-4 text-right font-bold text-sm">
-                  ZAR{" "}
+                  R{" "}
                   {(
                     (order.items?.reduce(
                       (sum, item) =>
@@ -105,18 +106,26 @@ const OrderList = ({ orders, onSelectOrder }) => {
                     ) || 0) * 1.08
                   ).toFixed(2)}
                 </td>
-                <td className="px-6 py-4 text-center">
-                  <span
-                    className={`px-3 py-1 text-xs font-bold rounded-full border uppercase tracking-wider ${
-                      order.orderState === "PENDING"
-                        ? "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800"
-                        : order.orderState === "ACCEPTED"
-                          ? "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800"
-                          : "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
-                    }`}
-                  >
-                    {order.orderState || order.status}
-                  </span>
+                <td className="px-6 py-4">
+                  <div className="flex flex-col items-center gap-1.5">
+                    <span
+                      className={`px-3 py-1 text-xs font-bold rounded-full border uppercase tracking-wider ${
+                        order.orderState === "PENDING"
+                          ? "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800"
+                          : order.orderState === "ACCEPTED"
+                            ? "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800"
+                            : "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
+                      }`}
+                    >
+                      {order.orderState || order.status}
+                    </span>
+                    {isOrderAtRisk(order) && (
+                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 text-[10px] font-black uppercase tracking-widest border border-red-200 dark:border-red-800">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                        Late
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4 text-center">
                   <button className="text-gray-400 hover:text-primary transition-colors">
@@ -253,10 +262,10 @@ const OrderDetails = ({ order }) => {
                         {item.quantity}
                       </td>
                       <td className="px-6 py-4 text-right text-sm">
-                        ZAR {(item.price || getMockPrice(item.sku)).toFixed(2)}
+                        R {(item.price || getMockPrice(item.sku)).toFixed(2)}
                       </td>
                       <td className="px-6 py-4 text-right font-bold text-sm">
-                        ZAR{" "}
+                        R{" "}
                         {(
                           (item.price || getMockPrice(item.sku)) * item.quantity
                         ).toFixed(2)}
@@ -271,15 +280,15 @@ const OrderDetails = ({ order }) => {
               <div className="w-64 space-y-2">
                 <div className="flex justify-between text-gray-500 dark:text-gray-400 text-sm">
                   <span>Subtotal</span>
-                  <span>ZAR {calculatedSubtotal.toFixed(2)}</span>
+                  <span>R {calculatedSubtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-gray-500 dark:text-gray-400 text-sm">
                   <span>Tax (8%)</span>
-                  <span>ZAR {(calculatedSubtotal * 0.08).toFixed(2)}</span>
+                  <span>R {(calculatedSubtotal * 0.08).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-[#121714] dark:text-white font-black text-xl border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
                   <span>Total</span>
-                  <span>ZAR {(calculatedSubtotal * 1.08).toFixed(2)}</span>
+                  <span>R {(calculatedSubtotal * 1.08).toFixed(2)}</span>
                 </div>
               </div>
             </div>

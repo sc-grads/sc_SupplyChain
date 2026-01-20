@@ -47,10 +47,7 @@ const InventoryTableRow = ({ item }) => {
       hash = sku.charCodeAt(i) + ((hash << 5) - hash);
     }
     const price = (Math.abs(hash) % 500) + 50; // Price between 50 and 550
-    return new Intl.NumberFormat("en-ZA", {
-      style: "currency",
-      currency: "ZAR",
-    }).format(price);
+    return `R ${price.toFixed(2)}`;
   };
 
   const price = getMockPrice(skuCode);

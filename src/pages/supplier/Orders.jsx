@@ -127,7 +127,7 @@ const OrderList = ({ orders, onSelectOrder }) => {
                       {order.items?.length || 0}
                     </td>
                     <td className="px-6 py-4 text-right font-bold text-sm">
-                      ZAR{" "}
+                      R{" "}
                       {(
                         (order.items?.reduce(
                           (sum, item) =>
@@ -302,11 +302,10 @@ const OrderDetails = ({ order, updateDeliveryStatus, fetchActiveOrders }) => {
                           {item.quantity || 0}
                         </td>
                         <td className="px-6 py-4 text-right text-sm">
-                          ZAR{" "}
-                          {(item.price || getMockPrice(item.sku)).toFixed(2)}
+                          R {(item.price || getMockPrice(item.sku)).toFixed(2)}
                         </td>
                         <td className="px-6 py-4 text-right font-bold text-sm">
-                          ZAR{" "}
+                          R{" "}
                           {(
                             (item.quantity || 0) *
                             (item.price || getMockPrice(item.sku))
@@ -332,15 +331,15 @@ const OrderDetails = ({ order, updateDeliveryStatus, fetchActiveOrders }) => {
               <div className="w-64 space-y-2">
                 <div className="flex justify-between text-gray-500 dark:text-gray-400 text-sm">
                   <span>Subtotal</span>
-                  <span>ZAR {calculatedSubtotal.toFixed(2)}</span>
+                  <span>R {calculatedSubtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-gray-500 dark:text-gray-400 text-sm">
                   <span>Tax (8%)</span>
-                  <span>ZAR {(calculatedSubtotal * 0.08).toFixed(2)}</span>
+                  <span>R {(calculatedSubtotal * 0.08).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-[#121714] dark:text-white font-black text-xl border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
                   <span>Total</span>
-                  <span>ZAR {(calculatedSubtotal * 1.08).toFixed(2)}</span>
+                  <span>R {(calculatedSubtotal * 1.08).toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -418,18 +417,24 @@ const OrderDetails = ({ order, updateDeliveryStatus, fetchActiveOrders }) => {
                     {order.vendor?.name || "Unknown Contact"} (Manager)
                   </p>
                   <div className="mt-3 flex flex-col gap-2">
-                    <button className="flex items-center gap-2 text-xs font-bold text-primary bg-primary/10 px-3 py-2 rounded-lg w-full justify-center border border-primary/20">
+                    <a
+                      href={`tel:${order.vendor?.phone || ""}`}
+                      className="flex items-center gap-2 text-xs font-bold text-primary bg-primary/10 px-3 py-2 rounded-lg w-full justify-center border border-primary/20 hover:bg-primary/20 transition-all text-center no-underline"
+                    >
                       <span className="material-symbols-outlined text-sm">
                         call
                       </span>
                       {order.vendor?.phone || "+27 000 000 000"}
-                    </button>
-                    <button className="flex items-center gap-2 text-xs font-bold text-gray-500 bg-background-light dark:bg-[#2c353d] px-3 py-2 rounded-lg w-full justify-center border border-gray-200 dark:border-gray-700">
+                    </a>
+                    <a
+                      href={`mailto:${order.vendor?.email || ""}?subject=Regarding Order #${order.orderNumber}&body=Hello ${order.vendor?.name || "Customer"},%0D%0A%0D%0AI am contacting you regarding order #${order.orderNumber}...`}
+                      className="flex items-center gap-2 text-xs font-bold text-gray-500 bg-background-light dark:bg-[#2c353d] px-3 py-2 rounded-lg w-full justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all text-center no-underline"
+                    >
                       <span className="material-symbols-outlined text-sm">
                         mail
                       </span>
                       {order.vendor?.email || "Contact via Email"}
-                    </button>
+                    </a>
                   </div>
                 </div>
               </div>

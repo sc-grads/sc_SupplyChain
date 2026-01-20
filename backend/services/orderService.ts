@@ -11,6 +11,8 @@ export async function createOrder(data: {
   deliveryLocation: string;
   requiredDeliveryDate: Date;
   deliveryAddress: string;
+  promisedDeliveryAt?: Date;
+  predictedDeliveryAt?: Date;
 }) {
   const order = await prisma.order.create({
     data: {
@@ -21,9 +23,11 @@ export async function createOrder(data: {
       deliveryLocation: data.deliveryLocation,
       requiredDeliveryDate: data.requiredDeliveryDate,
       deliveryAddress: data.deliveryAddress,
+      promisedDeliveryAt: data.promisedDeliveryAt,
+      predictedDeliveryAt: data.predictedDeliveryAt,
       orderState: "PENDING",
       deliveryState: "ON_TRACK",
-    },
+    } as any,
   });
 
   // Run Automation #1
@@ -63,6 +67,7 @@ export async function getOrdersByVendor(vendorId: string) {
     where: { vendorId },
     include: {
       vendor: true,
+      events: { orderBy: { timestamp: "asc" } },
       visibility: {
         include: { supplier: true },
       },
@@ -154,6 +159,7 @@ export async function getOrdersBySupplier(supplierId: string) {
     },
     include: {
       vendor: { select: { name: true, email: true } },
+      events: { orderBy: { timestamp: "asc" } },
       visibility: {
         where: { supplierId },
         select: { status: true },
@@ -185,7 +191,8 @@ export async function getActiveOrdersForSupplier(supplierId: string) {
         where: { supplierId },
         select: { status: true },
       },
-      // Optional: items, events for more detail
+      events: { orderBy: { timestamp: "asc" } },
+      // Optional: items for more detail
     },
     orderBy: [{ requiredDeliveryDate: "asc" }, { createdAt: "desc" }],
   });
@@ -199,18 +206,27 @@ export async function updateDeliveryStatus(orderId: string, status: string) {
     details: { message: `Order is ${status.replace(/_/g, " ").toLowerCase()}` },
   });
 
-  // 2. If delivered, update the actual order state
-  if (status === "DELIVERED") {
-    const order = await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        deliveryState: "DELIVERED",
-      },
-    });
-    return order;
+  // 2. Only update the actual DB status if it matches the high-level schema enum
+  const enumValues = ["ON_TRACK", "AT_RISK", "DELIVERED", "FAILED"];
+  const updateData: any = {};
+  if (enumValues.includes(status)) {
+    updateData.deliveryState = status;
   }
 
-  return { success: true };
+  if (status === "DELIVERED") {
+    updateData.actualDeliveredAt = new Date();
+  }
+
+  const order = await prisma.order.update({
+    where: { id: orderId },
+    data: updateData,
+    include: {
+      vendor: { select: { name: true, email: true } },
+      events: { orderBy: { timestamp: "asc" } },
+    },
+  });
+
+  return order;
 }
 
 // Helper for events (observability)

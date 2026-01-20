@@ -5,6 +5,7 @@ import BentoCard from "../../components/dashboard/BentoCard";
 import { useOrders } from "../../context/OrderContext";
 import { useInventory } from "../../context/InventoryContext";
 import { formatRelativeTime } from "../../utils/formatRelativeTime";
+import { isOrderAtRisk } from "../../utils/orderUtils";
 import "./Dashboard.css";
 
 const Dashboard = () => {
@@ -31,11 +32,13 @@ const Dashboard = () => {
 
   const activeOrdersCount = activeOrders.length;
   const atRiskCount = orders.filter(
-    (o) => o.deliveryState === "AT_RISK",
+    (o) => o.deliveryState === "AT_RISK" || isOrderAtRisk(o),
   ).length;
 
   // Get orders for live feed - limit to 3 total
-  const atRiskOrders = orders.filter((o) => o.deliveryState === "AT_RISK");
+  const atRiskOrders = orders.filter(
+    (o) => o.deliveryState === "AT_RISK" || isOrderAtRisk(o),
+  );
   const newRequestsOrders = newRequests;
 
   // Combine and limit to 3 orders for live feed
@@ -234,7 +237,9 @@ const Dashboard = () => {
                               ? "Delivery at Risk"
                               : isNew
                                 ? "New Order Received"
-                                : "In Progress"}
+                                : isOrderAtRisk(order)
+                                  ? "At Risk"
+                                  : "In Progress"}
                           </span>
                           <h3 className="text-lg font-bold">
                             {order.vendor?.name}

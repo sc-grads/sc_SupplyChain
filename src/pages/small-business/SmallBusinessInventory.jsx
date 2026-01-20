@@ -1,8 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "../../components/Layout";
+import { useInventory } from "../../context/InventoryContext";
 
 const SmallBusinessInventory = () => {
+  const { inventory, fetchInventory, loading } = useInventory();
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("all"); // 'all', 'low', 'out'
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [showCategoryMenu, setShowCategoryMenu] = useState(false);
+
+  useEffect(() => {
+    fetchInventory();
+  }, [fetchInventory]);
+
+  // Categories derivation
+  const categories = [
+    "All",
+    ...new Set(inventory.map((item) => item.category)),
+  ].filter(Boolean);
+
+  // Filtering Logic
+  const filteredItems = inventory.filter((item) => {
+    const matchesSearch =
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.sku.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "All" || item.category === selectedCategory;
+
+    let matchesTab = true;
+    if (activeTab === "low")
+      matchesTab =
+        item.currentStock > 0 && item.currentStock <= item.reorderLevel;
+    if (activeTab === "out") matchesTab = item.currentStock === 0;
+
+    return matchesSearch && matchesCategory && matchesTab;
+  });
+
+  const lowStockCount = inventory.filter(
+    (item) => item.currentStock > 0 && item.currentStock <= item.reorderLevel,
+  ).length;
+  const outOfStockCount = inventory.filter(
+    (item) => item.currentStock === 0,
+  ).length;
+
+  const getStockColor = (current, reorder) => {
+    if (current === 0) return "bg-status-red";
+    if (current <= reorder) return "bg-status-amber";
+    return "bg-status-green";
+  };
 
   return (
     <Layout>
@@ -49,28 +94,38 @@ const SmallBusinessInventory = () => {
 
         {/* Filter Chips */}
         <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-bold cursor-pointer">
+          <div
+            onClick={() => setActiveTab("all")}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold cursor-pointer transition-all ${activeTab === "all" ? "bg-primary text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200"}`}
+          >
             All Items{" "}
-            <span className="bg-white/20 px-1.5 rounded text-[10px]">24</span>
+            <span
+              className={`px-1.5 rounded text-[10px] ${activeTab === "all" ? "bg-white/20" : "bg-gray-200 dark:bg-gray-700"}`}
+            >
+              {inventory.length}
+            </span>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-bold hover:bg-gray-200 cursor-pointer">
+          <div
+            onClick={() => setActiveTab("low")}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold cursor-pointer transition-all ${activeTab === "low" ? "bg-amber-500 text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200"}`}
+          >
             Low Stock{" "}
-            <span className="bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 px-1.5 rounded text-[10px]">
-              3
+            <span
+              className={`px-1.5 rounded text-[10px] ${activeTab === "low" ? "bg-white/20" : "bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300"}`}
+            >
+              {lowStockCount}
             </span>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-bold hover:bg-gray-200 cursor-pointer">
+          <div
+            onClick={() => setActiveTab("out")}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold cursor-pointer transition-all ${activeTab === "out" ? "bg-red-500 text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200"}`}
+          >
             Out of Stock{" "}
-            <span className="bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 px-1.5 rounded text-[10px]">
-              1
+            <span
+              className={`px-1.5 rounded text-[10px] ${activeTab === "out" ? "bg-white/20" : "bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300"}`}
+            >
+              {outOfStockCount}
             </span>
-          </div>
-          <div className="h-4 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-bold hover:bg-gray-200 cursor-pointer">
-            <span className="material-symbols-outlined text-sm">
-              filter_list
-            </span>
-            Category
           </div>
         </div>
 
@@ -101,328 +156,112 @@ const SmallBusinessInventory = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                {/* Row 1: Good Stock */}
-                <tr className="hover:bg-primary/5 transition-colors group">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="size-10 rounded bg-gray-100 dark:bg-gray-800 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                        <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800"></div>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-[#111418] dark:text-white leading-tight">
-                          Organic Flour 25kg
-                        </p>
-                        <p className="text-[11px] font-mono text-gray-400 mt-0.5">
-                          SKU: FLR-ORG-001
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[11px] font-bold text-gray-600 dark:text-gray-400">
-                      BAKING
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col gap-1.5">
-                      <div className="flex items-end justify-between">
-                        <span className="text-sm font-black">
-                          45{" "}
-                          <span className="text-gray-400 font-normal">
-                            bags
-                          </span>
-                        </span>
-                      </div>
-                      <div className="w-32 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                {filteredItems.map((item) => (
+                  <tr
+                    key={item.id}
+                    className={`hover:bg-primary/5 transition-colors group ${item.currentStock === 0 ? "bg-red-50/20 dark:bg-red-950/5" : item.currentStock <= item.reorderLevel ? "bg-amber-50/20 dark:bg-amber-950/5" : ""}`}
+                  >
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
                         <div
-                          className="h-full bg-status-green"
-                          style={{ width: "90%" }}
-                        ></div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="text-sm font-medium text-gray-500">
-                      10 bags
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="text-sm text-gray-500">Oct 12, 2023</span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="inline-flex items-center justify-center size-8 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-primary hover:text-white transition-all">
-                        <span className="material-symbols-outlined text-lg">
-                          edit
-                        </span>
-                      </button>
-                      <button className="inline-flex items-center justify-center px-3 h-8 rounded bg-primary text-white text-xs font-bold hover:brightness-105 transition-all">
-                        Reorder
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* Row 2: Low Stock */}
-                <tr className="hover:bg-primary/5 transition-colors group bg-amber-50/20 dark:bg-amber-950/5">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="size-10 rounded bg-gray-100 dark:bg-gray-800 flex-shrink-0 flex items-center justify-center overflow-hidden border-2 border-amber-400/40">
-                        <div className="w-full h-full bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900 dark:to-amber-800"></div>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-bold text-[#111418] dark:text-white leading-tight">
-                            Whole Milk 1L
-                          </p>
-                          <span className="size-2 rounded-full bg-amber-500 animate-pulse"></span>
+                          className={`size-10 rounded bg-gray-100 dark:bg-gray-800 flex-shrink-0 flex items-center justify-center overflow-hidden ${item.currentStock === 0 ? "grayscale" : item.currentStock <= item.reorderLevel ? "border-2 border-amber-400/40" : ""}`}
+                        >
+                          <div
+                            className={`w-full h-full bg-gradient-to-br ${item.currentStock === 0 ? "from-red-100 to-red-200 dark:from-red-900 dark:to-red-800" : item.currentStock <= item.reorderLevel ? "from-amber-100 to-amber-200 dark:from-amber-900 dark:to-amber-800" : "from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800"}`}
+                          ></div>
                         </div>
-                        <p className="text-[11px] font-mono text-gray-400 mt-0.5">
-                          SKU: MLK-WHL-012
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[11px] font-bold text-gray-600 dark:text-gray-400">
-                      DAIRY
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col gap-1.5">
-                      <div className="flex items-end justify-between">
-                        <span className="text-sm font-black text-amber-600">
-                          15{" "}
-                          <span className="text-gray-400 font-normal">
-                            units
-                          </span>
-                        </span>
-                      </div>
-                      <div className="w-32 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-status-amber"
-                          style={{ width: "25%" }}
-                        ></div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="text-sm font-medium text-gray-500">
-                      20 units
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="text-sm text-gray-500">Oct 10, 2023</span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="inline-flex items-center justify-center size-8 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-primary hover:text-white transition-all">
-                        <span className="material-symbols-outlined text-lg">
-                          edit
-                        </span>
-                      </button>
-                      <button className="inline-flex items-center justify-center px-3 h-8 rounded bg-amber-500 text-white text-xs font-bold hover:brightness-105 transition-all">
-                        Reorder
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* Row 3: Out of Stock */}
-                <tr className="hover:bg-primary/5 transition-colors group bg-red-50/20 dark:bg-red-950/5">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="size-10 rounded bg-gray-100 dark:bg-gray-800 flex-shrink-0 flex items-center justify-center overflow-hidden grayscale">
-                        <div className="w-full h-full bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900 dark:to-red-800"></div>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-[#111418] dark:text-white leading-tight">
-                          Raw Honey 5kg
-                        </p>
-                        <p className="text-[11px] font-mono text-gray-400 mt-0.5">
-                          SKU: HNY-RAW-098
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[11px] font-bold text-gray-600 dark:text-gray-400">
-                      SWEETENERS
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col gap-1.5">
-                      <div className="flex items-end justify-between">
-                        <span className="text-sm font-black text-red-600">
-                          0{" "}
-                          <span className="text-gray-400 font-normal">
-                            jars
-                          </span>
-                        </span>
-                      </div>
-                      <div className="w-32 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-status-red"
-                          style={{ width: "0%" }}
-                        ></div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="text-sm font-medium text-gray-500">
-                      5 jars
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="text-sm text-gray-500">Sep 28, 2023</span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="inline-flex items-center justify-center size-8 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-primary hover:text-white transition-all">
-                        <span className="material-symbols-outlined text-lg">
-                          edit
-                        </span>
-                      </button>
-                      <button className="inline-flex items-center justify-center px-3 h-8 rounded bg-red-500 text-white text-xs font-bold hover:brightness-105 transition-all">
-                        Order Now
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* Row 4: Good Stock */}
-                <tr className="hover:bg-primary/5 transition-colors group">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="size-10 rounded bg-gray-100 dark:bg-gray-800 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                        <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900 dark:to-green-800"></div>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-[#111418] dark:text-white leading-tight">
-                          Olive Oil 20L
-                        </p>
-                        <p className="text-[11px] font-mono text-gray-400 mt-0.5">
-                          SKU: OIL-OLV-045
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[11px] font-bold text-gray-600 dark:text-gray-400">
-                      OILS
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col gap-1.5">
-                      <div className="flex items-end justify-between">
-                        <span className="text-sm font-black">
-                          32{" "}
-                          <span className="text-gray-400 font-normal">
-                            bottles
-                          </span>
-                        </span>
-                      </div>
-                      <div className="w-32 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-status-green"
-                          style={{ width: "80%" }}
-                        ></div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="text-sm font-medium text-gray-500">
-                      10 bottles
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="text-sm text-gray-500">Oct 11, 2023</span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="inline-flex items-center justify-center size-8 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-primary hover:text-white transition-all">
-                        <span className="material-symbols-outlined text-lg">
-                          edit
-                        </span>
-                      </button>
-                      <button className="inline-flex items-center justify-center px-3 h-8 rounded bg-primary text-white text-xs font-bold hover:brightness-105 transition-all">
-                        Reorder
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* Row 5: Low Stock */}
-                <tr className="hover:bg-primary/5 transition-colors group bg-amber-50/20 dark:bg-amber-950/5">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="size-10 rounded bg-gray-100 dark:bg-gray-800 flex-shrink-0 flex items-center justify-center overflow-hidden border-2 border-amber-400/40">
-                        <div className="w-full h-full bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900 dark:to-orange-800"></div>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-bold text-[#111418] dark:text-white leading-tight">
-                            Espresso Beans 1kg
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-bold text-[#111418] dark:text-white leading-tight">
+                              {item.name}
+                            </p>
+                            {item.currentStock <= item.reorderLevel && (
+                              <span
+                                className={`size-2 rounded-full ${item.currentStock === 0 ? "bg-red-500" : "bg-amber-500 animate-pulse"}`}
+                              ></span>
+                            )}
+                          </div>
+                          <p className="text-[11px] font-mono text-gray-400 mt-0.5">
+                            SKU: {item.sku}
                           </p>
-                          <span className="size-2 rounded-full bg-amber-500 animate-pulse"></span>
                         </div>
-                        <p className="text-[11px] font-mono text-gray-400 mt-0.5">
-                          SKU: COF-ESP-024
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[11px] font-bold text-gray-600 dark:text-gray-400 uppercase">
+                        {item.category || "N/A"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex items-end justify-between">
+                          <span
+                            className={`text-sm font-black ${item.currentStock === 0 ? "text-red-600" : item.currentStock <= item.reorderLevel ? "text-amber-600" : ""}`}
+                          >
+                            {item.currentStock}{" "}
+                            <span className="text-gray-400 font-normal">
+                              {item.unit || "units"}
+                            </span>
+                          </span>
+                        </div>
+                        <div className="w-32 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full ${getStockColor(item.currentStock, item.reorderLevel)}`}
+                            style={{
+                              width: `${Math.min((item.currentStock / (item.reorderLevel * 2)) * 100, 100)}%`,
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-sm font-medium text-gray-500">
+                        {item.reorderLevel} {item.unit || "units"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-sm text-gray-500">
+                        {item.lastOrdered || "N/A"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button className="inline-flex items-center justify-center size-8 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-primary hover:text-white transition-all">
+                          <span className="material-symbols-outlined text-lg">
+                            edit
+                          </span>
+                        </button>
+                        <button
+                          className={`inline-flex items-center justify-center px-3 h-8 rounded text-white text-xs font-bold hover:brightness-105 transition-all ${item.currentStock === 0 ? "bg-red-500" : item.currentStock <= item.reorderLevel ? "bg-amber-500" : "bg-primary"}`}
+                        >
+                          {item.currentStock === 0 ? "Order Now" : "Reorder"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+
+                {filteredItems.length === 0 && (
+                  <tr>
+                    <td colSpan="6" className="px-4 py-12 text-center">
+                      <div className="flex flex-col items-center gap-2">
+                        <span className="material-symbols-outlined text-4xl text-gray-300">
+                          inventory_2
+                        </span>
+                        <p className="text-gray-500 font-medium">
+                          No items found matching your filters.
                         </p>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[11px] font-bold text-gray-600 dark:text-gray-400">
-                      COFFEE
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col gap-1.5">
-                      <div className="flex items-end justify-between">
-                        <span className="text-sm font-black text-amber-600">
-                          8{" "}
-                          <span className="text-gray-400 font-normal">
-                            bags
-                          </span>
-                        </span>
-                      </div>
-                      <div className="w-32 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-status-amber"
-                          style={{ width: "20%" }}
-                        ></div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="text-sm font-medium text-gray-500">
-                      15 bags
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="text-sm text-gray-500">Oct 11, 2023</span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="inline-flex items-center justify-center size-8 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-primary hover:text-white transition-all">
-                        <span className="material-symbols-outlined text-lg">
-                          edit
-                        </span>
-                      </button>
-                      <button className="inline-flex items-center justify-center px-3 h-8 rounded bg-amber-500 text-white text-xs font-bold hover:brightness-105 transition-all">
-                        Reorder
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
           {/* Pagination */}
           <div className="px-6 py-3 bg-gray-50 dark:bg-gray-800/30 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
             <p className="text-xs text-gray-500 font-medium italic">
-              Showing 1-5 of 24 items
+              Showing {filteredItems.length} of {inventory.length} items
             </p>
             <div className="flex gap-1">
               <button className="size-8 flex items-center justify-center rounded border border-gray-200 dark:border-gray-700 text-gray-400 hover:bg-white dark:hover:bg-gray-800">
@@ -432,9 +271,6 @@ const SmallBusinessInventory = () => {
               </button>
               <button className="size-8 flex items-center justify-center rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-primary font-bold text-xs">
                 1
-              </button>
-              <button className="size-8 flex items-center justify-center rounded border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800 text-xs">
-                2
               </button>
               <button className="size-8 flex items-center justify-center rounded border border-gray-200 dark:border-gray-700 text-gray-400 hover:bg-white dark:hover:bg-gray-800">
                 <span className="material-symbols-outlined text-lg">
@@ -453,9 +289,20 @@ const SmallBusinessInventory = () => {
               <h3 className="text-sm font-bold">Reorder Suggestions</h3>
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-              Based on your usage patterns, we recommend reordering{" "}
-              <b>Whole Milk</b> and <b>Espresso Beans</b> within the next 3 days
-              to avoid stockouts.
+              {inventory.some((i) => i.currentStock <= i.reorderLevel) ? (
+                <>
+                  Based on your usage patterns, we recommend reordering{" "}
+                  <b>
+                    {
+                      inventory.find((i) => i.currentStock <= i.reorderLevel)
+                        ?.name
+                    }
+                  </b>{" "}
+                  soon to avoid stockouts.
+                </>
+              ) : (
+                "All your stock is currently at healthy levels."
+              )}
             </p>
           </div>
           <div className="p-4 rounded-xl border border-status-green/20 bg-status-green/5 flex flex-col gap-3">
@@ -466,8 +313,19 @@ const SmallBusinessInventory = () => {
               <h3 className="text-sm font-bold">Inventory Health</h3>
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-              Your inventory is <b>83% healthy</b>. Most items are well-stocked.
-              Focus on restocking the 4 items below reorder levels.
+              Your inventory is{" "}
+              <b>
+                {Math.round(
+                  ((inventory.length - (lowStockCount + outOfStockCount)) /
+                    inventory.length) *
+                    100,
+                ) || 100}
+                % healthy
+              </b>
+              .
+              {lowStockCount + outOfStockCount > 0
+                ? ` Focus on restocking the ${lowStockCount + outOfStockCount} items below reorder levels.`
+                : " All items are well-stocked."}
             </p>
           </div>
         </div>

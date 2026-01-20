@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
 import { useOrders } from "../../context/OrderContext";
+import { isOrderAtRisk } from "../../utils/orderUtils";
 
 const SmallBusinessDashboard = () => {
   const navigate = useNavigate();
@@ -16,6 +17,13 @@ const SmallBusinessDashboard = () => {
     (order) =>
       order.orderState === "ACCEPTED" && order.deliveryState !== "DELIVERED",
   ).length;
+
+  const atRiskOrders = orders.filter(
+    (order) =>
+      order.orderState === "ACCEPTED" &&
+      order.deliveryState !== "DELIVERED" &&
+      isOrderAtRisk(order),
+  );
 
   // Helper to replicate backend price simulation
   const getMockPrice = (sku) => {
@@ -42,22 +50,14 @@ const SmallBusinessDashboard = () => {
     .reduce((sum, order) => sum + calculateOrderTotal(order), 0);
 
   // Format as Rands
-  const estimatedExpenditure = new Intl.NumberFormat("en-ZA", {
-    style: "currency",
-    currency: "ZAR",
-    maximumFractionDigits: 0,
-  }).format(estimatedExpenditureVal);
+  const estimatedExpenditure = `R ${estimatedExpenditureVal.toLocaleString()}`;
 
   // Total Spending: Sum of all DELIVERED orders (Completed transactions)
   const totalSpendingVal = orders
     .filter((o) => o.deliveryState === "DELIVERED")
     .reduce((sum, order) => sum + calculateOrderTotal(order), 0);
 
-  const totalSpending = new Intl.NumberFormat("en-ZA", {
-    style: "currency",
-    currency: "ZAR",
-    maximumFractionDigits: 0,
-  }).format(totalSpendingVal);
+  const totalSpending = `R ${totalSpendingVal.toLocaleString()}`;
 
   const handleTrackDelivery = (orderId) => {
     alert(`Opening delivery tracking for order ${orderId}`);
@@ -138,6 +138,34 @@ const SmallBusinessDashboard = () => {
       <div className="max-w-[1200px] mx-auto relative hidden-scrollbar">
         {/* Status Header */}
         <div className="mb-8">
+          {atRiskOrders.length > 0 && (
+            <div className="mb-6 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-2xl p-4 flex items-center justify-between animate-in slide-in-from-top duration-500">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center text-red-600 dark:text-red-400">
+                  <span className="material-symbols-outlined font-bold">
+                    warning
+                  </span>
+                </div>
+                <div>
+                  <h4 className="font-bold text-red-900 dark:text-red-100">
+                    {atRiskOrders.length}{" "}
+                    {atRiskOrders.length === 1 ? "Order" : "Orders"} delayed
+                  </h4>
+                  <p className="text-sm text-red-600 dark:text-red-400/80">
+                    {atRiskOrders.length === 1
+                      ? "One of your deliveries is running behind schedule."
+                      : "Some of your deliveries are running behind schedule."}
+                  </p>
+                </div>
+              </div>
+              <Link
+                to={`/small-business/orders/${atRiskOrders[0].id}`}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-red-500/20 transition-all"
+              >
+                Track Now
+              </Link>
+            </div>
+          )}
           <h1 className="text-2xl font-bold tracking-tight">
             Business Overview
           </h1>
@@ -240,11 +268,19 @@ const SmallBusinessDashboard = () => {
                 <div className="p-6 flex-1 flex flex-col gap-4">
                   <div className="flex justify-between items-start">
                     <div className="flex flex-col gap-0.5">
-                      <span className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-status-green uppercase">
-                        <span className="size-2 rounded-full bg-status-green animate-pulse"></span>
-                        Expected{" "}
-                        {formatDate(arrivingTodayOrder.requiredDeliveryDate)}
-                      </span>
+                      {isOrderAtRisk(arrivingTodayOrder) ? (
+                        <span className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-risk-amber uppercase bg-risk-amber/10 px-2 py-0.5 rounded-full">
+                          <span className="size-2 rounded-full bg-risk-amber animate-pulse"></span>
+                          Late •{" "}
+                          {formatDate(arrivingTodayOrder.requiredDeliveryDate)}
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-status-green uppercase">
+                          <span className="size-2 rounded-full bg-status-green animate-pulse"></span>
+                          Expected{" "}
+                          {formatDate(arrivingTodayOrder.requiredDeliveryDate)}
+                        </span>
+                      )}
                       <h3 className="text-lg font-bold">
                         Order #{arrivingTodayOrder.orderNumber}
                       </h3>
@@ -426,12 +462,6 @@ const SmallBusinessDashboard = () => {
                       Out of Stock
                     </span>
                   </div>
-                  <button
-                    onClick={() => handleReorderNow("Raw Honey 5kg")}
-                    className="w-full py-2 bg-red-500 text-white rounded-lg text-xs font-bold hover:brightness-105 transition-all"
-                  >
-                    Order Urgently
-                  </button>
                 </div>
               </div>
               <Link
@@ -456,37 +486,23 @@ const SmallBusinessDashboard = () => {
                   className="w-full p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                   <p className="text-sm font-bold">Weekly Essentials</p>
-                  <p className="text-[10px] text-gray-400">12 items • $450</p>
+                  <p className="text-[10px] text-gray-400">12 items • R 450</p>
                 </button>
                 <button
                   onClick={() => handleQuickReorder("Coffee & Tea")}
                   className="w-full p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                   <p className="text-sm font-bold">Coffee & Tea</p>
-                  <p className="text-[10px] text-gray-400">5 items • $280</p>
+                  <p className="text-[10px] text-gray-400">5 items • R 280</p>
                 </button>
                 <button
                   onClick={() => handleQuickReorder("Dairy Products")}
                   className="w-full p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                   <p className="text-sm font-bold">Dairy Products</p>
-                  <p className="text-[10px] text-gray-400">8 items • $320</p>
+                  <p className="text-[10px] text-gray-400">8 items • R 320</p>
                 </button>
               </div>
-            </div>
-
-            {/* Spending Insight */}
-            <div className="bg-primary/10 rounded-xl p-6 border border-primary/20">
-              <h3 className="font-bold text-primary mb-2 flex items-center gap-2">
-                <span className="material-symbols-outlined text-lg">
-                  lightbulb
-                </span>
-                Spending Insight
-              </h3>
-              <p className="text-xs leading-relaxed text-primary/80">
-                You're spending <strong>15% less</strong> this month compared to
-                last month. Great job managing your budget!
-              </p>
             </div>
           </aside>
         </div>

@@ -70,13 +70,6 @@ const Inventory = () => {
               </span>
               Export Manifest
             </button>
-            <button
-              disabled
-              className="opacity-50 cursor-not-allowed flex items-center gap-2 px-4 h-10 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-lg text-sm font-bold text-red-600 dark:text-red-400 shadow-sm"
-            >
-              <span className="material-symbols-outlined text-sm">warning</span>
-              Manual Override
-            </button>
           </div>
         </div>
 

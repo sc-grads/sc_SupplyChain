@@ -55,11 +55,6 @@ const FilterBar = ({ activeFilter, onFilterChange, counts }) => {
           </span>
         </div>
       ))}
-      <div className="h-4 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-bold hover:bg-gray-200 cursor-pointer opacity-50">
-        <span className="material-symbols-outlined text-sm">filter_list</span>
-        More Filters
-      </div>
     </div>
   );
 };
