@@ -1,14 +1,16 @@
 import React from "react";
 import StatusBadge from "../common/StatusBadge";
 
-const InventoryTableRow = ({ item }) => {
+const InventoryTableRow = ({ item, onEdit }) => {
   // Map backend data to frontend variables
   const name = item.sku?.name || "Unknown Product";
   const skuCode = item.sku?.code || "N/A";
   const category = item.sku?.description || "General";
   const currentStock = item.quantity || 0;
+  const price = item.price
+    ? `R ${parseFloat(item.price).toFixed(2)}`
+    : "R 0.00";
   const maxStock = 1000; // Default for prototype visualization
-
   // Percentage calculation
   const percentage = Math.min(Math.round((currentStock / maxStock) * 100), 100);
 
@@ -19,13 +21,6 @@ const InventoryTableRow = ({ item }) => {
   } else if (percentage <= 30) {
     derivedStatus = "LOW";
   }
-
-  // Map derived status to frontend display strings and colors
-  const statusLabels = {
-    AVAILABLE: "Available",
-    LOW: "Low Stock",
-    UNAVAILABLE: "Out of Stock",
-  };
 
   // Progress bar color derivation
   let progressColor = "bg-primary";
@@ -39,18 +34,6 @@ const InventoryTableRow = ({ item }) => {
     UNAVAILABLE: "from-red-100 dark:from-red-900 to-red-200 dark:to-red-800",
   };
   const bgGradient = `bg-gradient-to-br ${gradients[derivedStatus] || gradients.AVAILABLE}`;
-
-  // Mock Price Generation (consistent by SKU)
-  const getMockPrice = (sku) => {
-    let hash = 0;
-    for (let i = 0; i < sku.length; i++) {
-      hash = sku.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const price = (Math.abs(hash) % 500) + 50; // Price between 50 and 550
-    return `R ${price.toFixed(2)}`;
-  };
-
-  const price = getMockPrice(skuCode);
 
   return (
     <tr
@@ -131,8 +114,8 @@ const InventoryTableRow = ({ item }) => {
       </td>
       <td className="px-4 py-3 text-right">
         <button
-          disabled
-          className="opacity-40 cursor-not-allowed inline-flex items-center justify-center size-8 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 transition-all"
+          onClick={() => onEdit(item)}
+          className="inline-flex items-center justify-center size-8 rounded bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all"
         >
           <span className="material-symbols-outlined text-lg">edit_note</span>
         </button>

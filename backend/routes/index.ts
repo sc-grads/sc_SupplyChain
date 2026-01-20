@@ -2,6 +2,8 @@ import { Router } from "express";
 import * as authController from "../controllers/auth.controller.js";
 import * as inventoryController from "../controllers/inventory.controller.js";
 import * as orderController from "../controllers/order.controller.js";
+import * as notificationController from "../controllers/notification.controller.js";
+import * as ratingController from "../controllers/rating.controller.js";
 import { authenticate } from "../middlewares/authMiddleware.js";
 
 const router = Router();
@@ -53,6 +55,36 @@ router.patch(
   "/orders/:id/delivery-status",
   authenticate,
   orderController.updateDeliveryStatus,
+);
+router.patch(
+  "/orders/:id/report-delay",
+  authenticate,
+  orderController.reportDelay,
+);
+
+// Notification Routes
+router.get(
+  "/notifications",
+  authenticate,
+  notificationController.getNotifications,
+);
+router.patch(
+  "/notifications/:id/read",
+  authenticate,
+  notificationController.markAsRead,
+);
+router.patch(
+  "/notifications/read-all",
+  authenticate,
+  notificationController.markAllAsRead,
+);
+
+// Rating Routes
+router.post("/ratings", authenticate, ratingController.createRating);
+router.get(
+  "/suppliers/:supplierId/rating",
+  authenticate,
+  ratingController.getSupplierRating,
 );
 
 export default router;

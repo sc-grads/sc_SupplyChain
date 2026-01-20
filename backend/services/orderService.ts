@@ -3,6 +3,8 @@ import {
   findEligibleSuppliers,
   createOrderVisibility,
 } from "./visibilityService.js";
+import { createNotification } from "./notificationService.js";
+import { sendDelayNotificationEmail } from "./emailService.js";
 
 export async function createOrder(data: {
   vendorId: string;
@@ -225,6 +227,54 @@ export async function updateDeliveryStatus(orderId: string, status: string) {
       events: { orderBy: { timestamp: "asc" } },
     },
   });
+
+  return order;
+}
+
+export async function reportDelay(
+  orderId: string,
+  revisedETA: Date,
+  reason: string,
+) {
+  // 1. Update order with new predicted ETA and ensure it's marked AT_RISK
+  const order = await prisma.order.update({
+    where: { id: orderId },
+    data: {
+      predictedDeliveryAt: revisedETA,
+      deliveryState: "AT_RISK",
+    },
+    include: {
+      vendor: { select: { id: true, name: true, email: true } },
+      events: { orderBy: { timestamp: "asc" } },
+    },
+  });
+
+  // 2. Log delay event
+  await logEvent({
+    type: "delay_reported",
+    orderId,
+    details: {
+      reason,
+      revisedETA,
+      reportedAt: new Date(),
+    },
+  });
+
+  // 3. Create In-App Notification for the Vendor
+  await createNotification({
+    userId: order.vendorId,
+    title: "Order Delay Alert",
+    message: `Order #${order.orderNumber} is delayed. New ETA: ${revisedETA.toLocaleString()}. Reason: ${reason}`,
+    type: "delay",
+    orderId: order.id,
+  });
+
+  // 4. Send Email Notification
+  await sendDelayNotificationEmail(
+    order.orderNumber,
+    revisedETA.toLocaleString(),
+    reason,
+  );
 
   return order;
 }

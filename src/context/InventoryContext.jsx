@@ -44,16 +44,23 @@ export const InventoryProvider = ({ children }) => {
     }
   }, [token, getHeaders]);
 
-  const updateStock = async (skuId, quantity, status) => {
+  const updateStock = async (skuId, quantity, status, price) => {
     setLoading(true);
     setError(null);
     try {
       const response = await fetch(`${API_BASE}/inventory`, {
         method: "POST",
         headers: getHeaders(),
-        body: JSON.stringify({ skuId, quantity, status }),
+        body: JSON.stringify({ skuId, quantity, status, price }),
       });
-      if (!response.ok) throw new Error("Failed to update inventory");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message ||
+            errorData.details ||
+            "Failed to update inventory",
+        );
+      }
 
       // Refresh inventory after update
       await fetchInventory();

@@ -5,10 +5,109 @@ import FilterBar from "../../components/inventory/FilterBar";
 import Pagination from "../../components/common/Pagination";
 import { useInventory } from "../../context/InventoryContext";
 
+const EditInventoryModal = ({ item, isOpen, onClose, onSave }) => {
+  const [price, setPrice] = useState(item?.price || 0);
+  const [quantity, setQuantity] = useState(item?.quantity || 0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (parseInt(quantity) > 1000) {
+      setError("Stock level cannot exceed 1000 units.");
+      return;
+    }
+    setError("");
+    setLoading(true);
+    await onSave(item.skuId, quantity, item.status, price);
+    setLoading(false);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white dark:bg-[#111418] rounded-xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-gray-800 overflow-hidden transform transition-all">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
+          <h3 className="text-lg font-bold">Edit Product</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-xs font-bold rounded-lg flex items-center gap-2">
+              <span className="material-symbols-outlined text-sm">error</span>
+              {error}
+            </div>
+          )}
+          <div>
+            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1.5">
+              Product
+            </label>
+            <p className="text-sm font-bold text-gray-700 dark:text-gray-300">
+              {item?.sku?.name}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1.5">
+                Price (R)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                required
+                className="w-full h-10 px-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1.5">
+                Stock Level
+              </label>
+              <input
+                type="number"
+                required
+                max="1000"
+                className={`w-full h-10 px-3 bg-gray-50 dark:bg-gray-800 border ${parseInt(quantity) > 1000 ? "border-red-500 ring-1 ring-red-500" : "border-gray-200 dark:border-gray-700"} rounded-lg text-sm font-bold focus:ring-2 focus:ring-primary outline-none`}
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="pt-2 flex gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 h-11 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 h-11 bg-primary text-white rounded-lg text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              {loading ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const Inventory = () => {
   const { inventory, loading, fetchInventory, updateStock } = useInventory();
   const [currentPage, setCurrentPage] = useState(1);
   const [activeFilter, setActiveFilter] = useState("All");
+  const [editingItem, setEditingItem] = useState(null);
 
   useEffect(() => {
     fetchInventory();
@@ -16,7 +115,7 @@ const Inventory = () => {
 
   // Derived quantity calculations
   const getDerivedStatus = (item) => {
-    const percentage = (item.quantity / 1000) * 100;
+    const percentage = ((item.quantity || 0) / 1000) * 100;
     if (percentage === 0) return "UNAVAILABLE";
     if (percentage <= 30) return "LOW";
     return "AVAILABLE";
@@ -40,10 +139,12 @@ const Inventory = () => {
     AtRisk: inventory.filter((i) => getDerivedStatus(i) === "LOW").length,
   };
 
-  const handleStatusUpdate = async (item, newStatus) => {
-    const result = await updateStock(item.skuId, null, newStatus);
+  const handleStatusUpdate = async (skuId, quantity, status, price) => {
+    const result = await updateStock(skuId, quantity, status, price);
     if (!result.success) {
-      alert(`Status update failed: ${result.error}`);
+      alert(`Update failed: ${result.error}`);
+    } else {
+      fetchInventory(); // Ensure we have latest data
     }
   };
 
@@ -112,6 +213,7 @@ const Inventory = () => {
                     key={item.id}
                     item={item}
                     onStatusUpdate={handleStatusUpdate}
+                    onEdit={setEditingItem}
                   />
                 ))}
               </tbody>
@@ -125,6 +227,14 @@ const Inventory = () => {
             onPageChange={setCurrentPage}
           />
         </div>
+
+        {/* Edit Modal */}
+        <EditInventoryModal
+          isOpen={!!editingItem}
+          item={editingItem}
+          onClose={() => setEditingItem(null)}
+          onSave={handleStatusUpdate}
+        />
       </div>
     </Layout>
   );

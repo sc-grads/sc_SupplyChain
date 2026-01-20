@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import { useAuth } from "./AuthContext";
 
 const OrderContext = createContext();
@@ -15,8 +21,9 @@ export const OrderProvider = ({ children }) => {
   const [orders, setOrders] = useState([]);
   const [newRequests, setNewRequests] = useState([]);
   const [catalog, setCatalog] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [activeOrders, setActiveOrders] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { token } = useAuth();
 
@@ -28,6 +35,47 @@ export const OrderProvider = ({ children }) => {
       Authorization: `Bearer ${token}`,
     };
   }, [token]);
+
+  const fetchNotifications = useCallback(async () => {
+    if (!token) return;
+    try {
+      const response = await fetch(`${API_BASE}/notifications`, {
+        headers: getHeaders(),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
+  }, [token, getHeaders]);
+
+  const markNotificationRead = async (id) => {
+    try {
+      await fetch(`${API_BASE}/notifications/${id}/read`, {
+        method: "PATCH",
+        headers: getHeaders(),
+      });
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
+      );
+    } catch (err) {
+      console.error("Failed to mark notification as read:", err);
+    }
+  };
+
+  const markAllNotificationsRead = async () => {
+    try {
+      await fetch(`${API_BASE}/notifications/read-all`, {
+        method: "PATCH",
+        headers: getHeaders(),
+      });
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    } catch (err) {
+      console.error("Failed to mark all as read:", err);
+    }
+  };
 
   const fetchCatalog = useCallback(async () => {
     if (!token) return;
@@ -238,6 +286,75 @@ export const OrderProvider = ({ children }) => {
     }
   };
 
+  const reportDelay = async (orderId, revisedETA, reason) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `${API_BASE}/orders/${orderId}/report-delay`,
+        {
+          method: "PATCH",
+          headers: getHeaders(),
+          body: JSON.stringify({ revisedETA, reason }),
+        },
+      );
+      if (!response.ok) throw new Error("Failed to report delay");
+      const data = await response.json();
+
+      // Update local state
+      const updateList = (prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, ...data.order } : o));
+
+      setOrders(updateList);
+      setActiveOrders(updateList);
+
+      return { success: true };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, error: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const rateOrder = async (orderId, score, comment, isAccurate) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_BASE}/ratings`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ orderId, score, comment, isAccurate }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to submit rating");
+      }
+      return { success: true };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, error: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getSupplierRating = async (supplierId) => {
+    try {
+      const response = await fetch(
+        `${API_BASE}/suppliers/${supplierId}/rating`,
+        {
+          headers: getHeaders(),
+        },
+      );
+      if (!response.ok) throw new Error("Failed to fetch rating");
+      return await response.json();
+    } catch (err) {
+      console.error("Failed to get supplier rating:", err);
+      return { averageScore: 0, totalRatings: 0 };
+    }
+  };
+
   return (
     <OrderContext.Provider
       value={{
@@ -256,6 +373,13 @@ export const OrderProvider = ({ children }) => {
         fetchActiveOrders,
         catalog,
         updateDeliveryStatus,
+        reportDelay,
+        notifications,
+        fetchNotifications,
+        markNotificationRead,
+        markAllNotificationsRead,
+        rateOrder,
+        getSupplierRating,
       }}
     >
       {children}

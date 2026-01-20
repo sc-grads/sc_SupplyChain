@@ -92,7 +92,13 @@ export const updateInventory = async (req: Request, res: Response) => {
     const userId = authReq.user?.id;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    const { skuId, status, quantity } = req.body;
+    const { skuId, status, quantity, price } = req.body;
+
+    if (quantity !== undefined && parseInt(quantity) > 1000) {
+      return res
+        .status(400)
+        .json({ message: "Stock level cannot exceed 1000 units." });
+    }
 
     const profile = await prisma.supplierProfile.findUnique({
       where: { supplierId: userId },
@@ -118,19 +124,24 @@ export const updateInventory = async (req: Request, res: Response) => {
       },
     });
 
-    const updated = await prisma.inventory.upsert({
+    const updated = await (prisma.inventory as any).upsert({
       where: {
         supplierId_skuId: {
           supplierId: profile.id,
           skuId,
         },
       },
-      update: { status, quantity },
+      update: {
+        status,
+        quantity: quantity !== undefined ? parseInt(quantity) : undefined,
+        price: price !== undefined ? parseFloat(price) : undefined,
+      },
       create: {
         supplierId: profile.id,
         skuId,
         status,
-        quantity,
+        quantity: quantity !== undefined ? parseInt(quantity) : 0,
+        price: price !== undefined ? parseFloat(price) : 0,
       },
     });
 
