@@ -64,7 +64,18 @@ const SmallBusinessDashboard = () => {
     console.log(`Track delivery: ${orderId}`);
   };
 
-  // ... (rest of handlers)
+  const handleReorderNow = (itemName) => {
+    navigate(
+      `/small-business/orders?action=new&item=${encodeURIComponent(itemName)}`,
+    );
+  };
+
+  const handleQuickReorder = (orderSource) => {
+    alert(
+      `Quick Reorder triggered for: ${orderSource}. This would pre-fill multiple items.`,
+    );
+    navigate(`/small-business/orders?action=new`);
+  };
 
   const handleMetricClick = (metric) => {
     alert(`Viewing ${metric} details`);
@@ -106,22 +117,57 @@ const SmallBusinessDashboard = () => {
     setSelectedSupplier(null);
   };
 
-  // Dynamic Incoming Deliveries
-  // 1. Arriving Today (Mock logic: First Accepted Order)
-  const arrivingTodayOrder = orders.find(
-    (o) => o.orderState === "ACCEPTED" && o.deliveryState === "ON_TRACK",
-  );
+  const isToday = (dateString) => {
+    if (!dateString) return false;
+    const d = new Date(dateString);
+    const now = new Date();
+    return (
+      d.getDate() === now.getDate() &&
+      d.getMonth() === now.getMonth() &&
+      d.getFullYear() === now.getFullYear()
+    );
+  };
 
-  // 2. In Transit (Mock logic: Second Accepted/At Risk Order)
-  const inTransitOrder = orders.find(
-    (o) =>
-      o.id !== arrivingTodayOrder?.id &&
+  const isIncoming = (o) => {
+    return (
       o.orderState === "ACCEPTED" &&
-      ["ON_TRACK", "AT_RISK"].includes(o.deliveryState),
-  );
+      o.deliveryState !== "DELIVERED" &&
+      (o.deliveryState === "OUT_FOR_DELIVERY" ||
+        o.deliveryState === "IN_TRANSIT" ||
+        isToday(o.requiredDeliveryDate) ||
+        isOrderAtRisk(o))
+    );
+  };
 
-  // 3. Pending (Mock logic: First Pending Order)
-  const pendingOrder = orders.find((o) => o.orderState === "PENDING");
+  // Dynamic Order Segregation
+  // 1. Incoming Deliveries: Out for delivery, In Transit, Due Today, or Late
+  const incomingOrders = orders
+    .filter(isIncoming)
+    .sort((a, b) => {
+      const aRisk = isOrderAtRisk(a);
+      const bRisk = isOrderAtRisk(b);
+      if (aRisk && !bRisk) return -1;
+      if (!aRisk && bRisk) return 1;
+      return (
+        new Date(a.requiredDeliveryDate) - new Date(b.requiredDeliveryDate)
+      );
+    })
+    .slice(0, 2);
+
+  // 2. Accepted/Active Orders: Future accepted orders only (not due today or late)
+  const confirmedOrders = orders
+    .filter(
+      (o) =>
+        o.orderState === "ACCEPTED" &&
+        o.deliveryState !== "DELIVERED" &&
+        !isIncoming(o),
+    )
+    .sort((a, b) => {
+      return (
+        new Date(a.requiredDeliveryDate) - new Date(b.requiredDeliveryDate)
+      );
+    })
+    .slice(0, 2);
 
   // Helper to format date
   const formatDate = (dateString) => {
@@ -250,151 +296,141 @@ const SmallBusinessDashboard = () => {
         {/* Main Feed */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
           <div className="xl:col-span-2 space-y-6">
+            {/* Incoming Deliveries Section */}
             <div className="flex items-center justify-between px-2">
               <h2 className="text-lg font-bold">Incoming Deliveries</h2>
-              <div className="flex gap-2">
-                <Link
-                  to="/small-business/orders"
-                  className="text-sm font-medium text-primary hover:underline"
-                >
-                  View all orders
-                </Link>
-              </div>
+              <Link
+                to="/small-business/orders"
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                View all
+              </Link>
             </div>
 
-            {/* Dynamic Card 1: Arriving Today (or closest Accepted Order) */}
-            {arrivingTodayOrder ? (
-              <div className="group relative flex items-stretch bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-status-green/30 shadow-sm transition-all">
-                <div className="p-6 flex-1 flex flex-col gap-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex flex-col gap-0.5">
-                      {isOrderAtRisk(arrivingTodayOrder) ? (
-                        <span className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-risk-amber uppercase bg-risk-amber/10 px-2 py-0.5 rounded-full">
-                          <span className="size-2 rounded-full bg-risk-amber animate-pulse"></span>
-                          Late •{" "}
-                          {formatDate(arrivingTodayOrder.requiredDeliveryDate)}
+            <div className="space-y-4">
+              {incomingOrders.length > 0 ? (
+                incomingOrders.slice(0, 2).map((order) => (
+                  <div
+                    key={order.id}
+                    className="group relative flex items-stretch bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-status-green/30 shadow-sm transition-all"
+                  >
+                    <div className="p-6 flex-1 flex flex-col gap-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex flex-col gap-0.5">
+                          {isOrderAtRisk(order) ? (
+                            <span className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-risk-amber uppercase bg-risk-amber/10 px-2 py-0.5 rounded-full">
+                              <span className="size-2 rounded-full bg-risk-amber animate-pulse"></span>
+                              Late • {formatDate(order.requiredDeliveryDate)}
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-status-green uppercase">
+                              <span className="size-2 rounded-full bg-status-green animate-pulse"></span>
+                              {order.deliveryState?.replace("_", " ") ||
+                                "Expected Soon"}{" "}
+                              • {formatDate(order.requiredDeliveryDate)}
+                            </span>
+                          )}
+                          <h3 className="text-lg font-bold">
+                            Order #{order.orderNumber}
+                          </h3>
+                        </div>
+                        <span className="text-new-blue material-symbols-outlined">
+                          local_shipping
                         </span>
-                      ) : (
-                        <span className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-status-green uppercase">
-                          <span className="size-2 rounded-full bg-status-green animate-pulse"></span>
-                          Expected{" "}
-                          {formatDate(arrivingTodayOrder.requiredDeliveryDate)}
+                      </div>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">
+                        <span className="font-bold text-gray-700 dark:text-gray-200">
+                          Items:
+                        </span>{" "}
+                        {order.items.length} ({order.items[0]?.name}...)
+                      </p>
+                      <button
+                        onClick={() =>
+                          navigate(`/small-business/orders/${order.id}`)
+                        }
+                        className="w-full bg-new-blue text-white h-11 rounded-lg font-bold text-sm hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                      >
+                        <span className="material-symbols-outlined text-lg">
+                          location_on
                         </span>
-                      )}
-                      <h3 className="text-lg font-bold">
-                        Order #{arrivingTodayOrder.orderNumber}
-                      </h3>
+                        Track Delivery
+                      </button>
                     </div>
-                    <span className="bg-status-green/10 text-status-green p-1.5 rounded-full">
-                      <span className="material-symbols-outlined text-sm">
-                        check_circle
-                      </span>
-                    </span>
                   </div>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                    <span className="font-bold text-gray-700 dark:text-gray-200">
-                      Items:
-                    </span>{" "}
-                    {arrivingTodayOrder.items.length} items (
-                    {arrivingTodayOrder.items[0]?.name}...)
-                  </p>
-                  <div className="flex items-center gap-3 pt-2">
-                    <button
-                      onClick={() =>
-                        navigate(
-                          `/small-business/orders/${arrivingTodayOrder.id}`,
-                        )
-                      }
-                      className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[#121615] dark:text-white h-11 px-4 rounded-lg font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      View Details
-                    </button>
-                  </div>
+                ))
+              ) : (
+                <div className="p-6 bg-white dark:bg-gray-900 rounded-xl border border-dashed border-gray-300 text-center text-gray-400 text-sm">
+                  No active incoming deliveries.
                 </div>
-              </div>
-            ) : (
-              <div className="p-6 bg-white dark:bg-gray-900 rounded-xl border border-dashed border-gray-300 text-center text-gray-400 text-sm">
-                No orders arriving today.
-              </div>
-            )}
+              )}
+            </div>
 
-            {/* Dynamic Card 2: In Transit */}
-            {inTransitOrder && (
-              <div className="group relative flex items-stretch bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-new-blue/20 shadow-sm">
-                <div className="p-6 flex-1 flex flex-col gap-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[10px] font-bold tracking-widest text-new-blue uppercase">
-                        In Transit • Expected{" "}
-                        {formatDate(inTransitOrder.requiredDeliveryDate)}
-                      </span>
-                      <h3 className="text-lg font-bold">
-                        Order #{inTransitOrder.orderNumber}
-                      </h3>
-                    </div>
-                    <span className="text-new-blue material-symbols-outlined">
-                      local_shipping
-                    </span>
-                  </div>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                    <span className="font-bold text-gray-700 dark:text-gray-200">
-                      Items:
-                    </span>{" "}
-                    {inTransitOrder.items.length} items (
-                    {inTransitOrder.items[0]?.name}...)
-                  </p>
-                  <div className="flex items-center gap-3 pt-2">
-                    <button
-                      onClick={() =>
-                        handleTrackDelivery(inTransitOrder.orderNumber)
-                      }
-                      className="flex-1 bg-new-blue text-white h-11 px-4 rounded-lg font-bold text-sm hover:brightness-110 transition-all flex items-center justify-center gap-2"
-                    >
-                      <span className="material-symbols-outlined text-lg">
-                        location_on
-                      </span>
-                      Track Delivery
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Accepted/Confirmed Orders Section */}
+            <div className="pt-4 flex items-center justify-between px-2">
+              <h2 className="text-lg font-bold">Accepted Orders</h2>
+              <span className="text-xs font-bold text-gray-400">
+                {confirmedOrders.length} Confirmed
+              </span>
+            </div>
 
-            {/* Dynamic Card 3: Pending Confirmation */}
-            {pendingOrder && (
-              <div className="group relative flex items-stretch bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm">
-                <div className="p-6 flex-1 flex flex-col gap-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-                        Pending Confirmation
-                      </span>
-                      <h3 className="text-lg font-bold">
-                        Order #{pendingOrder.orderNumber}
-                      </h3>
+            <div className="space-y-4">
+              {confirmedOrders.length > 0 ? (
+                confirmedOrders.slice(0, 2).map((order) => (
+                  <div
+                    key={order.id}
+                    className={`group relative flex items-stretch bg-white dark:bg-gray-900 rounded-xl overflow-hidden border ${order.orderState === "PENDING" ? "border-amber-100 dark:border-amber-900/30" : "border-gray-100 dark:border-gray-800"} shadow-sm`}
+                  >
+                    <div className="p-6 flex-1 flex flex-col gap-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex flex-col gap-0.5">
+                          <span
+                            className={`text-[10px] font-bold tracking-widest uppercase ${order.orderState === "PENDING" ? "text-risk-amber" : "text-gray-400"}`}
+                          >
+                            {order.orderState === "PENDING"
+                              ? "Awaiting Supplier Confirmation"
+                              : "Confirmed • Preparing Shipment"}
+                          </span>
+                          <h3 className="text-lg font-bold">
+                            Order #{order.orderNumber}
+                          </h3>
+                        </div>
+                        {order.orderState === "PENDING" ? (
+                          <span className="text-risk-amber material-symbols-outlined">
+                            schedule
+                          </span>
+                        ) : (
+                          <span className="bg-status-green/10 text-status-green p-1.5 rounded-full">
+                            <span className="material-symbols-outlined text-sm">
+                              check_circle
+                            </span>
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">
+                        <span className="font-bold text-gray-700 dark:text-gray-200">
+                          Items:
+                        </span>{" "}
+                        {order.items.length} ({order.items[0]?.name}...)
+                      </p>
+                      <button
+                        onClick={() =>
+                          navigate(`/small-business/orders/${order.id}`)
+                        }
+                        className={`w-full ${order.orderState === "PENDING" ? "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300" : "bg-gray-100 dark:bg-gray-800 text-[#121615] dark:text-white"} border h-11 px-4 rounded-lg font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors`}
+                      >
+                        {order.orderState === "PENDING"
+                          ? "Check Status"
+                          : "View Order Details"}
+                      </button>
                     </div>
-                    <span className="text-gray-400 material-symbols-outlined">
-                      schedule
-                    </span>
                   </div>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                    <span className="font-bold text-gray-700 dark:text-gray-200">
-                      Items:
-                    </span>{" "}
-                    {pendingOrder.items.length} items (
-                    {pendingOrder.items[0]?.name}...)
-                  </p>
-                  <div className="flex items-center gap-3 pt-2">
-                    <button
-                      onClick={() => handleContactSupplier(pendingOrder)}
-                      className="flex-1 bg-gray-100 dark:bg-gray-800 text-[#121615] dark:text-white h-11 px-4 rounded-lg font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      Contact Supplier
-                    </button>
-                  </div>
+                ))
+              ) : (
+                <div className="p-6 bg-white dark:bg-gray-900 rounded-xl border border-dashed border-gray-300 text-center text-gray-400 text-sm">
+                  No recently accepted orders.
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Right Sidebar: Low Stock & Quick Reorder */}

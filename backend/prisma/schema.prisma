@@ -33,6 +33,11 @@ model User {
   retailerInventory RetailerInventory[] @relation("VendorInventory")
 
   events    Event[]  // Activity log for this user
+  notifications Notification[]
+
+  // Ratings
+  ratingsGiven    Rating[] @relation("VendorRatings")
+  ratingsReceived Rating[] @relation("SupplierRatings")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -107,6 +112,7 @@ model Inventory {
   skuId      String
   status     InventoryStatus @default(AVAILABLE)
   quantity   Int?            // Optional — SMEs may not track exact qty
+  price      Float?          @default(0)
 
   supplier   SupplierProfile @relation(fields: [supplierId], references: [id], onDelete: Cascade)
   sku        Sku             @relation(fields: [skuId], references: [id])
@@ -177,6 +183,8 @@ model Order {
 
   // Activity log
   events               Event[]
+  notifications        Notification[]
+  rating               Rating?
 
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
@@ -242,4 +250,49 @@ model Event {
   @@index([type, timestamp])
   @@index([orderId])
   @@index([userId])
+}
+
+// ── Notifications ──
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   // Recipient
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title     String
+  message   String
+  type      String   // e.g. "delay", "order_accepted", "low_stock"
+  read      Boolean  @default(false)
+  
+  // Optional: link to a specific order
+  orderId   String?
+  order     Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
+}
+
+// ── Vendor Ratings ──
+model Rating {
+  id        String   @id @default(uuid())
+  score     Int      // 1-5
+  comment   String?
+  isAccurate Boolean @default(true)
+  
+  orderId   String   @unique
+  order     Order    @relation(fields: [orderId], references: [id])
+
+  vendorId  String
+  vendor    User     @relation("VendorRatings", fields: [vendorId], references: [id])
+
+  supplierId String
+  supplier   User     @relation("SupplierRatings", fields: [supplierId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([supplierId])
+  @@index([vendorId])
 }

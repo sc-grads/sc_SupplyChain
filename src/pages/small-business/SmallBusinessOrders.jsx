@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
 import { useOrders } from "../../context/OrderContext";
 import { isOrderAtRisk } from "../../utils/orderUtils";
@@ -299,9 +299,14 @@ const OrderDetails = ({ order }) => {
   );
 };
 
-const NewOrderForm = ({ onSubmit, onCancel, catalog }) => {
+const NewOrderForm = ({ onSubmit, onCancel, catalog, initialItem }) => {
   const [formData, setFormData] = useState({
-    item: catalog.length > 0 ? catalog[0].skuName : "",
+    item:
+      initialItem && catalog.some((p) => p.skuName === initialItem)
+        ? initialItem
+        : catalog.length > 0
+          ? catalog[0].skuName
+          : "",
     quantity: 1,
     urgency: "Normal",
     deliveryDate: "",
@@ -499,11 +504,36 @@ const SmallBusinessOrders = () => {
   const [selectedSupplier, setSelectedSupplier] = useState("All Suppliers");
 
   const { orderId } = useParams();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("action") === "new") {
+      setShowForm(true);
+      const itemName = params.get("item");
+      if (itemName) {
+        // We'll trust the form component to handle pre-selection if we pass it down
+        // or we can set it in local state if we refactor NewOrderForm to accept defaults.
+        // For now, let's just show the form.
+      }
+    }
+  }, []);
 
   useEffect(() => {
     fetchOrders();
     fetchCatalog();
   }, [fetchOrders, fetchCatalog]);
+
+  const handleOrderSelection = (order) => {
+    // CONDITIONAL ROUTING:
+    // If order is ACCEPTED, go to the page with "Mark as Delivered" button
+    // If order is PENDING, stay in this page and show inline details
+    if (order.orderState === "ACCEPTED") {
+      navigate(`/small-business/orders/${order.orderNumber || order.id}`);
+    } else {
+      setSelectedOrder(order);
+    }
+  };
 
   // Auto-select order if present in URL
   useEffect(() => {
@@ -591,6 +621,9 @@ const SmallBusinessOrders = () => {
             onSubmit={handleFormSubmit}
             onCancel={() => setShowForm(false)}
             catalog={catalog}
+            initialItem={new URLSearchParams(window.location.search).get(
+              "item",
+            )}
           />
         ) : !selectedOrder ? (
           <>
@@ -640,7 +673,7 @@ const SmallBusinessOrders = () => {
             </div>
             <OrderList
               orders={filteredOrders}
-              onSelectOrder={setSelectedOrder}
+              onSelectOrder={handleOrderSelection}
             />
           </>
         ) : (

@@ -6,9 +6,24 @@ import { isOrderAtRisk } from "../../utils/orderUtils";
 
 const SmallBusinessOrderDetails = () => {
   const { orderId } = useParams();
-  const { orders, fetchOrders, updateDeliveryStatus } = useOrders();
+  const {
+    orders,
+    fetchOrders,
+    updateDeliveryStatus,
+    rateOrder,
+    getSupplierRating,
+  } = useOrders();
   const [order, setOrder] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [ratingScore, setRatingScore] = useState(5);
+  const [ratingComment, setRatingComment] = useState("");
+  const [isAccurate, setIsAccurate] = useState(true);
+  const [supplierStats, setSupplierStats] = useState({
+    averageScore: 0,
+    totalRatings: 0,
+    accuracyPercentage: 100,
+  });
 
   useEffect(() => {
     fetchOrders(); // Initial fetch
@@ -19,12 +34,51 @@ const SmallBusinessOrderDetails = () => {
       (o) => o.id === orderId || o.orderNumber === orderId,
     );
     if (found) {
-      // Re-sync state if context data changed
       if (JSON.stringify(found) !== JSON.stringify(order)) {
         setOrder(found);
       }
     }
   }, [orderId, orders, order]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!order) return;
+      // Get supplier ID from accepted visibility or order.supplier (if stored as ID, but currently it's name?)
+      // Wait, order.supplier is name in mock logic?
+      // In schema order has visibility.
+      const acceptedVis = order.visibility?.find(
+        (v) => v.status === "ACCEPTED",
+      );
+      const supplierId = acceptedVis?.supplierId;
+
+      if (supplierId) {
+        const stats = await getSupplierRating(supplierId);
+        setSupplierStats(stats);
+      }
+    };
+    fetchStats();
+  }, [order, getSupplierRating]);
+
+  const handleSubmitRating = async () => {
+    setIsUpdating(true);
+    const result = await rateOrder(order.id, ratingScore, ratingComment);
+    setIsUpdating(false);
+
+    if (result.success) {
+      setShowRatingModal(false);
+      // Refresh stats
+      const acceptedVis = order.visibility?.find(
+        (v) => v.status === "ACCEPTED",
+      );
+      if (acceptedVis?.supplierId) {
+        const stats = await getSupplierRating(acceptedVis.supplierId);
+        setSupplierStats(stats);
+      }
+      alert("Rating submitted!");
+    } else {
+      alert("Failed to rate: " + result.error);
+    }
+  };
 
   const handleConfirmDelivery = async () => {
     if (!order) return;
@@ -33,7 +87,6 @@ const SmallBusinessOrderDetails = () => {
       const result = await updateDeliveryStatus(order.id, "DELIVERED");
       if (result.success) {
         await fetchOrders();
-        alert("Delivery confirmed successfully!");
       } else {
         alert("Server error: " + result.error);
       }
@@ -208,10 +261,17 @@ const SmallBusinessOrderDetails = () => {
 
               {/* Active line progress */}
               <div
-                className="absolute top-4 left-0 h-1 bg-emerald-500 rounded-full transition-all duration-500"
+                className={`absolute top-4 left-0 h-1 rounded-full transition-all duration-500 
+                  ${isOrderAtRisk(order) ? "bg-red-500" : "bg-emerald-500"}`}
                 style={{
                   width:
-                    activeStep >= 3 ? "100%" : activeStep >= 2 ? "50%" : "0%",
+                    activeStep >= 3
+                      ? "100%"
+                      : activeStep >= 2
+                        ? "50%"
+                        : isOrderAtRisk(order)
+                          ? "50%"
+                          : "0%",
                 }}
               ></div>
 
@@ -245,22 +305,33 @@ const SmallBusinessOrderDetails = () => {
                   </div>
                 </div>
 
-                {/* Step 2: Out for Delivery */}
+                {/* Step 2: Out for Delivery (or At Risk) */}
                 <div className="flex flex-col items-center text-center">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 shadow-sm ${activeStep >= 2 ? "bg-emerald-500 text-white shadow-emerald-500/20" : "border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-900"}`}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 shadow-sm transition-colors duration-300
+                      ${activeStep >= 2 ? (isOrderAtRisk(order) ? "bg-red-500 shadow-red-500/20" : "bg-emerald-500 shadow-emerald-500/20") : isOrderAtRisk(order) ? "bg-red-100 dark:bg-red-900/30 border-2 border-red-500 text-red-600" : "border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-900"}`}
                   >
-                    {activeStep >= 2 && (
-                      <span className="material-symbols-outlined text-base">
+                    {activeStep >= 2 ? (
+                      <span className="material-symbols-outlined text-base text-white">
                         check
                       </span>
+                    ) : (
+                      isOrderAtRisk(order) && (
+                        <span className="material-symbols-outlined text-base animate-pulse">
+                          warning
+                        </span>
+                      )
                     )}
                   </div>
                   <div className="mt-4">
                     <p
-                      className={`text-sm font-bold ${activeStep >= 2 ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-600"}`}
+                      className={`text-sm font-bold 
+                        ${activeStep >= 2 || isOrderAtRisk(order) ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-600"}
+                        ${isOrderAtRisk(order) && activeStep < 2 ? "text-red-600 dark:text-red-400" : ""}`}
                     >
-                      Out for Delivery
+                      {isOrderAtRisk(order) && activeStep < 2
+                        ? "Delivery Delayed"
+                        : "Out for Delivery"}
                     </p>
                     {outForDeliveryAt && (
                       <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
@@ -281,7 +352,8 @@ const SmallBusinessOrderDetails = () => {
                 {/* Step 3: Delivered */}
                 <div className="flex flex-col items-center text-center">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 shadow-sm ${activeStep >= 3 ? "bg-emerald-500 text-white shadow-emerald-500/20" : "border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-900"}`}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 shadow-sm 
+                      ${activeStep >= 3 ? "bg-emerald-500 text-white shadow-emerald-500/20" : "border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-900"}`}
                   >
                     {activeStep >= 3 && (
                       <span className="material-symbols-outlined text-base">
@@ -451,7 +523,11 @@ const SmallBusinessOrderDetails = () => {
             <div className="space-y-4">
               <button
                 onClick={handleConfirmDelivery}
-                disabled={isUpdating || order.deliveryState === "DELIVERED"}
+                disabled={
+                  isUpdating ||
+                  order.deliveryState === "DELIVERED" ||
+                  !isOutForDelivery
+                }
                 className="w-full mb-4 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-100 disabled:text-slate-400 text-white py-3 rounded-xl font-bold text-sm transition-all shadow-lg shadow-emerald-500/10"
               >
                 <span className="material-symbols-outlined text-base">
@@ -459,6 +535,77 @@ const SmallBusinessOrderDetails = () => {
                 </span>
                 {isUpdating ? "Updating..." : "Mark as Delivered"}
               </button>
+
+              {order.deliveryState === "DELIVERED" && (
+                <button
+                  onClick={() => setShowRatingModal(true)}
+                  className="w-full mb-4 flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-gray-700 text-slate-700 dark:text-slate-300 py-3 rounded-xl font-bold text-sm transition-all"
+                >
+                  <span className="material-symbols-outlined text-base">
+                    star
+                  </span>
+                  Rate Supplier
+                </button>
+              )}
+
+              {showRatingModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-in fade-in zoom-in duration-200">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                      Rate Supplier
+                    </h3>
+                    <div className="flex gap-2 justify-center mb-6">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          onClick={() => setRatingScore(star)}
+                          className={`text-3xl transition-transform hover:scale-110 ${ratingScore >= star ? "text-yellow-400 font-variation-FILL" : "text-gray-300"}`}
+                        >
+                          <span className="material-symbols-outlined filled">
+                            star
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between mb-4 bg-gray-50 dark:bg-gray-700/30 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Order Accurate?
+                      </span>
+                      <button
+                        onClick={() => setIsAccurate(!isAccurate)}
+                        className={`relative w-11 h-6 rounded-full transition-colors ${isAccurate ? "bg-emerald-500" : "bg-gray-300"}`}
+                      >
+                        <span
+                          className={`block w-4 h-4 bg-white rounded-full shadow-md transform transition-transform ${isAccurate ? "translate-x-6" : "translate-x-1"}`}
+                        />
+                      </button>
+                    </div>
+
+                    <textarea
+                      className="w-full p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl border-none focus:ring-2 focus:ring-primary mb-4"
+                      placeholder="Optional comment..."
+                      rows="3"
+                      value={ratingComment}
+                      onChange={(e) => setRatingComment(e.target.value)}
+                    ></textarea>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setShowRatingModal(false)}
+                        className="flex-1 py-3 text-gray-500 font-bold hover:bg-gray-100 rounded-xl"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSubmitRating}
+                        disabled={isUpdating}
+                        className="flex-1 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary-dark"
+                      >
+                        {isUpdating ? "Submitting..." : "Submit"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
               <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">
                 Supplier Performance
               </h4>
@@ -468,7 +615,12 @@ const SmallBusinessOrderDetails = () => {
                     On-time rate
                   </span>
                   <span className="text-sm font-bold text-emerald-500">
-                    98%
+                    {supplierStats.totalRatings > 0
+                      ? `${Math.round((supplierStats.averageScore / 5) * 100)}%`
+                      : "N/A"}
+                    <span className="text-xs text-slate-400 font-normal ml-1">
+                      ({supplierStats.totalRatings} ratings)
+                    </span>
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -476,7 +628,9 @@ const SmallBusinessOrderDetails = () => {
                     Order accuracy
                   </span>
                   <span className="text-sm font-bold text-emerald-500">
-                    100%
+                    {supplierStats.totalRatings > 0
+                      ? `${supplierStats.accuracyPercentage || 100}%`
+                      : "100%"}
                   </span>
                 </div>
               </div>

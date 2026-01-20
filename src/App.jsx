@@ -12,12 +12,15 @@ import Dashboard from "./pages/supplier/Dashboard";
 import Orders from "./pages/supplier/Orders";
 import Inventory from "./pages/supplier/Inventory";
 import NewOrders from "./pages/supplier/NewOrders";
+import PerformanceAnalytics from "./pages/supplier/PerformanceAnalytics";
+import OrderHistoryAnalytics from "./pages/supplier/OrderHistoryAnalytics";
 // Small Business
 import SmallBusinessDashboard from "./pages/small-business/SmallBusinessDashboard";
 import SmallBusinessOrders from "./pages/small-business/SmallBusinessOrders";
 import SmallBusinessInventory from "./pages/small-business/SmallBusinessInventory";
-
 import SmallBusinessOrderDetails from "./pages/small-business/SmallBusinessOrderDetails";
+import SmallBusinessPerformance from "./pages/small-business/SmallBusinessPerformance";
+import SmallBusinessHistory from "./pages/small-business/SmallBusinessHistory";
 
 function App() {
   return (
@@ -41,6 +44,11 @@ function App() {
               <Route path="/new-orders" element={<NewOrders />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/inventory" element={<Inventory />} />
+              <Route path="/analytics" element={<PerformanceAnalytics />} />
+              <Route
+                path="/analytics/history"
+                element={<OrderHistoryAnalytics />}
+              />
               {/* Small Business Routes */}
               <Route
                 path="/small-business/dashboard"
@@ -57,6 +65,14 @@ function App() {
               <Route
                 path="/small-business/inventory"
                 element={<SmallBusinessInventory />}
+              />
+              <Route
+                path="/small-business/analytics"
+                element={<SmallBusinessPerformance />}
+              />
+              <Route
+                path="/small-business/analytics/history"
+                element={<SmallBusinessHistory />}
               />
             </Routes>
           </Router>

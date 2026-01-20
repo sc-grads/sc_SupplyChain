@@ -201,3 +201,32 @@ export const updateDeliveryStatus = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const reportDelay = async (req: Request, res: Response) => {
+  try {
+    const authReq = req as AuthRequest;
+    const supplierId = authReq.user?.id;
+    if (!supplierId) return res.status(401).json({ message: "Unauthorized" });
+
+    const { id } = req.params;
+    const { revisedETA, reason } = req.body;
+
+    if (!revisedETA || !reason) {
+      return res
+        .status(400)
+        .json({ message: "revisedETA and reason are required." });
+    }
+
+    const order = await orderService.reportDelay(
+      id as string,
+      new Date(revisedETA),
+      reason,
+    );
+    res.json({ message: "Delay reported successfully", order });
+  } catch (error: any) {
+    res.status(500).json({
+      message: "Failed to report delay.",
+      details: error.message,
+    });
+  }
+};

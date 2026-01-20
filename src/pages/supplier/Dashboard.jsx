@@ -19,9 +19,14 @@ const Dashboard = () => {
     declineOrder,
     activeOrders,
     fetchActiveOrders,
+    reportDelay,
   } = useOrders();
   const { inventory, fetchInventory, updateStock } = useInventory();
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Modal State for Reporting Delay
+  const [delayOrder, setDelayOrder] = useState(null);
+  const [isDelayModalOpen, setIsDelayModalOpen] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -41,12 +46,22 @@ const Dashboard = () => {
   );
   const newRequestsOrders = newRequests;
 
-  // Combine and limit to 3 orders for live feed
-  const liveFeedOrders = [
+  // Combine and unique-ify orders for live feed (limit to 3 total)
+  const combinedOrders = [
     ...atRiskOrders.map((o) => ({ ...o, feedType: "at-risk" })),
     ...newRequestsOrders.map((o) => ({ ...o, feedType: "new" })),
     ...activeOrders.map((o) => ({ ...o, feedType: "active" })),
-  ].slice(0, 3);
+  ];
+
+  // Remove duplicates by ID, prioritizing at-risk > new > active
+  const uniqueOrdersMap = new Map();
+  combinedOrders.forEach((o) => {
+    if (!uniqueOrdersMap.has(o.id)) {
+      uniqueOrdersMap.set(o.id, o);
+    }
+  });
+
+  const liveFeedOrders = Array.from(uniqueOrdersMap.values()).slice(0, 3);
 
   const handleAcceptOrder = async (orderId) => {
     const result = await acceptOrder(orderId);
@@ -68,9 +83,9 @@ const Dashboard = () => {
     }
   };
 
-  const handleUpdateStatus = (orderId) => {
-    alert(`Opening status update for order ${orderId}`);
-    console.log(`Update status for: ${orderId}`);
+  const handleUpdateStatus = (order) => {
+    setDelayOrder(order);
+    setIsDelayModalOpen(true);
   };
 
   const handleCallRetailer = (retailer) => {
@@ -277,7 +292,7 @@ const Dashboard = () => {
                       <div className="flex items-center gap-3 pt-2">
                         {isAtRisk ? (
                           <button
-                            onClick={() => handleUpdateStatus(order.id)}
+                            onClick={() => handleUpdateStatus(order)}
                             className="flex-1 bg-risk-amber text-white h-11 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all"
                           >
                             <span className="material-symbols-outlined text-lg">
@@ -401,7 +416,133 @@ const Dashboard = () => {
           </aside>
         </div>
       </div>
+
+      <ReportDelayModal
+        isOpen={isDelayModalOpen}
+        onClose={() => setIsDelayModalOpen(false)}
+        order={delayOrder}
+        onSave={reportDelay}
+      />
     </Layout>
+  );
+};
+
+const ReportDelayModal = ({ isOpen, onClose, order, onSave }) => {
+  const [revisedETA, setRevisedETA] = useState("");
+  const [reason, setReason] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (order?.predictedDeliveryAt || order?.promisedDeliveryAt) {
+      const baseDate = order.predictedDeliveryAt || order.promisedDeliveryAt;
+      const date = new Date(baseDate);
+      // Format to yyyy-MM-ddThh:mm for datetime-local
+      const formatted = date.toISOString().slice(0, 16);
+      setRevisedETA(formatted);
+    }
+  }, [order]);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    const result = await onSave(order.id, revisedETA, reason);
+    setLoading(false);
+    if (result.success) {
+      onClose();
+    } else {
+      alert("Error reporting delay: " + result.error);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-gray-900 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100 dark:border-gray-800">
+        <div className="p-8">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                Report Delay
+              </h2>
+              <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mt-1">
+                Order #{order?.orderNumber}
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <span className="material-symbols-outlined text-gray-400">
+                close
+              </span>
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block px-1">
+                Revised Estimated Arrival (ETA)
+              </label>
+              <input
+                type="datetime-local"
+                value={revisedETA}
+                onChange={(e) => setRevisedETA(e.target.value)}
+                required
+                className="w-full h-14 px-5 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl font-bold text-[#121615] dark:text-white focus:border-primary transition-all outline-none"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block px-1">
+                Reason for Delay
+              </label>
+              <textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                required
+                placeholder="Select or enter reason..."
+                className="w-full p-5 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl font-bold text-[#121615] dark:text-white focus:border-primary transition-all outline-none min-h-[120px] resize-none"
+              />
+              <div className="flex flex-wrap gap-2 mt-2">
+                {[
+                  "Vehicle Breakdown",
+                  "Inventory Shortage",
+                  "Traffic Delay",
+                  "Route Adjustment",
+                ].map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setReason(r)}
+                    className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-lg text-xs font-bold hover:bg-gray-200 transition-colors border border-transparent hover:border-gray-300"
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 h-14 bg-gray-100 dark:bg-gray-800 text-[#121615] dark:text-white rounded-2xl font-bold hover:bg-gray-200 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 h-14 bg-risk-amber text-white rounded-2xl font-bold hover:brightness-110 shadow-lg shadow-risk-amber/20 transition-all disabled:opacity-50"
+              >
+                {loading ? "Reporting..." : "Send Update"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   );
 };
 
