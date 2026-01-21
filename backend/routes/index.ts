@@ -5,6 +5,8 @@ import * as orderController from "../controllers/order.controller.js";
 import * as notificationController from "../controllers/notification.controller.js";
 import * as ratingController from "../controllers/rating.controller.js";
 import * as analyticsController from "../controllers/analytics.controller.js";
+import * as recommendationController from "../controllers/recommendation.controller.js";
+import * as userController from "../controllers/user.controller.js";
 import { authenticate } from "../middlewares/authMiddleware.js";
 
 const router = Router();
@@ -99,5 +101,16 @@ router.get(
   authenticate,
   analyticsController.getSupplierAnalytics,
 );
+
+// Recommendation Routes
+router.get(
+  "/recommendations",
+  authenticate,
+  recommendationController.getVendorRecommendations,
+);
+
+// User Management Routes
+router.patch("/user/profile", authenticate, userController.updateProfile);
+router.patch("/user/password", authenticate, userController.changePassword);
 
 export default router;

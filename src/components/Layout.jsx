@@ -109,11 +109,11 @@ const Layout = ({ children }) => {
           <span className="text-sm whitespace-nowrap">Inventory</span>
         </button>
         <button
-          onClick={() => navigate(`${baseRoute}/analytics`)}
-          className={`h-10 px-4 rounded-lg flex items-center gap-3 w-full justify-start transition-all ${isActive(`${baseRoute}/analytics`) || isActive(`${baseRoute}/analytics/history`) ? "bg-primary/10 text-primary font-bold shadow-sm" : "text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"}`}
+          onClick={() => navigate(`/profile`)}
+          className={`h-10 px-4 rounded-lg flex items-center gap-3 w-full justify-start transition-all ${isActive(`/profile`) ? "bg-primary/10 text-primary font-bold shadow-sm" : "text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"}`}
         >
-          <span className="material-symbols-outlined text-xl">history</span>
-          <span className="text-sm whitespace-nowrap">History</span>
+          <span className="material-symbols-outlined text-xl">settings</span>
+          <span className="text-sm whitespace-nowrap">Settings</span>
         </button>
 
         <button

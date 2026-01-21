@@ -83,9 +83,68 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
+  const updateProfile = async (data) => {
+    try {
+      const response = await fetch(`${API_BASE}/user/profile`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(responseData.message || "Failed to update profile");
+      }
+
+      // Update local state with new user data
+      setUser(responseData.user);
+      localStorage.setItem("user", JSON.stringify(responseData.user));
+
+      return { success: true, message: responseData.message };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  const changePassword = async (currentPassword, newPassword) => {
+    try {
+      const response = await fetch(`${API_BASE}/user/password`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to change password");
+      }
+
+      return { success: true, message: data.message };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, token, login, logout, register, loading }}
+      value={{
+        user,
+        token,
+        login,
+        logout,
+        register,
+        loading,
+        updateProfile,
+        changePassword,
+      }}
     >
       {children}
     </AuthContext.Provider>

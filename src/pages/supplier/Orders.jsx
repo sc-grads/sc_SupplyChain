@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Timeline from "../../components/Timeline";
 import Layout from "../../components/Layout";
+import StatusBadge from "../../components/common/StatusBadge";
 import { useOrders } from "../../context/OrderContext";
 
 // Helper to format relative time (keep your existing function if you have it)

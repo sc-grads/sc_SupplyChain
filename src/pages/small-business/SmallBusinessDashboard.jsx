@@ -351,7 +351,7 @@ const SmallBusinessDashboard = () => {
                         onClick={() =>
                           navigate(`/small-business/orders/${order.id}`)
                         }
-                        className="w-full bg-new-blue text-white h-11 rounded-lg font-bold text-sm hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                        className="w-full bg-primary text-white h-11 rounded-lg font-bold text-sm hover:brightness-110 transition-all flex items-center justify-center gap-2"
                       >
                         <span className="material-symbols-outlined text-lg">
                           location_on

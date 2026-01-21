@@ -355,6 +355,20 @@ export const OrderProvider = ({ children }) => {
     }
   };
 
+  const fetchRecommendations = useCallback(async () => {
+    if (!token) return [];
+    try {
+      const response = await fetch(`${API_BASE}/recommendations`, {
+        headers: getHeaders(),
+      });
+      if (!response.ok) throw new Error("Failed to fetch recommendations");
+      return await response.json();
+    } catch (err) {
+      console.error("Failed to fetch recommendations:", err);
+      return [];
+    }
+  }, [token, getHeaders]);
+
   return (
     <OrderContext.Provider
       value={{
@@ -380,6 +394,7 @@ export const OrderProvider = ({ children }) => {
         markAllNotificationsRead,
         rateOrder,
         getSupplierRating,
+        fetchRecommendations,
       }}
     >
       {children}

@@ -23,6 +23,7 @@ import SmallBusinessInventory from "./pages/small-business/SmallBusinessInventor
 import SmallBusinessOrderDetails from "./pages/small-business/SmallBusinessOrderDetails";
 import SmallBusinessPerformance from "./pages/small-business/SmallBusinessPerformance";
 import SmallBusinessHistory from "./pages/small-business/SmallBusinessHistory";
+import Profile from "./pages/common/Profile";
 
 function App() {
   return (
@@ -80,6 +81,7 @@ function App() {
                   path="/small-business/analytics/history"
                   element={<SmallBusinessHistory />}
                 />
+                <Route path="/profile" element={<Profile />} />
               </Routes>
             </Router>
             <ToastContainer

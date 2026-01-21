@@ -13,6 +13,8 @@ const getStatusStyles = (status) => {
     // Order Status
     New: "bg-primary/10 text-primary border-primary/20",
     Pending: "bg-risk-amber/10 text-risk-amber border-risk-amber/20",
+    ACCEPTED:
+      "bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800",
     DELIVERED: "bg-success/10 text-success border-success/20",
     CANCELLED: "bg-red-50 text-red-600 border-red-100",
 

@@ -363,10 +363,38 @@ const NewOrderForm = ({
     ? selectedProduct.price || getMockPrice(selectedProduct.skuCode)
     : 0;
 
+  const { fetchRecommendations } = useOrders();
+  const [recommendations, setRecommendations] = useState([]);
+
+  useEffect(() => {
+    const loadRecs = async () => {
+      const data = await fetchRecommendations();
+      setRecommendations(data.slice(0, 4));
+    };
+    loadRecs();
+  }, [fetchRecommendations]);
+
+  const handleAddToOrder = (rec) => {
+    // Check if item exists in catalog to ensure select works
+    const catalogItem = catalog.find((p) => p.skuName === rec.name);
+    if (catalogItem) {
+      setFormData((prev) => ({
+        ...prev,
+        item: rec.name,
+        quantity: 1,
+      }));
+      toast.success("Item added to order!");
+    } else {
+      // If strict catalog matching isn't required by select (e.g. if we allowed custom input), likely fine
+      // But since it's a select, we warn if not found
+      toast.warning("Item not found in current catalog listing.");
+    }
+  };
+
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden max-w-2xl mx-auto shadow-2xl">
       <div className="p-8">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-6">
           <div className="space-y-1">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight leading-none">
               Procurement Request
@@ -382,6 +410,49 @@ const NewOrderForm = ({
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
+
+        {/* Recommendations Section */}
+        {recommendations.length > 0 && (
+          <div className="mb-8 p-5 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700/50">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="bg-primary/10 text-primary p-1 rounded-md">
+                <span className="material-symbols-outlined text-sm">
+                  auto_awesome
+                </span>
+              </span>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                Recommended for you
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {recommendations.map((rec) => (
+                <div
+                  key={rec.sku}
+                  className="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-primary/30 transition-all group"
+                >
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-gray-900 dark:text-white line-clamp-1">
+                      {rec.name}
+                    </div>
+                    <div className="text-[10px] font-medium text-gray-400 line-clamp-1">
+                      {rec.supplierName}
+                    </div>
+                    <div className="text-[10px] font-bold text-gray-500 mt-0.5">
+                      R{rec.price}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleAddToOrder(rec)}
+                    className="ml-3 h-8 px-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-primary hover:text-white transition-colors flex flex-shrink-0 items-center"
+                  >
+                    Add
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
