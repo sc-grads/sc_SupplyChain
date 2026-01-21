@@ -58,32 +58,12 @@ const getMockPrice = (sku) => {
 };
 
 const OrderList = ({ orders, onSelectOrder }) => {
-  const getOrderStatus = (order) => {
-    if (order.deliveryState === "DELIVERED") return "Delivered";
-    if (order.orderState === "ACCEPTED") return "Processing";
-    if (order.orderState === "PENDING") return "Confirmed";
-    return order.orderState || "Unknown";
-  };
-
-  const getStatusClass = (status) => {
-    switch (status) {
-      case "Delivered":
-        return "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800";
-      case "Processing":
-        return "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800";
-      case "Confirmed":
-        return "bg-primary/10 text-primary border-primary/20";
-      default:
-        return "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-400 dark:border-gray-800";
-    }
-  };
-
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-background-light dark:bg-[#2c353d] border-b border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 text-[11px] uppercase font-black tracking-widest">
+            <tr className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800 text-[10px] uppercase font-semibold tracking-widest text-gray-400">
               <th className="px-6 py-4">ORDER ID</th>
               <th className="px-6 py-4">CUSTOMER</th>
               <th className="px-6 py-4">DATE</th>
@@ -93,40 +73,48 @@ const OrderList = ({ orders, onSelectOrder }) => {
               <th className="px-6 py-4 text-center">ACTION</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
             {orders.length === 0 ? (
               <tr>
-                <td colSpan="7" className="px-6 py-12 text-center">
-                  <span className="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700 mb-4 block">
+                <td colSpan="7" className="px-6 py-20 text-center">
+                  <span className="material-symbols-outlined text-4xl text-gray-300 mb-2 block">
                     inbox
                   </span>
-                  <p className="text-gray-500 dark:text-gray-400">
+                  <p className="text-gray-400 text-xs font-semibold uppercase tracking-widest">
                     No orders found
                   </p>
                 </td>
               </tr>
             ) : (
               orders.map((order) => {
-                const status = getOrderStatus(order);
+                const deliveryStatus = order.deliveryState || "PENDING";
+                const orderState = order.orderState || "PENDING";
                 return (
                   <tr
                     key={order.id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer group"
                     onClick={() => onSelectOrder(order)}
                   >
-                    <td className="px-6 py-4 font-bold text-sm text-[#121714] dark:text-white">
+                    <td className="px-6 py-5 font-bold text-sm text-gray-900 dark:text-white">
                       #{order.orderNumber}
                     </td>
-                    <td className="px-6 py-4 text-sm font-medium">
-                      {order.vendor?.name || "Unknown"}
+                    <td className="px-6 py-5">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-gray-900 dark:text-white">
+                          {order.vendor?.name || "Unknown"}
+                        </span>
+                        <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+                          {order.deliveryLocation || "No Location"}
+                        </span>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
+                    <td className="px-6 py-5 text-sm font-medium text-gray-500">
                       {formatFullDate(order.createdAt || order.placedAt)}
                     </td>
-                    <td className="px-6 py-4 text-center font-bold text-sm">
+                    <td className="px-6 py-5 text-center font-bold text-sm text-gray-900 dark:text-white">
                       {order.items?.length || 0}
                     </td>
-                    <td className="px-6 py-4 text-right font-bold text-sm">
+                    <td className="px-6 py-5 text-right font-bold text-sm text-gray-900 dark:text-white">
                       R{" "}
                       {(
                         (order.items?.reduce(
@@ -138,16 +126,18 @@ const OrderList = ({ orders, onSelectOrder }) => {
                         ) || 0) * 1.08
                       ).toFixed(2)}
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <span
-                        className={`px-3 py-1 text-xs font-bold rounded-full border uppercase tracking-wider ${getStatusClass(status)}`}
-                      >
-                        {status}
-                      </span>
+                    <td className="px-6 py-5 text-center">
+                      <StatusBadge
+                        status={
+                          deliveryStatus === "DELIVERED"
+                            ? "DELIVERED"
+                            : orderState
+                        }
+                      />
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <button className="text-gray-400 hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined">
+                    <td className="px-6 py-5 text-center">
+                      <button className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400 group-hover:bg-primary/10 group-hover:text-primary transition-all">
+                        <span className="material-symbols-outlined text-xl">
                           arrow_forward
                         </span>
                       </button>
@@ -224,30 +214,31 @@ const OrderDetails = ({ order, updateDeliveryStatus, fetchActiveOrders }) => {
 
   return (
     <>
-      <div className="flex flex-wrap justify-between items-end gap-6 mb-8">
-        <div className="flex flex-col gap-2">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+        <div className="space-y-1">
           <div className="flex items-center gap-4">
-            <h1 className="text-[#121714] dark:text-white text-3xl lg:text-4xl font-black tracking-tight">
+            <h1 className="text-gray-900 dark:text-white text-2xl font-bold tracking-tight leading-none">
               Order #{order.orderNumber}
             </h1>
-            <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full border border-primary/20 uppercase tracking-wider">
-              {order.orderState || "Unknown"}
-            </span>
+            <StatusBadge
+              status={order.orderState}
+              className="text-[10px] px-4"
+            />
           </div>
-          <p className="text-gray-500 dark:text-gray-400 text-lg">
-            {order.vendor?.name || "Unknown Customer"} • Placed{" "}
-            {formatRelativeTime(order.createdAt)}
+          <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">
+            Authorized by {order.vendor?.name || "Unknown Customer"} • Placed{" "}
+            {formatFullDate(order.createdAt)}
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex items-center gap-3">
           <button
             onClick={handleOutForDelivery}
-            className="flex items-center justify-center rounded-lg h-12 px-6 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:brightness-105 transition-all"
+            className="h-11 px-6 bg-primary text-white rounded-lg font-bold text-[10px] uppercase tracking-widest hover:brightness-105 transition-all shadow-sm flex items-center gap-3"
           >
-            <span className="material-symbols-outlined mr-2">
+            <span className="material-symbols-outlined text-lg">
               local_shipping
             </span>
-            <span>Out for Delivery</span>
+            Mark Out for Delivery
           </button>
         </div>
       </div>
@@ -267,7 +258,7 @@ const OrderDetails = ({ order, updateDeliveryStatus, fetchActiveOrders }) => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-background-light dark:bg-[#2c353d] border-b border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 text-[11px] uppercase font-black tracking-widest">
+                  <tr className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800 text-[10px] uppercase font-semibold tracking-widest text-gray-400">
                     <th className="px-6 py-4">PRODUCT</th>
                     <th className="px-6 py-4">SKU</th>
                     <th className="px-6 py-4 text-center">QTY</th>
@@ -275,36 +266,39 @@ const OrderDetails = ({ order, updateDeliveryStatus, fetchActiveOrders }) => {
                     <th className="px-6 py-4 text-right">TOTAL</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                   {order.items && order.items.length > 0 ? (
                     order.items.map((item, index) => (
                       <tr
                         key={index}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                       >
-                        <td className="px-6 py-4 flex items-center gap-3">
-                          {/* Static placeholder image – matches screenshot style */}
-                          <div
-                            className="w-10 h-10 rounded bg-cover bg-center bg-gray-200 dark:bg-gray-700"
-                            style={{
-                              backgroundImage:
-                                "url('https://images.unsplash.com/photo-1606857521015-7f9fcf423740?w=100&h=100&fit=crop')",
-                            }}
-                          />
-                          <span className="font-bold text-sm">
-                            {item.name || "Unnamed Product"}
+                        <td className="px-6 py-5">
+                          <div className="flex items-center gap-4">
+                            <div
+                              className="w-12 h-12 rounded-lg bg-cover bg-center border border-gray-100 dark:border-gray-800"
+                              style={{
+                                backgroundImage:
+                                  "url('https://images.unsplash.com/photo-1606857521015-7f9fcf423740?w=100&h=100&fit=crop')",
+                              }}
+                            />
+                            <span className="font-bold text-sm text-gray-900 dark:text-white">
+                              {item.name || "Unnamed Product"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+                            {item.sku || "N/A"}
                           </span>
                         </td>
-                        <td className="px-6 py-4 font-mono text-xs text-gray-500">
-                          {item.sku || "N/A"}
-                        </td>
-                        <td className="px-6 py-4 text-center font-bold">
+                        <td className="px-6 py-5 text-center font-bold text-sm text-gray-900 dark:text-white">
                           {item.quantity || 0}
                         </td>
-                        <td className="px-6 py-4 text-right text-sm">
+                        <td className="px-6 py-5 text-right font-bold text-sm text-gray-900 dark:text-white">
                           R {(item.price || getMockPrice(item.sku)).toFixed(2)}
                         </td>
-                        <td className="px-6 py-4 text-right font-bold text-sm">
+                        <td className="px-6 py-5 text-right font-bold text-sm text-gray-900 dark:text-white">
                           R{" "}
                           {(
                             (item.quantity || 0) *
@@ -315,11 +309,10 @@ const OrderDetails = ({ order, updateDeliveryStatus, fetchActiveOrders }) => {
                     ))
                   ) : (
                     <tr>
-                      <td
-                        colSpan={5}
-                        className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
-                      >
-                        No items in this order
+                      <td colSpan={5} className="px-6 py-20 text-center">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                          No items in this order
+                        </p>
                       </td>
                     </tr>
                   )}
@@ -327,19 +320,31 @@ const OrderDetails = ({ order, updateDeliveryStatus, fetchActiveOrders }) => {
               </table>
             </div>
 
-            <div className="p-6 bg-background-light/30 dark:bg-background-dark flex justify-end">
-              <div className="w-64 space-y-2">
-                <div className="flex justify-between text-gray-500 dark:text-gray-400 text-sm">
-                  <span>Subtotal</span>
-                  <span>R {calculatedSubtotal.toFixed(2)}</span>
+            <div className="p-8 bg-gray-50/30 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+              <div className="w-64 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+                    Subtotal
+                  </span>
+                  <span className="text-sm font-bold text-gray-900 dark:text-white">
+                    R {calculatedSubtotal.toFixed(2)}
+                  </span>
                 </div>
-                <div className="flex justify-between text-gray-500 dark:text-gray-400 text-sm">
-                  <span>Tax (8%)</span>
-                  <span>R {(calculatedSubtotal * 0.08).toFixed(2)}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+                    Tax (8%)
+                  </span>
+                  <span className="text-sm font-bold text-gray-900 dark:text-white">
+                    R {(calculatedSubtotal * 0.08).toFixed(2)}
+                  </span>
                 </div>
-                <div className="flex justify-between text-[#121714] dark:text-white font-black text-xl border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
-                  <span>Total</span>
-                  <span>R {(calculatedSubtotal * 1.08).toFixed(2)}</span>
+                <div className="flex justify-between items-center pt-4 mt-2 border-t border-gray-100 dark:border-gray-800">
+                  <span className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+                    Grand Total
+                  </span>
+                  <span className="text-2xl font-bold text-primary">
+                    R {(calculatedSubtotal * 1.08).toFixed(2)}
+                  </span>
                 </div>
               </div>
             </div>
@@ -353,7 +358,7 @@ const OrderDetails = ({ order, updateDeliveryStatus, fetchActiveOrders }) => {
                 </span>
               </div>
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-black tracking-widest">
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold tracking-widest">
                   Courier
                 </p>
                 <p className="font-bold">SwiftLogistics Express</p>
@@ -367,7 +372,7 @@ const OrderDetails = ({ order, updateDeliveryStatus, fetchActiveOrders }) => {
                 </span>
               </div>
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-black tracking-widest">
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold tracking-widest">
                   Estimated Delivery
                 </p>
                 <p className="font-bold">
@@ -383,7 +388,7 @@ const OrderDetails = ({ order, updateDeliveryStatus, fetchActiveOrders }) => {
 
         <div className="space-y-6">
           <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-            <h3 className="text-sm font-black uppercase tracking-widest mb-4">
+            <h3 className="text-sm font-bold uppercase tracking-widest mb-4">
               Delivery Info
             </h3>
             <div className="space-y-6">
@@ -442,7 +447,7 @@ const OrderDetails = ({ order, updateDeliveryStatus, fetchActiveOrders }) => {
           </div>
 
           <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-            <h3 className="text-sm font-black uppercase tracking-widest mb-6">
+            <h3 className="text-sm font-bold uppercase tracking-widest mb-6">
               Activity Timeline
             </h3>
             <div className="relative space-y-8 pl-4">
@@ -538,30 +543,33 @@ const Orders = () => {
 
         {!selectedOrder ? (
           <>
-            <div className="flex justify-between items-end mb-8">
-              <div>
-                <h1 className="text-[#121714] dark:text-white text-3xl lg:text-4xl font-black tracking-tight mb-2">
-                  Orders
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+              <div className="space-y-1">
+                <h1 className="text-gray-900 dark:text-white text-2xl font-bold tracking-tight leading-none">
+                  Order Management
                 </h1>
-                <p className="text-gray-500 dark:text-gray-400 text-lg">
-                  Manage and track customer orders
+                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">
+                  Monitor and track real-time fulfillment across all active
+                  customers
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                <label className="text-sm font-bold text-gray-500 dark:text-gray-400">
-                  Filter by:
-                </label>
-                <select
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
-                  className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2c353d] text-[#121714] dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                >
-                  {availableMonths.map((month) => (
-                    <option key={month} value={month}>
-                      {month}
-                    </option>
-                  ))}
-                </select>
+              <div className="flex items-center gap-4">
+                <div className="flex flex-col gap-1.5 min-w-[200px]">
+                  <label className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 px-1">
+                    Filter by Period
+                  </label>
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value)}
+                    className="w-full h-11 px-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-semibold text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-sm appearance-none cursor-pointer"
+                  >
+                    {availableMonths.map((month) => (
+                      <option key={month} value={month}>
+                        {month === "All" ? "All History" : month}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 

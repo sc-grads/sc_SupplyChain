@@ -24,100 +24,63 @@ const InventoryTableRow = ({ item, onEdit }) => {
 
   // Progress bar color derivation
   let progressColor = "bg-primary";
-  if (derivedStatus === "LOW") progressColor = "bg-status-amber";
-  if (derivedStatus === "UNAVAILABLE") progressColor = "bg-status-red";
-
-  // Gradient derivation based on status
-  const gradients = {
-    AVAILABLE: "from-blue-100 dark:from-blue-900 to-blue-200 dark:to-blue-800",
-    LOW: "from-amber-100 dark:from-amber-900 to-amber-200 dark:to-amber-800",
-    UNAVAILABLE: "from-red-100 dark:from-red-900 to-red-200 dark:to-red-800",
-  };
-  const bgGradient = `bg-gradient-to-br ${gradients[derivedStatus] || gradients.AVAILABLE}`;
+  if (derivedStatus === "LOW") progressColor = "bg-risk-amber";
+  if (derivedStatus === "UNAVAILABLE") progressColor = "bg-red-500";
 
   return (
-    <tr
-      className={`hover:bg-primary/5 transition-colors group ${derivedStatus === "UNAVAILABLE" ? "bg-red-50/20 dark:bg-red-950/5" : ""}`}
-    >
-      <td className="px-4 py-3">
-        <div className="flex items-center gap-3">
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group border-b border-gray-100 dark:border-gray-800 last:border-0">
+      <td className="px-6 py-4">
+        <div className="flex items-center gap-4">
           <div
-            className={`size-10 rounded bg-gray-100 dark:bg-gray-800 flex-shrink-0 flex items-center justify-center overflow-hidden ${derivedStatus === "UNAVAILABLE" ? "grayscale" : ""}`}
+            className={`h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-100 dark:border-gray-700 ${derivedStatus === "UNAVAILABLE" ? "grayscale opacity-50" : ""}`}
           >
-            <div className={`w-full h-full ${bgGradient}`}></div>
+            <span className="material-symbols-outlined text-gray-400">
+              inventory_2
+            </span>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-bold text-[#111418] dark:text-white leading-tight">
-                {name}
-              </p>
-            </div>
-            <p className="text-[11px] font-mono text-gray-400 mt-0.5">
+          <div className="space-y-0.5">
+            <p className="text-sm font-bold tracking-tight text-gray-900 dark:text-white leading-tight">
+              {name}
+            </p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
               SKU: {skuCode}
             </p>
           </div>
         </div>
       </td>
-      <td className="px-4 py-3">
+      <td className="px-6 py-4 text-center">
         <StatusBadge status={category.toLowerCase()}>{category}</StatusBadge>
       </td>
-      <td className="px-4 py-3">
-        <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+      <td className="px-6 py-4 text-center">
+        <span className="text-sm font-bold tracking-tight text-gray-900 dark:text-white">
           {price}
         </span>
       </td>
-      <td className="px-4 py-3">
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-end justify-between">
-            <span
-              className={`text-sm font-black ${currentStock === 0 ? "text-red-600" : ""}`}
-            >
-              {currentStock}{" "}
-              <span className="text-gray-400 font-normal">/ {maxStock}</span>
-            </span>
-          </div>
-          <div className="w-32 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+      <td className="px-6 py-4">
+        <div className="flex flex-col gap-2 items-center">
+          <div className="w-24 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
             <div
-              className={`h-full ${progressColor}`}
+              className={`h-full ${progressColor} transition-all duration-500`}
               style={{ width: `${percentage}%` }}
             ></div>
           </div>
+          <span
+            className={`text-[10px] font-semibold uppercase tracking-widest ${currentStock === 0 ? "text-red-500" : "text-gray-400"}`}
+          >
+            {currentStock} / {maxStock} Units
+          </span>
         </div>
       </td>
-      <td className="px-4 py-3">
-        <div className="w-fit">
-          {derivedStatus === "AVAILABLE" && (
-            <div
-              style={{ backgroundColor: "rgb(51 153 119)" }}
-              className="px-2 py-1 text-white rounded-[8px] text-[10px] font-black tracking-wider uppercase shadow-sm"
-            >
-              Available
-            </div>
-          )}
-          {derivedStatus === "LOW" && (
-            <div
-              style={{ backgroundColor: "#ECBD6C" }}
-              className="px-2 py-1 text-black rounded-[8px] text-[10px] font-black tracking-wider uppercase shadow-sm"
-            >
-              Low Stock
-            </div>
-          )}
-          {derivedStatus === "UNAVAILABLE" && (
-            <div
-              style={{ backgroundColor: "rgb(185 28 28)" }}
-              className="px-2 py-1 text-white rounded-[8px] text-[10px] font-black tracking-wider uppercase shadow-sm"
-            >
-              OOS
-            </div>
-          )}
-        </div>
+      <td className="px-6 py-4 text-center">
+        <StatusBadge status={derivedStatus} />
       </td>
-      <td className="px-4 py-3 text-right">
+      <td className="px-6 py-4 text-right">
         <button
           onClick={() => onEdit(item)}
-          className="inline-flex items-center justify-center size-8 rounded bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all"
+          className="inline-flex items-center justify-center h-8 px-3 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-400 hover:text-primary hover:bg-primary/10 transition-all font-semibold text-[10px] uppercase tracking-widest gap-2"
         >
           <span className="material-symbols-outlined text-lg">edit_note</span>
+          Manage
         </button>
       </td>
     </tr>

@@ -11,43 +11,51 @@ const Pagination = ({
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
-    <div className="px-6 py-3 bg-gray-50 dark:bg-gray-800/30 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
-      <p className="text-xs text-gray-500 font-medium italic">
-        Showing {startItem}-{endItem} of {totalItems} items
+    <div className="px-6 py-4 bg-white dark:bg-gray-900 flex items-center justify-between">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+        Showing{" "}
+        <span className="text-gray-900 dark:text-white">
+          {startItem}-{endItem}
+        </span>{" "}
+        of <span className="text-gray-900 dark:text-white">{totalItems}</span>{" "}
+        items
       </p>
-      <div className="flex gap-1">
+      <div className="flex gap-2">
         <button
           onClick={() =>
             onPageChange && onPageChange(Math.max(1, currentPage - 1))
           }
           disabled={currentPage === 1}
-          className="size-8 flex items-center justify-center rounded border border-gray-200 dark:border-gray-700 text-gray-400 hover:bg-white dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="size-8 flex items-center justify-center rounded-lg border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-400 hover:text-primary hover:border-primary/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
         >
           <span className="material-symbols-outlined text-lg">
             chevron_left
           </span>
         </button>
 
-        {/* Simple pagination logic - can be expanded for many pages */}
-        {[1, 2, 3].map((page) => (
-          <button
-            key={page}
-            onClick={() => onPageChange && onPageChange(page)}
-            className={`size-8 flex items-center justify-center rounded border border-gray-200 dark:border-gray-700 text-xs font-bold ${
-              currentPage === page
-                ? "bg-white dark:bg-gray-800 text-primary"
-                : "text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800"
-            }`}
-          >
-            {page}
-          </button>
-        ))}
+        {totalPages > 0 &&
+          Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map(
+            (page) => (
+              <button
+                key={page}
+                onClick={() => onPageChange && onPageChange(page)}
+                className={`size-8 flex items-center justify-center rounded-lg border text-[10px] font-bold transition-all shadow-sm ${
+                  currentPage === page
+                    ? "bg-primary text-white border-primary shadow-sm"
+                    : "bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 text-gray-400 hover:text-primary hover:border-primary/30"
+                }`}
+              >
+                {page}
+              </button>
+            ),
+          )}
 
         <button
           onClick={() =>
             onPageChange && onPageChange(Math.min(totalPages, currentPage + 1))
           }
-          className="size-8 flex items-center justify-center rounded border border-gray-200 dark:border-gray-700 text-gray-400 hover:bg-white dark:hover:bg-gray-800"
+          disabled={currentPage === totalPages || totalPages === 0}
+          className="size-8 flex items-center justify-center rounded-lg border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-400 hover:text-primary hover:border-primary/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
         >
           <span className="material-symbols-outlined text-lg">
             chevron_right

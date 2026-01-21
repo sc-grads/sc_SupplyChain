@@ -52,40 +52,41 @@ const RegisterSupplier = () => {
   };
 
   return (
-    <div className="register-container">
-      <div className="register-card">
-        <div className="register-header">
+    <div className="register-container min-h-screen bg-gray-50 dark:bg-[#0f1115] flex flex-col justify-center py-12 px-6 lg:px-8">
+      {/* Card Container: Matched radius, background, and shadow from small business side */}
+      <div className="register-card max-w-[480px] w-full mx-auto bg-white dark:bg-gray-900 p-10 rounded-lg border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
+        <div className="register-header space-y-2">
+          {/* Matched back-link style and spacing from small business side */}
           <div
-            className="back-link"
+            className="back-link inline-flex items-center gap-2 text-gray-400 dark:text-gray-500 hover:text-primary transition-colors text-[10px] font-bold uppercase tracking-widest cursor-pointer mb-2"
             onClick={() => navigate("/register-selection")}
           >
             ← Back
           </div>
-          <h2>Supplier Registration</h2>
-          <p>Join our network of trusted suppliers</p>
+          {/* Matched font-weight to small business side (700 for headings) */}
+          <h2 className="text-gray-900 dark:text-white text-2xl font-bold tracking-tight">
+            Supplier Registration
+          </h2>
+          {/* Reduced font-weight for subtitles (500) */}
+          <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">
+            Join our network of trusted suppliers
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div
-              className="error-message"
-              style={{
-                padding: "12px",
-                marginBottom: "16px",
-                backgroundColor: "#fee",
-                border: "1px solid #fcc",
-                borderRadius: "8px",
-                color: "#c33",
-                fontSize: "14px",
-                fontWeight: "500",
-              }}
-            >
+            <div className="p-4 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-lg text-red-600 dark:text-red-400 text-sm font-medium">
               {error}
             </div>
           )}
 
-          <div className="form-group">
-            <label htmlFor="companyName">Company Name</label>
+          <div className="form-group flex flex-col gap-1.5">
+            <label
+              htmlFor="companyName"
+              className="text-[10px] font-medium uppercase tracking-widest text-gray-400 px-1"
+            >
+              Company Name
+            </label>
             <input
               type="text"
               id="companyName"
@@ -95,12 +96,18 @@ const RegisterSupplier = () => {
               required
               placeholder="e.g. Acme Supplies Ltd."
               disabled={loading}
+              className="w-full h-11 px-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-lg text-sm font-normal text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
             />
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="businessEmail">Business Email</label>
+          <div className="form-row grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="form-group flex flex-col gap-1.5">
+              <label
+                htmlFor="businessEmail"
+                className="text-[10px] font-medium uppercase tracking-widest text-gray-400 px-1"
+              >
+                Business Email
+              </label>
               <input
                 type="email"
                 id="businessEmail"
@@ -110,11 +117,17 @@ const RegisterSupplier = () => {
                 required
                 placeholder="contact@company.com"
                 disabled={loading}
+                className="w-full h-11 px-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-lg text-sm font-normal text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="phone">Phone Number</label>
+            <div className="form-group flex flex-col gap-1.5">
+              <label
+                htmlFor="phone"
+                className="text-[10px] font-medium uppercase tracking-widest text-gray-400 px-1"
+              >
+                Phone Number
+              </label>
               <input
                 type="tel"
                 id="phone"
@@ -124,12 +137,18 @@ const RegisterSupplier = () => {
                 required
                 placeholder="+27 00 000 0000"
                 disabled={loading}
+                className="w-full h-11 px-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-lg text-sm font-normal text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
               />
             </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="address">Business Address</label>
+          <div className="form-group flex flex-col gap-1.5">
+            <label
+              htmlFor="address"
+              className="text-[10px] font-medium uppercase tracking-widest text-gray-400 px-1"
+            >
+              Business Address
+            </label>
             <textarea
               id="address"
               name="address"
@@ -138,19 +157,25 @@ const RegisterSupplier = () => {
               required
               rows="3"
               disabled={loading}
+              className="w-full p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-lg text-sm font-normal text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="primaryGoods">Primary Goods</label>
+          <div className="form-group flex flex-col gap-1.5">
+            <label
+              htmlFor="primaryGoods"
+              className="text-[10px] font-medium uppercase tracking-widest text-gray-400 px-1"
+            >
+              Primary Goods
+            </label>
             <select
               id="primaryGoods"
               name="primaryGoods"
               value={formData.primaryGoods}
               onChange={handleChange}
               required
-              className="form-select"
               disabled={loading}
+              className="w-full h-11 px-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-lg text-sm font-normal text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all cursor-pointer appearance-none"
             >
               <option value="">Select your primary goods...</option>
               <option value="Hardware">Hardware</option>
@@ -162,9 +187,15 @@ const RegisterSupplier = () => {
             </select>
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
+          <div className="form-row grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
+            <div className="form-group flex flex-col gap-1.5">
+              <label
+                htmlFor="password"
+                name="password"
+                className="text-[10px] font-medium uppercase tracking-widest text-gray-400 px-1"
+              >
+                Password
+              </label>
               <input
                 type="password"
                 id="password"
@@ -173,11 +204,18 @@ const RegisterSupplier = () => {
                 onChange={handleChange}
                 required
                 disabled={loading}
+                className="w-full h-11 px-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-lg text-sm font-normal text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
+            <div className="form-group flex flex-col gap-1.5">
+              <label
+                htmlFor="confirmPassword"
+                name="confirmPassword"
+                className="text-[10px] font-medium uppercase tracking-widest text-gray-400 px-1"
+              >
+                Confirm Password
+              </label>
               <input
                 type="password"
                 id="confirmPassword"
@@ -186,17 +224,26 @@ const RegisterSupplier = () => {
                 onChange={handleChange}
                 required
                 disabled={loading}
+                className="w-full h-11 px-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-lg text-sm font-normal text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
               />
             </div>
           </div>
 
-          <button type="submit" className="submit-button" disabled={loading}>
+          {/* Matched button style from small business side (h-11, px-6, rounded-lg, font-bold, sm shadow) */}
+          <button
+            type="submit"
+            className="submit-button w-full h-11 bg-primary text-white rounded-lg font-bold text-[10px] uppercase tracking-widest hover:brightness-105 transition-all shadow-sm flex items-center justify-center gap-2"
+            disabled={loading}
+          >
             {loading ? "Creating Account..." : "Create Supplier Account"}
           </button>
         </form>
 
-        <div className="register-footer">
-          Already have an account? <Link to="/">Log in</Link>
+        <div className="register-footer pt-6 border-t border-gray-50 dark:border-gray-800 text-center text-xs font-medium text-gray-400 uppercase tracking-widest">
+          Already have an account?{" "}
+          <Link to="/" className="text-primary hover:underline">
+            Log in
+          </Link>
         </div>
       </div>
     </div>

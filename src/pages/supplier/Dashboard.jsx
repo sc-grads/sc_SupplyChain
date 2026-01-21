@@ -129,9 +129,11 @@ const Dashboard = () => {
     <Layout>
       <div className="max-w-[1200px] mx-auto">
         {/* Status Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold tracking-tight">Today's Status</h1>
-          <p className="text-gray-500 dark:text-gray-400">
+        <div className="mb-10">
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+            Today's Status
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mt-1">
             {new Date().toLocaleDateString("en-US", {
               weekday: "long",
               month: "short",
@@ -191,14 +193,16 @@ const Dashboard = () => {
         </div>
 
         {/* Main Feed */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-10 items-start">
           <div className="xl:col-span-2 space-y-6">
-            <div className="flex items-center justify-between px-2">
-              <h2 className="text-lg font-bold">Live Order Feed</h2>
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white uppercase text-xs tracking-widest text-gray-400">
+                Live Order Feed
+              </h2>
               <div className="flex gap-2">
                 <button
                   onClick={() => navigate("/new-orders")}
-                  className="text-sm font-medium text-primary hover:underline"
+                  className="text-xs font-semibold uppercase tracking-widest text-primary hover:underline"
                 >
                   View all
                 </button>
@@ -225,65 +229,63 @@ const Dashboard = () => {
                 return (
                   <div
                     key={order.id}
-                    className={`group relative flex items-stretch bg-white dark:bg-gray-900 rounded-xl overflow-hidden ${
+                    className={`group relative flex items-stretch bg-white dark:bg-gray-900 rounded-lg overflow-hidden transition-all ${
                       isAtRisk
-                        ? "border-l-4 border-risk-amber shadow-[0_4px_20px_rgba(242,184,0,0.1)]"
+                        ? "border-l-4 border-risk-amber shadow-sm"
                         : isNew
-                          ? "border border-new-blue/20 shadow-sm"
+                          ? "border border-primary/20 shadow-sm"
                           : "border border-gray-100 dark:border-gray-800 shadow-sm"
-                    } transition-all`}
+                    } hover:shadow-sm transition-all`}
                   >
                     <div className="p-6 flex-1 flex flex-col gap-4">
                       <div className="flex justify-between items-start">
                         <div className="flex flex-col gap-0.5">
                           <span
-                            className={`text-[10px] font-bold tracking-widest uppercase ${
+                            className={`text-[10px] font-semibold tracking-widest uppercase ${
                               isAtRisk
                                 ? "text-risk-amber"
                                 : isNew
-                                  ? "text-new-blue flex items-center gap-1.5"
+                                  ? "text-primary flex items-center gap-1.5"
                                   : "text-gray-400"
                             }`}
                           >
                             {isNew && (
-                              <span className="size-2 rounded-full bg-new-blue animate-pulse"></span>
+                              <span className="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
                             )}
-                            {isAtRisk
-                              ? "Delivery at Risk"
-                              : isNew
-                                ? "New Order Received"
-                                : isOrderAtRisk(order)
-                                  ? "At Risk"
-                                  : "In Progress"}
+                            {isNew
+                              ? "New Request"
+                              : isOrderAtRisk(order)
+                                ? "At Risk"
+                                : "In Progress"}
                           </span>
-                          <h3 className="text-lg font-bold">
+                          <h3 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
                             {order.vendor?.name}
                           </h3>
                         </div>
                         <div className="flex flex-col items-end gap-1">
                           {isAtRisk ? (
-                            <span className="bg-risk-amber/10 text-risk-amber p-1.5 rounded-full">
+                            <span className="bg-risk-amber/10 text-risk-amber h-8 w-8 rounded-full flex items-center justify-center">
                               <span className="material-symbols-outlined text-sm">
-                                schedule
+                                priority_high
                               </span>
                             </span>
                           ) : isNew ? (
-                            <span className="bg-new-blue/10 text-new-blue px-2 py-0.5 rounded text-[10px] font-bold">
+                            <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest">
                               NEW
                             </span>
                           ) : (
-                            <span className="text-gray-400 material-symbols-outlined">
+                            <span className="text-gray-300 material-symbols-outlined text-xl">
                               local_shipping
                             </span>
                           )}
-                          <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                          <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
                             {formatRelativeTime(order.createdAt)}
                           </span>
                         </div>
                       </div>
-                      <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                        <span className="font-bold text-gray-700 dark:text-gray-200">
-                          Order #{order.orderNumber}:
+                      <p className="text-gray-600 dark:text-gray-400 text-sm font-medium leading-relaxed">
+                        <span className="font-semibold text-gray-900 dark:text-white uppercase text-[10px] tracking-widest opacity-50 block mb-1">
+                          Order #{order.orderNumber}
                         </span>{" "}
                         {order.items
                           ?.map((i) => `${i.quantity}x ${i.name || i.sku}`)
@@ -293,10 +295,10 @@ const Dashboard = () => {
                         {isAtRisk ? (
                           <button
                             onClick={() => handleUpdateStatus(order)}
-                            className="flex-1 bg-risk-amber text-white h-11 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all"
+                            className="flex-1 bg-risk-amber text-white h-11 px-6 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-sm"
                           >
-                            <span className="material-symbols-outlined text-lg">
-                              report_problem
+                            <span className="material-symbols-outlined text-xl">
+                              edit_notifications
                             </span>
                             Update Status
                           </button>
@@ -304,13 +306,13 @@ const Dashboard = () => {
                           <>
                             <button
                               onClick={() => handleAcceptOrder(order.id)}
-                              className="flex-1 bg-primary text-white h-11 px-4 rounded-lg font-bold text-sm hover:brightness-110 transition-all"
+                              className="flex-1 bg-primary text-white h-11 px-6 rounded-lg font-bold text-sm hover:opacity-90 transition-all shadow-sm"
                             >
-                              Accept Order
+                              Accept Request
                             </button>
                             <button
                               onClick={() => handleDeclineOrder(order.id)}
-                              className="px-4 h-11 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                              className="px-6 h-11 rounded-lg border border-gray-100 dark:border-gray-800 text-gray-400 text-sm font-bold hover:bg-red-50 hover:text-red-500 transition-all font-medium"
                             >
                               Decline
                             </button>
@@ -318,7 +320,7 @@ const Dashboard = () => {
                         ) : (
                           <button
                             onClick={() => handleTrackVehicle(order.id)}
-                            className="flex-1 bg-gray-100 dark:bg-gray-800 text-[#121615] dark:text-white h-11 px-4 rounded-lg font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                            className="flex-1 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-white h-11 px-6 rounded-lg font-bold text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-all shadow-sm"
                           >
                             Track Delivery
                           </button>
@@ -332,11 +334,13 @@ const Dashboard = () => {
           </div>
 
           {/* Right Sidebar: Inventory Quick Controls */}
-          <aside className="space-y-6">
-            <div className="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm h-fit">
+          <aside className="space-y-8">
+            <div className="bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-100 dark:border-gray-800 shadow-sm h-fit">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="font-bold">Stock Availability</h2>
-                <span className="material-symbols-outlined text-gray-400">
+                <h2 className="font-bold text-xs uppercase tracking-widest text-gray-400">
+                  Stock Availability
+                </h2>
+                <span className="material-symbols-outlined text-gray-300 text-xl">
                   inventory
                 </span>
               </div>
@@ -345,7 +349,7 @@ const Dashboard = () => {
                   search
                 </span>
                 <input
-                  className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20"
+                  className="w-full h-10 pl-10 pr-4 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm font-medium focus:ring-2 focus:ring-primary/20 dark:text-gray-200"
                   placeholder="Search SKUs..."
                   type="text"
                   value={searchQuery}
@@ -373,19 +377,19 @@ const Dashboard = () => {
                   return (
                     <div
                       key={item.id}
-                      className="flex flex-col gap-3 pb-4 border-b border-gray-50 dark:border-gray-800"
+                      className="flex flex-col gap-3 pb-4 border-b border-gray-50 dark:border-gray-800 last:border-0"
                     >
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center px-1">
                         <div>
-                          <p className="text-sm font-bold">
+                          <p className="text-sm font-bold text-gray-900 dark:text-white">
                             {item.sku?.name || "Unknown"}
                           </p>
-                          <p className="text-[10px] text-gray-400">
-                            Current Stock: {item.quantity || 0} / 1000
+                          <p className="text-[10px] uppercase font-semibold tracking-wider text-gray-400">
+                            {item.quantity || 0} / 1000 Units
                           </p>
                         </div>
                         <span
-                          className={`text-xs font-bold ${statusColors[derivedStatus] || "text-gray-400"}`}
+                          className={`text-[10px] font-semibold uppercase tracking-widest ${statusColors[derivedStatus] || "text-gray-400"}`}
                         >
                           {statusLabels[derivedStatus] || derivedStatus}
                         </span>
@@ -396,19 +400,19 @@ const Dashboard = () => {
               </div>
               <button
                 onClick={handleBulkInventory}
-                className="w-full mt-6 py-3 border border-primary/30 text-primary font-bold text-sm rounded-lg hover:bg-primary/5 transition-colors"
+                className="w-full mt-6 h-11 border border-primary text-primary font-semibold text-[10px] uppercase tracking-widest rounded-lg hover:bg-primary/5 transition-all"
               >
                 Manage Bulk Inventory
               </button>
             </div>
-            <div className="bg-primary/10 rounded-xl p-6 border border-primary/20">
-              <h3 className="font-bold text-primary mb-2 flex items-center gap-2">
+            <div className="bg-primary/5 rounded-lg p-6 border border-primary/10">
+              <h3 className="font-semibold text-[10px] uppercase tracking-widest text-primary mb-3 flex items-center gap-2">
                 <span className="material-symbols-outlined text-lg">
                   lightbulb
                 </span>
                 Stock Insight
               </h3>
-              <p className="text-xs leading-relaxed text-primary/80">
+              <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-400 font-medium">
                 Demand for <strong>Artisan Sourdough</strong> is up 40% in your
                 area. Consider increasing production for the weekend.
               </p>
@@ -436,7 +440,6 @@ const ReportDelayModal = ({ isOpen, onClose, order, onSave }) => {
     if (order?.predictedDeliveryAt || order?.promisedDeliveryAt) {
       const baseDate = order.predictedDeliveryAt || order.promisedDeliveryAt;
       const date = new Date(baseDate);
-      // Format to yyyy-MM-ddThh:mm for datetime-local
       const formatted = date.toISOString().slice(0, 16);
       setRevisedETA(formatted);
     }
@@ -457,69 +460,87 @@ const ReportDelayModal = ({ isOpen, onClose, order, onSave }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-gray-900 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100 dark:border-gray-800">
-        <div className="p-8">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
-                Report Delay
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-all duration-300">
+      <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-lg shadow-sm overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div className="p-10">
+          <div className="flex justify-between items-center mb-10">
+            <div className="space-y-1">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight leading-none">
+                Risk Management
               </h2>
-              <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mt-1">
-                Order #{order?.orderNumber}
+              <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-widest mt-2 px-0.5">
+                Disruption Awareness Disclosure
               </p>
             </div>
             <button
               onClick={onClose}
-              className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="h-10 w-10 flex items-center justify-center rounded-lg border border-gray-100 dark:border-gray-800 text-gray-400 hover:text-primary transition-all shadow-sm"
             >
-              <span className="material-symbols-outlined text-gray-400">
-                close
-              </span>
+              <span className="material-symbols-outlined">close</span>
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block px-1">
-                Revised Estimated Arrival (ETA)
-              </label>
-              <input
-                type="datetime-local"
-                value={revisedETA}
-                onChange={(e) => setRevisedETA(e.target.value)}
-                required
-                className="w-full h-14 px-5 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl font-bold text-[#121615] dark:text-white focus:border-primary transition-all outline-none"
-              />
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="p-6 bg-risk-amber/5 rounded-lg border border-risk-amber/10 space-y-2">
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-risk-amber">
+                  warning
+                </span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-tight">
+                  Active Disruption Warning
+                </span>
+              </div>
+              <p className="text-xs font-medium text-gray-500 leading-relaxed">
+                Disclosing a fulfillment delay for{" "}
+                <span className="font-bold text-gray-900 dark:text-white">
+                  Order #{order.orderNumber}
+                </span>{" "}
+                will trigger immediate stakeholder notifications.
+              </p>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block px-1">
-                Reason for Delay
-              </label>
-              <textarea
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                required
-                placeholder="Select or enter reason..."
-                className="w-full p-5 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl font-bold text-[#121615] dark:text-white focus:border-primary transition-all outline-none min-h-[120px] resize-none"
-              />
-              <div className="flex flex-wrap gap-2 mt-2">
-                {[
-                  "Vehicle Breakdown",
-                  "Inventory Shortage",
-                  "Traffic Delay",
-                  "Route Adjustment",
-                ].map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => setReason(r)}
-                    className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-lg text-xs font-bold hover:bg-gray-200 transition-colors border border-transparent hover:border-gray-300"
-                  >
-                    {r}
-                  </button>
-                ))}
+            <div className="grid grid-cols-1 gap-8">
+              <div className="space-y-2">
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 block px-1">
+                  Projected Fulfillment Date (ETA)
+                </label>
+                <input
+                  type="datetime-local"
+                  value={revisedETA}
+                  onChange={(e) => setRevisedETA(e.target.value)}
+                  required
+                  className="w-full h-11 px-5 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-risk-amber/20 outline-none transition-all"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 block px-1">
+                  Systemic Root Cause
+                </label>
+                <textarea
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  required
+                  placeholder="Analyze and state the disruption cause..."
+                  className="w-full h-32 p-5 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-risk-amber/20 outline-none transition-all resize-none"
+                />
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {[
+                    "Vehicle Breakdown",
+                    "Inventory Shortage",
+                    "Traffic Congestion",
+                    "Climatic Disruption",
+                  ].map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setReason(r)}
+                      className="px-4 py-2 bg-gray-50 dark:bg-gray-800 text-[10px] font-semibold uppercase tracking-widest text-gray-400 rounded-lg border border-gray-100 dark:border-gray-800 hover:text-risk-amber hover:border-risk-amber/30 transition-all shadow-sm"
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -527,16 +548,28 @@ const ReportDelayModal = ({ isOpen, onClose, order, onSave }) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 h-14 bg-gray-100 dark:bg-gray-800 text-[#121615] dark:text-white rounded-2xl font-bold hover:bg-gray-200 transition-all"
+                className="flex-1 h-11 rounded-lg border border-gray-100 dark:border-gray-800 text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all shadow-sm"
               >
-                Cancel
+                Retract Report
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 h-14 bg-risk-amber text-white rounded-2xl font-bold hover:brightness-110 shadow-lg shadow-risk-amber/20 transition-all disabled:opacity-50"
+                className="flex-[1.5] h-11 bg-risk-amber text-white rounded-lg text-[10px] font-semibold uppercase tracking-widest hover:brightness-105 shadow-sm shadow-risk-amber/20 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
               >
-                {loading ? "Reporting..." : "Send Update"}
+                {loading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    <span>Submitting...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-lg">
+                      crisis_alt
+                    </span>
+                    <span>Confirm Disclosure</span>
+                  </>
+                )}
               </button>
             </div>
           </form>
