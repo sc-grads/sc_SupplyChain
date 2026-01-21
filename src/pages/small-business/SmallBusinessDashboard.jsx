@@ -510,39 +510,6 @@ const SmallBusinessDashboard = () => {
                 View Full Inventory
               </Link>
             </div>
-
-            {/* Quick Reorder */}
-            <div className="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="font-bold">Quick Reorder</h2>
-                <span className="material-symbols-outlined text-gray-400">
-                  history
-                </span>
-              </div>
-              <div className="space-y-3">
-                <button
-                  onClick={() => handleQuickReorder("Weekly Essentials")}
-                  className="w-full p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                >
-                  <p className="text-sm font-bold">Weekly Essentials</p>
-                  <p className="text-[10px] text-gray-400">12 items • R 450</p>
-                </button>
-                <button
-                  onClick={() => handleQuickReorder("Coffee & Tea")}
-                  className="w-full p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                >
-                  <p className="text-sm font-bold">Coffee & Tea</p>
-                  <p className="text-[10px] text-gray-400">5 items • R 280</p>
-                </button>
-                <button
-                  onClick={() => handleQuickReorder("Dairy Products")}
-                  className="w-full p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                >
-                  <p className="text-sm font-bold">Dairy Products</p>
-                  <p className="text-[10px] text-gray-400">8 items • R 320</p>
-                </button>
-              </div>
-            </div>
           </aside>
         </div>
       </div>

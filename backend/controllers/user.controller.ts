@@ -14,6 +14,7 @@ export const updateProfile = async (req: Request, res: Response) => {
       businessCategory, // Maps to User.businessType
       contactPersonName, // Vendor specific
       supplierAddress, // Supplier specific
+      profileImage, // New field
     } = req.body;
 
     // 1. Update Core User Data
@@ -22,6 +23,7 @@ export const updateProfile = async (req: Request, res: Response) => {
       data: {
         name: name || companyName, // Prefer name, fallback to companyName
         phone,
+        profileImage,
         // Update vendor-specific fields directly on User model
         address: address,
         businessType: businessCategory,
@@ -48,6 +50,17 @@ export const updateProfile = async (req: Request, res: Response) => {
     }
 
     const { password: _, ...userWithoutPassword } = updatedUser;
+
+    // If supplier, merge address from SupplierProfile for frontend consistency
+    if (updatedUser.role === "SUPPLIER") {
+      const supplierProfile = await prisma.supplierProfile.findUnique({
+        where: { supplierId: userId },
+      });
+      if (supplierProfile?.address) {
+        userWithoutPassword.address = supplierProfile.address;
+      }
+    }
+
     res.json({
       message: "Profile updated successfully.",
       user: userWithoutPassword,

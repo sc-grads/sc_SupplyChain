@@ -19,6 +19,7 @@ model User {
   contactPersonName String?
   address           String?
   businessType      String?
+  profileImage      String?  // URL to profile image
   password          String   // To be hashed
   role              Role     @default(SUPPLIER) // SUPPLIER or VENDOR/RETAILER
 

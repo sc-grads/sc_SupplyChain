@@ -109,6 +109,13 @@ const Layout = ({ children }) => {
           <span className="text-sm whitespace-nowrap">Inventory</span>
         </button>
         <button
+          onClick={() => navigate(`${baseRoute}/analytics`)}
+          className={`h-10 px-4 rounded-lg flex items-center gap-3 w-full justify-start transition-all ${isActive(`${baseRoute}/analytics`) || isActive(`${baseRoute}/analytics/history`) ? "bg-primary/10 text-primary font-bold shadow-sm" : "text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"}`}
+        >
+          <span className="material-symbols-outlined text-xl">history</span>
+          <span className="text-sm whitespace-nowrap">History</span>
+        </button>
+        <button
           onClick={() => navigate(`/profile`)}
           className={`h-10 px-4 rounded-lg flex items-center gap-3 w-full justify-start transition-all ${isActive(`/profile`) ? "bg-primary/10 text-primary font-bold shadow-sm" : "text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"}`}
         >
@@ -193,7 +200,10 @@ const Layout = ({ children }) => {
               )}
             </div>
 
-            <div className="flex items-center gap-3 pl-4 border-l border-gray-200 dark:border-gray-800">
+            <button
+              onClick={() => navigate("/profile")}
+              className="flex items-center gap-3 pl-4 border-l border-gray-200 dark:border-gray-800 cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors rounded-l-lg p-1"
+            >
               <div className="hidden sm:flex flex-col text-right">
                 <span className="text-sm font-bold text-gray-900 dark:text-white">
                   {user?.name || "User"}
@@ -204,12 +214,20 @@ const Layout = ({ children }) => {
                     : "Supplier Account"}
                 </span>
               </div>
-              <div className="flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-full h-10 w-10 ring-2 ring-primary/20 text-gray-400">
-                <span className="material-symbols-outlined text-xl">
-                  person
-                </span>
+              <div className="flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-full h-10 w-10 ring-2 ring-primary/20 text-gray-400 overflow-hidden">
+                {user?.profileImage ? (
+                  <img
+                    src={user.profileImage}
+                    alt="Profile"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="material-symbols-outlined text-xl">
+                    person
+                  </span>
+                )}
               </div>
-            </div>
+            </button>
           </div>
         </header>
 

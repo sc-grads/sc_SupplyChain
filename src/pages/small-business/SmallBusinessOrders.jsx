@@ -304,6 +304,11 @@ const OrderDetails = ({ order }) => {
   );
 };
 
+import { useAuth } from "../../context/AuthContext";
+// ... (keep existing imports)
+
+// ... (keep existing components until NewOrderForm)
+
 const NewOrderForm = ({
   onSubmit,
   onCancel,
@@ -311,6 +316,28 @@ const NewOrderForm = ({
   initialItem,
   initialQuantity,
 }) => {
+  const { user } = useAuth();
+
+  // Helper to extract city from address
+  const getCityFromAddress = (address) => {
+    if (!address) return "Pretoria";
+    const knownCities = [
+      "Pretoria",
+      "Johannesburg",
+      "Cape Town",
+      "Durban",
+      "Bloemfontein",
+      "Sandton",
+      "Midrand",
+      "Centurion",
+    ];
+    for (const city of knownCities) {
+      if (address.toLowerCase().includes(city.toLowerCase())) return city;
+    }
+    const parts = address.split(",").map((p) => p.trim());
+    return parts.length > 1 ? parts[parts.length - 2] : parts[0] || "Pretoria";
+  };
+
   const [formData, setFormData] = useState({
     item:
       initialItem && catalog.some((p) => p.skuName === initialItem)
@@ -321,8 +348,8 @@ const NewOrderForm = ({
     quantity: initialQuantity || 1,
     urgency: "Normal",
     deliveryDate: "",
-    deliveryLocation: "Pretoria",
-    deliveryAddress: "",
+    deliveryLocation: getCityFromAddress(user?.address),
+    deliveryAddress: user?.address || "",
     notes: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);

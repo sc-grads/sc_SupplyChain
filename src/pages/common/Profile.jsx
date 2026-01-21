@@ -14,6 +14,7 @@ const Profile = () => {
     companyName: user?.companyName || user?.name || "My Company", // Fallback logic
     businessType: user?.businessType || "Retail Distribution",
     address: user?.address || "",
+    profileImage: user?.profileImage || "",
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -35,6 +36,17 @@ const Profile = () => {
     setPasswordData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleImageUpdate = () => {
+    // Simple prompt for URL for prototype purposes, or could be a file input
+    const url = window.prompt(
+      "Enter Profile Image URL:",
+      formData.profileImage,
+    );
+    if (url !== null) {
+      setFormData((prev) => ({ ...prev, profileImage: url }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -47,6 +59,7 @@ const Profile = () => {
       businessCategory: formData.businessType, // businessType mapped to businessCategory in controller
       address: formData.address,
       contactPersonName: formData.name, // Keep synced for now
+      profileImage: formData.profileImage,
     });
 
     if (result.success) {
@@ -84,6 +97,13 @@ const Profile = () => {
     setLoading(false);
   };
 
+  // High contrast input classes
+  const inputClasses =
+    "w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-medium transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none placeholder:text-gray-400";
+
+  const labelClasses =
+    "text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400";
+
   return (
     <Layout>
       <div className="max-w-3xl mx-auto py-6 lg:py-10">
@@ -98,19 +118,26 @@ const Profile = () => {
 
         <div className="space-y-12">
           {/* Profile Header Block */}
-          <div className="flex items-center gap-6 pb-12 border-b border-gray-100 dark:border-gray-800">
-            <div className="relative">
-              <div
-                className="size-20 rounded-full bg-gray-100 dark:bg-gray-800 bg-center bg-cover border border-gray-200 dark:border-gray-700"
-                style={{
-                  backgroundImage:
-                    'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDYfChC-c4NXZULCNCluijym60McGYDdJsx-wmMtHndTSK3aK_taz9U6VvkQbYZcL1uVEoYiE-xknXUDWS0VC34NauKCpnQBRLFb_T8LvPOYmG7hZ40kWFHxtnjFWSde8KtzADXLgmSm44BdnDk2nIr-ShsMVrvodg2BkLdOoIgf2gOpGujanO6RAUicQ7iB_cRO7PTdmetJWlRRMoWXWrinx8brOt-ystm4LSFnvT6cduQDtjXz_FiN4RIN3v98Fm7JALJw8_VqOLR")',
-                }}
-              ></div>
+          <div className="flex items-center gap-6 pb-12 border-b border-gray-200 dark:border-gray-800">
+            <div className="relative group">
+              <div className="size-24 rounded-full bg-gray-100 dark:bg-gray-800 bg-center bg-cover border-2 border-white dark:border-gray-700 shadow-md flex items-center justify-center overflow-hidden">
+                {formData.profileImage ? (
+                  <img
+                    src={formData.profileImage}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="material-symbols-outlined text-4xl text-gray-400">
+                    person
+                  </span>
+                )}
+              </div>
               <button
-                className="absolute -bottom-1 -right-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 size-8 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                className="absolute bottom-0 right-0 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 size-8 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-primary hover:border-primary transition-colors shadow-sm"
                 type="button"
-                onClick={() => toast.info("Photo upload coming soon!")}
+                onClick={handleImageUpdate}
+                title="Update Profile Photo"
               >
                 <span className="material-symbols-outlined text-sm">
                   photo_camera
@@ -118,12 +145,18 @@ const Profile = () => {
               </button>
             </div>
             <div>
-              <h3 className="font-bold text-slate-900 dark:text-white text-lg">
+              <h3 className="font-bold text-slate-900 dark:text-white text-xl">
                 {user?.name || "User Profile"}
               </h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 capitalize">
+              <p className="text-sm text-slate-500 dark:text-slate-400 capitalize font-medium">
                 {user?.role?.toLowerCase().replace("_", " ")} Argument
               </p>
+              <button
+                onClick={handleImageUpdate}
+                className="text-xs text-primary font-bold mt-1 hover:underline"
+              >
+                {formData.profileImage ? "Change Photo" : "Upload Photo"}
+              </button>
             </div>
           </div>
 
@@ -140,28 +173,24 @@ const Profile = () => {
               </div>
               <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    Full Name
-                  </label>
+                  <label className={labelClasses}>Full Name</label>
                   <input
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-2.5 text-slate-700 dark:text-slate-200 transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                    className={inputClasses}
                     type="text"
                     placeholder="Enter your full name"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    Email Address
-                  </label>
+                  <label className={labelClasses}>Email Address</label>
                   <div className="relative">
                     <input
                       name="email"
                       value={formData.email}
                       readOnly
-                      className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-2.5 text-slate-400 dark:text-slate-500 cursor-not-allowed outline-none"
+                      className={`${inputClasses} bg-gray-50 dark:bg-gray-800 text-gray-500 border-gray-200 cursor-not-allowed`}
                       type="email"
                     />
                     <span
@@ -175,14 +204,12 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    Phone Number
-                  </label>
+                  <label className={labelClasses}>Phone Number</label>
                   <input
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-2.5 text-slate-700 dark:text-slate-200 transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                    className={inputClasses}
                     type="tel"
                     placeholder="+27 (000) 000-0000"
                   />
@@ -191,33 +218,29 @@ const Profile = () => {
             </section>
 
             {/* Business Details Section */}
-            <section className="space-y-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+            <section className="space-y-6 pt-6 border-t border-gray-200 dark:border-gray-800">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                 Business Details
               </h2>
               <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    Company Name
-                  </label>
+                  <label className={labelClasses}>Company Name</label>
                   <input
                     name="companyName"
                     value={formData.companyName}
                     onChange={handleChange}
-                    className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-2.5 text-slate-700 dark:text-slate-200 transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                    className={inputClasses}
                     type="text"
                     placeholder="Enter company name"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    Business Category
-                  </label>
+                  <label className={labelClasses}>Business Category</label>
                   <select
                     name="businessType"
                     value={formData.businessType}
                     onChange={handleChange}
-                    className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-2.5 text-slate-700 dark:text-slate-200 transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none appearance-none"
+                    className={`${inputClasses} appearance-none`}
                   >
                     <option>Retail Distribution</option>
                     <option>Wholesale</option>
@@ -229,14 +252,12 @@ const Profile = () => {
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    Office Address
-                  </label>
+                  <label className={labelClasses}>Office Address</label>
                   <textarea
                     name="address"
                     value={formData.address}
                     onChange={handleChange}
-                    className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-2.5 text-slate-700 dark:text-slate-200 transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                    className={inputClasses}
                     rows="2"
                     placeholder="Enter registered business address"
                   ></textarea>
@@ -245,12 +266,12 @@ const Profile = () => {
             </section>
 
             {/* Security Section */}
-            <section className="space-y-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+            <section className="space-y-6 pt-6 border-t border-gray-200 dark:border-gray-800">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                 Security
               </h2>
               <div className="space-y-6">
-                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-800">
+                <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                   <div>
                     <p className="font-semibold text-slate-900 dark:text-white">
                       Two-Factor Authentication
@@ -298,7 +319,7 @@ const Profile = () => {
                         placeholder="Current Password"
                         value={passwordData.currentPassword}
                         onChange={handlePasswordChange}
-                        className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 text-sm outline-none focus:border-primary"
+                        className={inputClasses}
                       />
                       <input
                         name="newPassword"
@@ -306,7 +327,7 @@ const Profile = () => {
                         placeholder="New Password"
                         value={passwordData.newPassword}
                         onChange={handlePasswordChange}
-                        className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 text-sm outline-none focus:border-primary"
+                        className={inputClasses}
                       />
                       <input
                         name="confirmPassword"
@@ -314,7 +335,7 @@ const Profile = () => {
                         placeholder="Confirm New Password"
                         value={passwordData.confirmPassword}
                         onChange={handlePasswordChange}
-                        className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 text-sm outline-none focus:border-primary"
+                        className={inputClasses}
                       />
                     </div>
                     <div className="flex gap-3 pt-2">
@@ -340,7 +361,7 @@ const Profile = () => {
             </section>
 
             {/* Footer Actions */}
-            <footer className="pt-12 flex items-center justify-between border-t border-gray-100 dark:border-gray-800">
+            <footer className="pt-12 flex items-center justify-between border-t border-gray-200 dark:border-gray-800">
               <button
                 type="button"
                 className="text-sm font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
@@ -352,6 +373,7 @@ const Profile = () => {
                     companyName: user?.companyName || user?.name || "",
                     businessType: user?.businessType || "Retail Distribution",
                     address: user?.address || "",
+                    profileImage: user?.profileImage || "",
                   });
                   toast.info("Form reset to original values.");
                 }}

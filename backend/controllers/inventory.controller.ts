@@ -191,16 +191,32 @@ export const updateInventory = async (req: Request, res: Response) => {
           });
 
           if (vendor && vendor.address) {
-            // Parse Address: "street, city" or similar
-            const parts = vendor.address.split(",");
-            const deliveryLocation = "Pretoria"; // Overridden to Pretoria for testing as requested by user
-            const deliveryAddress =
-              parts.length > 1
-                ? parts
-                    .slice(0, parts.length - 1)
-                    .join(",")
-                    .trim()
-                : vendor.address;
+            // Parse Address: Try to extract city or use a fallback
+            const parts = vendor.address.split(",").map((p) => p.trim());
+
+            // Heuristic: Try to find known major cities, otherwise fallback to 2nd last part (common: Street, Suburb, City, Province)
+            const knownCities = [
+              "Pretoria",
+              "Johannesburg",
+              "Cape Town",
+              "Durban",
+              "Bloemfontein",
+              "Sandton",
+              "Midrand",
+              "Centurion",
+            ];
+            let deliveryLocation =
+              parts.length > 1 ? parts[parts.length - 2] : parts[0]; // Default to second last item (City)
+
+            // Refine if a known city is present in the address string
+            for (const city of knownCities) {
+              if (vendor.address.toLowerCase().includes(city.toLowerCase())) {
+                deliveryLocation = city;
+                break;
+              }
+            }
+
+            const deliveryAddress = vendor.address; // Use full address
 
             // 2. Create Order
             const order = await orderService.createOrder({

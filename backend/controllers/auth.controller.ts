@@ -143,6 +143,17 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Invalid credentials." });
     }
 
+    // If Supplier, fetch profile to get address
+    let supplierAddress = null;
+    if (user.role === "SUPPLIER") {
+      const profile = await prisma.supplierProfile.findUnique({
+        where: { supplierId: user.id },
+      });
+      if (profile) {
+        supplierAddress = profile.address;
+      }
+    }
+
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       JWT_SECRET,
@@ -152,6 +163,12 @@ export const login = async (req: Request, res: Response) => {
     );
 
     const { password: _, ...userWithoutPassword } = user;
+
+    // Merge supplier address into user object for frontend consistency
+    if (user.role === "SUPPLIER" && supplierAddress) {
+      userWithoutPassword.address = supplierAddress;
+    }
+
     res.json({ user: userWithoutPassword, token });
   } catch (error: any) {
     res
