@@ -1,82 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import Layout from "../../components/Layout";
+import { useAnalytics } from "../../context/AnalyticsContext";
 
 const SmallBusinessPerformance = () => {
-  const historyData = [
-    {
-      id: "#ORD-9921",
-      supplier: "Global Fabric Co.",
-      date: "Oct 12, 2023",
-      value: "R4,250.00",
-      stars: 5,
-    },
-    {
-      id: "#ORD-9884",
-      supplier: "Standard Mfg.",
-      date: "Oct 08, 2023",
-      value: "R1,840.50",
-      stars: 2,
-    },
-    {
-      id: "#ORD-9851",
-      supplier: "Metro Pack",
-      date: "Oct 05, 2023",
-      value: "R890.00",
-      stars: 4,
-    },
-    {
-      id: "#ORD-9822",
-      supplier: "Apex Logistics",
-      date: "Oct 02, 2023",
-      value: "R12,400.00",
-      stars: 3.5,
-    },
-  ];
-
-  const suppliers = [
-    {
-      name: "Global Fabric",
-      spend: 60,
-      score: 85,
-      scoreVal: "85",
-      spendVal: "R12k",
-    },
-    {
-      name: "Apex Logistics",
-      spend: 75,
-      score: 92,
-      scoreVal: "92",
-      spendVal: "R15k",
-    },
-    {
-      name: "Standard Mfg.",
-      spend: 90,
-      score: 40,
-      scoreVal: "40",
-      spendVal: "R18k",
-    },
-    {
-      name: "Metro Pack",
-      spend: 35,
-      score: 78,
-      scoreVal: "78",
-      spendVal: "R7k",
-    },
-    {
-      name: "EcoSupplies",
-      spend: 50,
-      score: 98,
-      scoreVal: "98",
-      spendVal: "R10k",
-    },
-  ];
-
-  const heatmap = [
-    [10, 10, 40, 10, 10, 10, 10],
-    [70, 90, 50, 10, 10, 10, 10],
-    [10, 10, 10, 10, 10, 10, 30],
-    [10, 10, 10, 10, 10, 10, 10],
-  ];
+  const { analyticsData, loading, error } = useAnalytics();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   const getHeatColor = (val) => {
     if (val === 10) return "bg-primary/10";
@@ -84,6 +13,86 @@ const SmallBusinessPerformance = () => {
     if (val <= 50) return "bg-risk-amber/50";
     if (val <= 70) return "bg-risk-amber/70";
     return "bg-risk-amber";
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <Layout>
+        <div className="max-w-7xl mx-auto w-full pb-12 text-[#121615] dark:text-white">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold tracking-tight">
+              Supply Chain Performance
+            </h2>
+            <p className="text-[#6a8179]">Loading analytics data...</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="bg-white dark:bg-[#1e2227] p-6 rounded-xl border border-[#dde3e1] dark:border-gray-800 shadow-sm h-32 animate-pulse"
+              />
+            ))}
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <Layout>
+        <div className="max-w-7xl mx-auto w-full pb-12 text-[#121615] dark:text-white">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold tracking-tight">
+              Supply Chain Performance
+            </h2>
+            <p className="text-red-500">Error loading analytics: {error}</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Empty state
+  if (!analyticsData) {
+    return (
+      <Layout>
+        <div className="max-w-7xl mx-auto w-full pb-12 text-[#121615] dark:text-white">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold tracking-tight">
+              Supply Chain Performance
+            </h2>
+            <p className="text-[#6a8179]">No analytics data available yet.</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  const {
+    totalSpendFormatted,
+    mostStableSupplier,
+    stockoutsAvoided,
+    supplierPerformance,
+    disruptionHeatmap,
+    deliveredOrders,
+    trends,
+  } = analyticsData;
+
+  // Pagination logic
+  const totalPages = Math.ceil((deliveredOrders?.length || 0) / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentOrders = deliveredOrders?.slice(startIndex, endIndex) || [];
+
+  const handlePrevious = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNext = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
 
   return (
@@ -105,140 +114,227 @@ const SmallBusinessPerformance = () => {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {[
-            {
-              label: "Total Spend",
-              val: "R42,850.20",
-              trend: "+5.2%",
-              icon: "payments",
-              color: "text-primary",
-            },
-            {
-              label: "Supply Reliability %",
-              val: "94.2%",
-              trend: "+1.5%",
-              icon: "verified",
-              color: "text-primary",
-            },
-            {
-              label: "Most Stable Supplier",
-              val: "Global Fabric Co.",
-              icon: "star_half",
-              color: "text-primary",
-            },
-            {
-              label: "Stockouts Avoided",
-              val: "12 Events",
-              tag: "Resilient",
-              icon: "security",
-              color: "text-risk-amber",
-            },
-          ].map((card, idx) => (
-            <div
-              key={idx}
-              className="bg-white dark:bg-[#1e2227] p-6 rounded-xl border border-[#dde3e1] dark:border-gray-800 shadow-sm transition-all hover:shadow-md"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <span
-                  className={`material-symbols-outlined ${card.color} bg-primary/10 p-2 rounded-lg`}
-                >
-                  {card.icon}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white dark:bg-[#1e2227] p-6 rounded-xl border border-[#dde3e1] dark:border-gray-800 shadow-sm transition-all hover:shadow-md">
+            <div className="flex justify-between items-start mb-4">
+              <span className="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">
+                payments
+              </span>
+              {trends.spendTrend && (
+                <span className="text-[#07882e] text-xs font-bold bg-[#07882e]/10 px-2 py-1 rounded">
+                  {trends.spendTrend}
                 </span>
-                {card.trend && (
-                  <span className="text-[#07882e] text-xs font-bold bg-[#07882e]/10 px-2 py-1 rounded">
-                    {card.trend}
-                  </span>
-                )}
-                {card.tag && (
-                  <span className="text-primary text-xs font-bold bg-primary/10 px-2 py-1 rounded">
-                    {card.tag}
-                  </span>
-                )}
-              </div>
-              <p className="text-[#6a8179] text-sm font-medium">{card.label}</p>
-              <p className="text-2xl font-bold mt-1 truncate">{card.val}</p>
+              )}
             </div>
-          ))}
+            <p className="text-[#6a8179] text-sm font-medium">Total Spend</p>
+            <p className="text-2xl font-bold mt-1 truncate">
+              {totalSpendFormatted}
+            </p>
+          </div>
+
+          <div className="bg-white dark:bg-[#1e2227] p-6 rounded-xl border border-[#dde3e1] dark:border-gray-800 shadow-sm transition-all hover:shadow-md">
+            <div className="flex justify-between items-start mb-4">
+              <span className="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">
+                star_half
+              </span>
+            </div>
+            <p className="text-[#6a8179] text-sm font-medium">
+              Most Stable Supplier
+            </p>
+            <p className="text-2xl font-bold mt-1 truncate">
+              {mostStableSupplier.name}
+            </p>
+          </div>
+
+          <div className="bg-white dark:bg-[#1e2227] p-6 rounded-xl border border-[#dde3e1] dark:border-gray-800 shadow-sm transition-all hover:shadow-md">
+            <div className="flex justify-between items-start mb-4">
+              <span className="material-symbols-outlined text-risk-amber bg-primary/10 p-2 rounded-lg">
+                security
+              </span>
+              <span className="text-primary text-xs font-bold bg-primary/10 px-2 py-1 rounded">
+                Resilient
+              </span>
+            </div>
+            <p className="text-[#6a8179] text-sm font-medium">
+              Stockouts Avoided
+            </p>
+            <p className="text-2xl font-bold mt-1 truncate">
+              {stockoutsAvoided} Events
+            </p>
+          </div>
         </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          <div className="lg:col-span-2 bg-white dark:bg-[#1e2227] p-6 rounded-xl border border-[#dde3e1] dark:border-gray-800 shadow-sm">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="font-bold text-lg">Spend vs. Reliability Score</h3>
-              <div className="flex gap-4 text-xs font-medium">
-                <div className="flex items-center gap-1.5">
-                  <span className="size-2 rounded-full bg-primary"></span> Spend
-                  (R)
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="size-2 rounded-full bg-risk-amber"></span>{" "}
-                  Score (1-100)
-                </div>
-              </div>
+        {/* Charts Section - Two Separate Graphs */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Supplier Spending Graph */}
+          <div className="bg-white dark:bg-[#1e2227] p-8 rounded-xl border border-[#dde3e1] dark:border-gray-800 shadow-sm">
+            <div className="mb-6">
+              <h3 className="font-bold text-xl mb-2">Supplier Spending</h3>
+              <p className="text-sm text-[#6a8179]">
+                Total spend per supplier (ZAR)
+              </p>
             </div>
-            <div className="flex items-end justify-between gap-4 h-48">
-              {suppliers.map((s, i) => (
-                <div
-                  key={i}
-                  className="flex-1 flex flex-col items-center gap-2 group"
-                >
-                  <div className="w-full flex flex-col items-center gap-1 justify-end h-full">
-                    <div
-                      className="w-8 bg-risk-amber/20 rounded-t-sm relative transition-all group-hover:bg-risk-amber/30"
-                      style={{ height: `${s.score}%` }}
-                    >
-                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity font-bold">
-                        {s.scoreVal}
-                      </div>
-                    </div>
-                    <div
-                      className="w-8 bg-primary rounded-t-sm relative transition-all group-hover:brightness-110"
-                      style={{ height: `${s.spend}%` }}
-                    >
-                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity font-bold">
-                        {s.spendVal}
-                      </div>
-                    </div>
+
+            {/* Spending Bar Chart */}
+            <div className="relative pt-6">
+              {supplierPerformance && supplierPerformance.length > 0 ? (
+                <>
+                  {/* Chart Area */}
+                  <div className="flex items-end justify-around gap-4 h-80 border-b-2 border-l-2 border-[#dde3e1] dark:border-gray-700 ml-12 pl-6">
+                    {supplierPerformance.map((s, i) => {
+                      // Calculate height relative to the maximum spend in the dataset
+                      const maxSpendPercentage = Math.max(
+                        ...supplierPerformance.map((sp) => sp.spend),
+                      );
+                      const relativeHeight =
+                        (s.spend / maxSpendPercentage) * 100;
+
+                      return (
+                        <div
+                          key={i}
+                          className="flex flex-col items-center gap-2 group flex-1 relative"
+                        >
+                          {/* Value Label Above Bar */}
+                          <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-sm font-bold text-primary whitespace-nowrap">
+                            {s.spendVal}
+                          </div>
+
+                          {/* Spend Bar */}
+                          <div className="relative flex flex-col items-center justify-end h-full w-full">
+                            <div
+                              className="w-full max-w-[60px] bg-primary rounded-t relative transition-all duration-300 group-hover:brightness-110 shadow-md"
+                              style={{
+                                height: `${Math.max(relativeHeight, 1)}%`,
+                              }}
+                            ></div>
+                          </div>
+
+                          {/* Supplier Name Below X-axis */}
+                          <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 text-xs font-semibold text-[#6a8179] text-center leading-tight w-24 group-hover:text-[#121615] dark:group-hover:text-white transition-colors">
+                            {s.name}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                  <span className="text-[10px] text-[#6a8179] font-bold text-center leading-tight">
-                    {s.name}
-                  </span>
+
+                  {/* Y-axis labels - Currency */}
+                  <div className="absolute left-0 top-6 h-80 flex flex-col justify-between text-xs text-[#6a8179] font-medium w-10 text-right">
+                    {supplierPerformance.length > 0 &&
+                      (() => {
+                        const maxSpend = Math.max(
+                          ...supplierPerformance.map((s) => s.spend),
+                        );
+                        const maxSpendSupplier = supplierPerformance.find(
+                          (s) => s.spend === maxSpend,
+                        );
+                        const maxValue =
+                          parseFloat(
+                            maxSpendSupplier?.spendVal.replace(/[^0-9.]/g, ""),
+                          ) || 100;
+                        const unit = maxSpendSupplier?.spendVal.includes("k")
+                          ? "k"
+                          : "";
+
+                        return (
+                          <>
+                            <span className="transform -translate-y-1/2">
+                              R{maxValue}
+                              {unit}
+                            </span>
+                            <span className="transform -translate-y-1/2">
+                              R{(maxValue * 0.75).toFixed(0)}
+                              {unit}
+                            </span>
+                            <span className="transform -translate-y-1/2">
+                              R{(maxValue * 0.5).toFixed(0)}
+                              {unit}
+                            </span>
+                            <span className="transform -translate-y-1/2">
+                              R{(maxValue * 0.25).toFixed(0)}
+                              {unit}
+                            </span>
+                            <span className="transform translate-y-1/2">
+                              R0
+                            </span>
+                          </>
+                        );
+                      })()}
+                  </div>
+                </>
+              ) : (
+                <div className="w-full h-80 flex items-center justify-center text-[#6a8179]">
+                  No spending data available
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
-          <div className="bg-white dark:bg-[#1e2227] p-6 rounded-xl border border-[#dde3e1] dark:border-gray-800 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-lg">Supply Disruption</h3>
-              <div className="text-[10px] uppercase font-bold tracking-widest text-[#6a8179]">
-                Past 4 Weeks
-              </div>
+          {/* Supplier Reliability Score Graph */}
+          <div className="bg-white dark:bg-[#1e2227] p-8 rounded-xl border border-[#dde3e1] dark:border-gray-800 shadow-sm">
+            <div className="mb-6">
+              <h3 className="font-bold text-xl mb-2">
+                Supplier Reliability Score
+              </h3>
+              <p className="text-sm text-[#6a8179]">
+                Average rating per supplier (1-5 scale)
+              </p>
             </div>
-            <div className="grid grid-cols-7 gap-1.5">
-              {heatmap.flat().map((val, i) => (
-                <div
-                  key={i}
-                  className={`aspect-square rounded-sm ${getHeatColor(val)} transition-all hover:scale-110 cursor-help`}
-                  title={`Level: ${val}`}
-                ></div>
-              ))}
-            </div>
-            <div className="mt-4 flex items-center justify-between text-[10px] text-[#6a8179] font-bold">
-              {"MTWTFSS".split("").map((d, i) => (
-                <span key={i}>{d}</span>
-              ))}
-            </div>
-            <div className="mt-6 pt-4 border-t border-dashed border-[#dde3e1] dark:border-gray-700 flex items-center gap-2 text-xs font-bold">
-              <span>Risk Level:</span>
-              <div className="flex gap-1">
-                <div className="size-3 bg-primary/10 rounded-sm"></div>
-                <div className="size-3 bg-risk-amber/30 rounded-sm"></div>
-                <div className="size-3 bg-risk-amber/60 rounded-sm"></div>
-                <div className="size-3 bg-risk-amber rounded-sm"></div>
-              </div>
+
+            {/* Reliability Score Bar Chart */}
+            <div className="relative pt-6">
+              {supplierPerformance && supplierPerformance.length > 0 ? (
+                <>
+                  {/* Chart Area */}
+                  <div className="flex items-end justify-around gap-4 h-80 border-b-2 border-l-2 border-[#dde3e1] dark:border-gray-700 ml-12 pl-6">
+                    {supplierPerformance.map((s, i) => {
+                      const scorePercentage =
+                        (parseFloat(s.scoreVal) / 5) * 100;
+
+                      return (
+                        <div
+                          key={i}
+                          className="flex flex-col items-center gap-2 group flex-1 relative"
+                        >
+                          {/* Score Label Above Bar */}
+                          <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-sm font-bold text-risk-amber whitespace-nowrap">
+                            {s.scoreVal}
+                          </div>
+
+                          {/* Score Bar */}
+                          <div className="relative flex flex-col items-center justify-end h-full w-full">
+                            <div
+                              className="w-full max-w-[60px] bg-risk-amber rounded-t relative transition-all duration-300 group-hover:brightness-110 shadow-md"
+                              style={{
+                                height: `${Math.max(scorePercentage, 5)}%`,
+                                minHeight: "50px",
+                              }}
+                            ></div>
+                          </div>
+
+                          {/* Supplier Name Below X-axis */}
+                          <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 text-xs font-semibold text-[#6a8179] text-center leading-tight w-24 group-hover:text-[#121615] dark:group-hover:text-white transition-colors">
+                            {s.name}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Y-axis labels - Rating Scale */}
+                  <div className="absolute left-0 top-6 h-80 flex flex-col justify-between text-xs text-[#6a8179] font-medium w-10 text-right">
+                    <span className="transform -translate-y-1/2">5.0</span>
+                    <span className="transform -translate-y-1/2">3.75</span>
+                    <span className="transform -translate-y-1/2">2.5</span>
+                    <span className="transform -translate-y-1/2">1.25</span>
+                    <span className="transform translate-y-1/2">0.0</span>
+                  </div>
+                </>
+              ) : (
+                <div className="w-full h-80 flex items-center justify-center text-[#6a8179]">
+                  No reliability data available
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -278,57 +374,80 @@ const SmallBusinessPerformance = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#dde3e1] dark:divide-gray-800">
-                {historyData.map((row, i) => (
-                  <tr
-                    key={i}
-                    className="hover:bg-background-light/50 dark:hover:bg-white/5 transition-colors group"
-                  >
-                    <td className="px-6 py-4 text-sm font-bold">{row.id}</td>
-                    <td className="px-6 py-4 text-sm font-medium">
-                      {row.supplier}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-[#6a8179] font-medium">
-                      {row.date}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-bold text-primary">
-                      {row.value}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-0.5 text-risk-amber">
-                        {[1, 2, 3, 4, 5].map((s) => (
-                          <span
-                            key={s}
-                            className={`material-symbols-outlined text-lg ${s <= row.stars ? "fill-1" : ""}`}
-                            style={{
-                              fontVariationSettings: `'FILL' ${s <= row.stars ? 1 : 0}`,
-                            }}
-                          >
-                            {s === Math.ceil(row.stars) && row.stars % 1 !== 0
-                              ? "star_half"
-                              : "star"}
+                {currentOrders && currentOrders.length > 0 ? (
+                  currentOrders.map((row, i) => (
+                    <tr
+                      key={i}
+                      className="hover:bg-background-light/50 dark:hover:bg-white/5 transition-colors group"
+                    >
+                      <td className="px-6 py-4 text-sm font-bold">{row.id}</td>
+                      <td className="px-6 py-4 text-sm font-medium">
+                        {row.supplier}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-[#6a8179] font-medium">
+                        {row.date}
+                      </td>
+                      <td className="px-6 py-4 text-sm font-bold text-primary">
+                        {row.value}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex gap-0.5 text-risk-amber">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <span
+                              key={s}
+                              className={`material-symbols-outlined text-lg ${s <= row.stars ? "fill-1" : ""}`}
+                              style={{
+                                fontVariationSettings: `'FILL' ${s <= row.stars ? 1 : 0}`,
+                              }}
+                            >
+                              {s === Math.ceil(row.stars) && row.stars % 1 !== 0
+                                ? "star_half"
+                                : "star"}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button className="text-[#6a8179] hover:text-primary transition-colors opacity-0 group-hover:opacity-100">
+                          <span className="material-symbols-outlined">
+                            more_horiz
                           </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button className="text-[#6a8179] hover:text-primary transition-colors opacity-0 group-hover:opacity-100">
-                        <span className="material-symbols-outlined">
-                          more_horiz
-                        </span>
-                      </button>
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="6"
+                      className="px-6 py-8 text-center text-[#6a8179]"
+                    >
+                      No delivered orders yet
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
           <div className="p-4 border-t border-[#dde3e1] dark:border-gray-800 flex items-center justify-between text-xs font-bold text-[#6a8179]">
-            <span>Showing 4 of 128 orders</span>
+            <span>
+              Showing {startIndex + 1}-
+              {Math.min(endIndex, deliveredOrders?.length || 0)} of{" "}
+              {deliveredOrders?.length || 0} orders
+            </span>
             <div className="flex gap-2">
-              <button className="px-3 py-1.5 border border-[#dde3e1] dark:border-gray-800 rounded hover:bg-background-light dark:hover:bg-white/5 transition-colors">
+              <button
+                onClick={handlePrevious}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 border border-[#dde3e1] dark:border-gray-800 rounded hover:bg-background-light dark:hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Previous
               </button>
-              <button className="px-3 py-1.5 border border-[#dde3e1] dark:border-gray-800 rounded hover:bg-background-light dark:hover:bg-white/5 transition-colors">
+              <button
+                onClick={handleNext}
+                disabled={currentPage === totalPages || totalPages === 0}
+                className="px-3 py-1.5 border border-[#dde3e1] dark:border-gray-800 rounded hover:bg-background-light dark:hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Next
               </button>
             </div>

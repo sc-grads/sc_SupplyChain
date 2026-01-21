@@ -108,8 +108,8 @@ const Layout = ({ children }) => {
           onClick={() => navigate(`${baseRoute}/analytics`)}
           className={`p-2 rounded-lg flex items-center gap-3 w-full justify-start ${isActive(`${baseRoute}/analytics`) || isActive(`${baseRoute}/analytics/history`) ? "bg-primary/10 text-primary" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
         >
-          <span className="material-symbols-outlined">analytics</span>
-          <span className="font-medium whitespace-nowrap">Analytics</span>
+          <span className="material-symbols-outlined">history</span>
+          <span className="font-medium whitespace-nowrap">History</span>
         </button>
 
         <button

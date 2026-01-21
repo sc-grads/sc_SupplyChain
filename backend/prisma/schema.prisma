@@ -128,6 +128,8 @@ model RetailerInventory {
   skuId        String
   currentStock Int      @default(0)
   reorderLevel Int      @default(10)
+  autoReorderEnabled Boolean @default(false)
+  reorderQuantity Int   @default(50)
   category     String?  // Optional override or descriptive
   unit         String?  @default("units")
   lastOrdered  DateTime?

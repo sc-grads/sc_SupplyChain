@@ -4,6 +4,7 @@ import * as inventoryController from "../controllers/inventory.controller.js";
 import * as orderController from "../controllers/order.controller.js";
 import * as notificationController from "../controllers/notification.controller.js";
 import * as ratingController from "../controllers/rating.controller.js";
+import * as analyticsController from "../controllers/analytics.controller.js";
 import { authenticate } from "../middlewares/authMiddleware.js";
 
 const router = Router();
@@ -85,6 +86,13 @@ router.get(
   "/suppliers/:supplierId/rating",
   authenticate,
   ratingController.getSupplierRating,
+);
+
+// Analytics Routes
+router.get(
+  "/analytics/vendor",
+  authenticate,
+  analyticsController.getVendorAnalytics,
 );
 
 export default router;

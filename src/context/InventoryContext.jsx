@@ -44,14 +44,30 @@ export const InventoryProvider = ({ children }) => {
     }
   }, [token, getHeaders]);
 
-  const updateStock = async (skuId, quantity, status, price) => {
+  const updateStock = async (
+    skuId,
+    quantity,
+    status,
+    price,
+    reorderLevel,
+    autoReorderEnabled,
+    reorderQuantity,
+  ) => {
     setLoading(true);
     setError(null);
     try {
       const response = await fetch(`${API_BASE}/inventory`, {
         method: "POST",
         headers: getHeaders(),
-        body: JSON.stringify({ skuId, quantity, status, price }),
+        body: JSON.stringify({
+          skuId,
+          quantity,
+          status,
+          price,
+          reorderLevel,
+          autoReorderEnabled,
+          reorderQuantity,
+        }),
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -64,7 +80,7 @@ export const InventoryProvider = ({ children }) => {
 
       // Refresh inventory after update
       await fetchInventory();
-      return { success: true };
+      return { success: true, data: await response.json() };
     } catch (err) {
       setError(err.message);
       return { success: false, error: err.message };

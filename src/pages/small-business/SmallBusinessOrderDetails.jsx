@@ -197,18 +197,6 @@ const SmallBusinessOrderDetails = () => {
                   time is more than 60 minutes later than promised.
                 </p>
               </div>
-              <button
-                onClick={() =>
-                  handleContactSupplier?.(order) ||
-                  alert("Opening contact for " + getSupplierName(order))
-                }
-                className="w-full sm:w-auto px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-500/20 flex items-center justify-center gap-2"
-              >
-                <span className="material-symbols-outlined text-base">
-                  call
-                </span>
-                Contact Supplier
-              </button>
             </div>
           )}
           {/* Header Section */}

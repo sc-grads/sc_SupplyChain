@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { OrderProvider } from "./context/OrderContext";
 import { InventoryProvider } from "./context/InventoryContext";
+import { AnalyticsProvider } from "./context/AnalyticsContext";
 // Auth
 import Login from "./pages/auth/Login";
 import AccountTypeSelection from "./pages/auth/AccountTypeSelection";
@@ -27,55 +28,60 @@ function App() {
     <AuthProvider>
       <OrderProvider>
         <InventoryProvider>
-          <Router>
-            <Routes>
-              <Route path="/" element={<Login />} />
-              <Route
-                path="/register-selection"
-                element={<AccountTypeSelection />}
-              />
-              <Route path="/register/supplier" element={<RegisterSupplier />} />
-              <Route
-                path="/register/small-business"
-                element={<RegisterSmallBusiness />}
-              />
-              {/* Supplier Routes */}
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/new-orders" element={<NewOrders />} />
-              <Route path="/orders" element={<Orders />} />
-              <Route path="/inventory" element={<Inventory />} />
-              <Route path="/analytics" element={<PerformanceAnalytics />} />
-              <Route
-                path="/analytics/history"
-                element={<OrderHistoryAnalytics />}
-              />
-              {/* Small Business Routes */}
-              <Route
-                path="/small-business/dashboard"
-                element={<SmallBusinessDashboard />}
-              />
-              <Route
-                path="/small-business/orders"
-                element={<SmallBusinessOrders />}
-              />
-              <Route
-                path="/small-business/orders/:orderId"
-                element={<SmallBusinessOrderDetails />}
-              />
-              <Route
-                path="/small-business/inventory"
-                element={<SmallBusinessInventory />}
-              />
-              <Route
-                path="/small-business/analytics"
-                element={<SmallBusinessPerformance />}
-              />
-              <Route
-                path="/small-business/analytics/history"
-                element={<SmallBusinessHistory />}
-              />
-            </Routes>
-          </Router>
+          <AnalyticsProvider>
+            <Router>
+              <Routes>
+                <Route path="/" element={<Login />} />
+                <Route
+                  path="/register-selection"
+                  element={<AccountTypeSelection />}
+                />
+                <Route
+                  path="/register/supplier"
+                  element={<RegisterSupplier />}
+                />
+                <Route
+                  path="/register/small-business"
+                  element={<RegisterSmallBusiness />}
+                />
+                {/* Supplier Routes */}
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/new-orders" element={<NewOrders />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/inventory" element={<Inventory />} />
+                <Route path="/analytics" element={<PerformanceAnalytics />} />
+                <Route
+                  path="/analytics/history"
+                  element={<OrderHistoryAnalytics />}
+                />
+                {/* Small Business Routes */}
+                <Route
+                  path="/small-business/dashboard"
+                  element={<SmallBusinessDashboard />}
+                />
+                <Route
+                  path="/small-business/orders"
+                  element={<SmallBusinessOrders />}
+                />
+                <Route
+                  path="/small-business/orders/:orderId"
+                  element={<SmallBusinessOrderDetails />}
+                />
+                <Route
+                  path="/small-business/inventory"
+                  element={<SmallBusinessInventory />}
+                />
+                <Route
+                  path="/small-business/analytics"
+                  element={<SmallBusinessPerformance />}
+                />
+                <Route
+                  path="/small-business/analytics/history"
+                  element={<SmallBusinessHistory />}
+                />
+              </Routes>
+            </Router>
+          </AnalyticsProvider>
         </InventoryProvider>
       </OrderProvider>
     </AuthProvider>

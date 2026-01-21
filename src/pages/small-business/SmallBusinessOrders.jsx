@@ -299,7 +299,13 @@ const OrderDetails = ({ order }) => {
   );
 };
 
-const NewOrderForm = ({ onSubmit, onCancel, catalog, initialItem }) => {
+const NewOrderForm = ({
+  onSubmit,
+  onCancel,
+  catalog,
+  initialItem,
+  initialQuantity,
+}) => {
   const [formData, setFormData] = useState({
     item:
       initialItem && catalog.some((p) => p.skuName === initialItem)
@@ -307,10 +313,10 @@ const NewOrderForm = ({ onSubmit, onCancel, catalog, initialItem }) => {
         : catalog.length > 0
           ? catalog[0].skuName
           : "",
-    quantity: 1,
+    quantity: initialQuantity || 1,
     urgency: "Normal",
     deliveryDate: "",
-    deliveryLocation: "Johannesburg CBD",
+    deliveryLocation: "Pretoria",
     deliveryAddress: "",
     notes: "",
   });
@@ -339,6 +345,11 @@ const NewOrderForm = ({ onSubmit, onCancel, catalog, initialItem }) => {
     onSubmit(orderData);
   };
 
+  const selectedProduct = catalog.find((p) => p.skuName === formData.item);
+  const unitPrice = selectedProduct
+    ? selectedProduct.price || getMockPrice(selectedProduct.skuCode)
+    : 0;
+
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden max-w-2xl mx-auto shadow-xl">
       <div className="p-8">
@@ -356,9 +367,16 @@ const NewOrderForm = ({ onSubmit, onCancel, catalog, initialItem }) => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-black uppercase tracking-widest text-gray-500 mb-2">
-              Items to Order
-            </label>
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-sm font-black uppercase tracking-widest text-gray-500">
+                Items to Order
+              </label>
+              {selectedProduct && (
+                <span className="text-sm font-bold text-primary bg-primary/10 px-2 py-1 rounded">
+                  Est. Total: R{(unitPrice * formData.quantity).toFixed(2)}
+                </span>
+              )}
+            </div>
             <select
               value={formData.item}
               onChange={(e) =>
@@ -458,20 +476,6 @@ const NewOrderForm = ({ onSubmit, onCancel, catalog, initialItem }) => {
                 required
               />
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-black uppercase tracking-widest text-gray-500 mb-2">
-              Delivery Notes
-            </label>
-            <textarea
-              value={formData.notes}
-              onChange={(e) =>
-                setFormData({ ...formData, notes: e.target.value })
-              }
-              placeholder="Gate code, specific dock number, etc."
-              className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#121715] text-[#121714] dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all h-24"
-            />
           </div>
 
           <div className="flex gap-4 pt-4">
@@ -623,6 +627,9 @@ const SmallBusinessOrders = () => {
             catalog={catalog}
             initialItem={new URLSearchParams(window.location.search).get(
               "item",
+            )}
+            initialQuantity={parseInt(
+              new URLSearchParams(window.location.search).get("quantity"),
             )}
           />
         ) : !selectedOrder ? (
