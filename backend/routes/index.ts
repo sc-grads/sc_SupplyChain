@@ -94,5 +94,10 @@ router.get(
   authenticate,
   analyticsController.getVendorAnalytics,
 );
+router.get(
+  "/analytics/supplier",
+  authenticate,
+  analyticsController.getSupplierAnalytics,
+);
 
 export default router;

@@ -113,6 +113,11 @@ const Inventory = () => {
     fetchInventory();
   }, [fetchInventory]);
 
+  // Reset to page 1 when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeFilter]);
+
   // Derived quantity calculations
   const getDerivedStatus = (item) => {
     const percentage = ((item.quantity || 0) / 1000) * 100;
@@ -130,6 +135,14 @@ const Inventory = () => {
     if (activeFilter === "At Risk") return status === "LOW";
     return true;
   });
+
+  // Slicing for Pagination
+  const itemsPerPage = 7;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedInventory = filteredInventory.slice(
+    startIndex,
+    startIndex + itemsPerPage,
+  );
 
   // Derived counts for FilterBar
   const counts = {
@@ -208,7 +221,7 @@ const Inventory = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                {filteredInventory.map((item) => (
+                {paginatedInventory.map((item) => (
                   <InventoryTableRow
                     key={item.id}
                     item={item}
@@ -223,7 +236,7 @@ const Inventory = () => {
           <Pagination
             currentPage={currentPage}
             totalItems={filteredInventory.length}
-            itemsPerPage={15}
+            itemsPerPage={itemsPerPage}
             onPageChange={setCurrentPage}
           />
         </div>

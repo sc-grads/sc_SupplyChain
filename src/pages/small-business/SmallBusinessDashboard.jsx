@@ -36,28 +36,31 @@ const SmallBusinessDashboard = () => {
   };
 
   const calculateOrderTotal = (order) => {
-    return order.items.reduce((total, item) => {
-      const price = item.price || getMockPrice(item.sku || "UNKNOWN");
-      return total + price * item.quantity;
-    }, 0);
+    const subtotal =
+      order.subtotal ||
+      order.items.reduce((total, item) => {
+        const price = item.price || getMockPrice(item.sku || "UNKNOWN");
+        return total + price * item.quantity;
+      }, 0);
+    return subtotal * 1.08; // Include 8% tax
   };
 
-  // Logic: Sum of all ACCEPTED orders (which are active financial commitments)
-  // Logic Note: The user said "when supplier cancels ... price should be back".
-  // This implies we ONLY count accepted orders. Pending or Cancelled don't count.
+  // Logic: Sum of all ACCEPTED orders that are NOT YET DELIVERED (active financial commitments)
   const estimatedExpenditureVal = orders
-    .filter((o) => o.orderState === "ACCEPTED")
+    .filter(
+      (o) => o.orderState === "ACCEPTED" && o.deliveryState !== "DELIVERED",
+    )
     .reduce((sum, order) => sum + calculateOrderTotal(order), 0);
 
   // Format as Rands
-  const estimatedExpenditure = `R ${estimatedExpenditureVal.toLocaleString()}`;
+  const estimatedExpenditure = `R ${estimatedExpenditureVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   // Total Spending: Sum of all DELIVERED orders (Completed transactions)
   const totalSpendingVal = orders
     .filter((o) => o.deliveryState === "DELIVERED")
     .reduce((sum, order) => sum + calculateOrderTotal(order), 0);
 
-  const totalSpending = `R ${totalSpendingVal.toLocaleString()}`;
+  const totalSpending = `R ${totalSpendingVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const handleTrackDelivery = (orderId) => {
     alert(`Opening delivery tracking for order ${orderId}`);

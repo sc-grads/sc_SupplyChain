@@ -21,3 +21,23 @@ export const getVendorAnalytics = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getSupplierAnalytics = async (req: Request, res: Response) => {
+  try {
+    const authReq = req as AuthRequest;
+    const supplierId = authReq.user?.id;
+
+    if (!supplierId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const analytics = await analyticsService.getSupplierAnalytics(supplierId);
+    res.json(analytics);
+  } catch (error: any) {
+    console.error("Supplier analytics fetch error:", error);
+    res.status(500).json({
+      message: "Failed to fetch supplier analytics data",
+      details: error.message,
+    });
+  }
+};

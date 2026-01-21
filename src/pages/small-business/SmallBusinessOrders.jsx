@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
 import { useOrders } from "../../context/OrderContext";
@@ -97,13 +98,15 @@ const OrderList = ({ orders, onSelectOrder }) => {
                 <td className="px-6 py-4 text-right font-bold text-sm">
                   R{" "}
                   {(
-                    (order.items?.reduce(
-                      (sum, item) =>
-                        sum +
-                        (item.price || getMockPrice(item.sku)) *
-                          (item.quantity || 0),
-                      0,
-                    ) || 0) * 1.08
+                    (order.subtotal ||
+                      order.items?.reduce(
+                        (sum, item) =>
+                          sum +
+                          (item.price || getMockPrice(item.sku)) *
+                            (item.quantity || 0),
+                        0,
+                      ) ||
+                      0) * 1.08
                   ).toFixed(2)}
                 </td>
                 <td className="px-6 py-4">
@@ -157,11 +160,13 @@ const OrderDetails = ({ order }) => {
   };
 
   const calculatedSubtotal =
+    order.subtotal ||
     order.items?.reduce(
       (sum, item) =>
         sum + (item.price || getMockPrice(item.sku)) * (item.quantity || 0),
       0,
-    ) || 0;
+    ) ||
+    0;
 
   return (
     <>
@@ -320,11 +325,14 @@ const NewOrderForm = ({
     deliveryAddress: "",
     notes: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const selectedProduct = catalog.find((p) => p.skuName === formData.item);
     if (!selectedProduct) return;
+
+    setIsSubmitting(true);
 
     // Map to backend schema
     const orderData = {
@@ -342,7 +350,12 @@ const NewOrderForm = ({
       deliveryAddress: formData.deliveryAddress,
       partialAllowed: false,
     };
-    onSubmit(orderData);
+
+    try {
+      await onSubmit(orderData);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const selectedProduct = catalog.find((p) => p.skuName === formData.item);
@@ -488,9 +501,19 @@ const NewOrderForm = ({
             </button>
             <button
               type="submit"
-              className="flex-1 h-12 rounded-lg bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:brightness-105 transition-all"
+              disabled={isSubmitting}
+              className={`flex-1 h-12 rounded-lg bg-primary text-white font-bold shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 ${isSubmitting ? "opacity-70 cursor-not-allowed" : "hover:brightness-105"}`}
             >
-              Submit to Supplier
+              {isSubmitting ? (
+                <>
+                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  <span>Processing...</span>
+                </>
+              ) : (
+                <>
+                  <span>Submit to Supplier</span>
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -582,10 +605,18 @@ const SmallBusinessOrders = () => {
   const handleFormSubmit = async (orderData) => {
     const result = await createOrder(orderData);
     if (result.success) {
-      alert("Order placed successfully!");
+      toast.success("Order placed successfully!", {
+        icon: "🚀",
+        style: {
+          borderRadius: "12px",
+          background: "#121714",
+          color: "#fff",
+          fontWeight: "bold",
+        },
+      });
       setShowForm(false);
     } else {
-      alert(`Failed to place order: ${result.error}`);
+      toast.error(`Failed to place order: ${result.error}`);
     }
   };
 

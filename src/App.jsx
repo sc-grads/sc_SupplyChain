@@ -3,6 +3,8 @@ import { AuthProvider } from "./context/AuthContext";
 import { OrderProvider } from "./context/OrderContext";
 import { InventoryProvider } from "./context/InventoryContext";
 import { AnalyticsProvider } from "./context/AnalyticsContext";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 // Auth
 import Login from "./pages/auth/Login";
 import AccountTypeSelection from "./pages/auth/AccountTypeSelection";
@@ -13,7 +15,6 @@ import Dashboard from "./pages/supplier/Dashboard";
 import Orders from "./pages/supplier/Orders";
 import Inventory from "./pages/supplier/Inventory";
 import NewOrders from "./pages/supplier/NewOrders";
-import PerformanceAnalytics from "./pages/supplier/PerformanceAnalytics";
 import OrderHistoryAnalytics from "./pages/supplier/OrderHistoryAnalytics";
 // Small Business
 import SmallBusinessDashboard from "./pages/small-business/SmallBusinessDashboard";
@@ -49,7 +50,7 @@ function App() {
                 <Route path="/new-orders" element={<NewOrders />} />
                 <Route path="/orders" element={<Orders />} />
                 <Route path="/inventory" element={<Inventory />} />
-                <Route path="/analytics" element={<PerformanceAnalytics />} />
+                <Route path="/analytics" element={<OrderHistoryAnalytics />} />
                 <Route
                   path="/analytics/history"
                   element={<OrderHistoryAnalytics />}
@@ -81,6 +82,18 @@ function App() {
                 />
               </Routes>
             </Router>
+            <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="colored"
+            />
           </AnalyticsProvider>
         </InventoryProvider>
       </OrderProvider>

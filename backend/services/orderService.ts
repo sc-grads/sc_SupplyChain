@@ -16,11 +16,32 @@ export async function createOrder(data: {
   promisedDeliveryAt?: Date;
   predictedDeliveryAt?: Date;
 }) {
+  // Ensure items have prices if missing, and calculate subtotal
+  const itemsWithPrices = await Promise.all(
+    data.items.map(async (item) => {
+      if (!item.price || item.price === 0) {
+        // Find price from first available inventory record for this SKU
+        const inventory = await prisma.inventory.findFirst({
+          where: { sku: { code: item.sku } },
+          select: { price: true },
+        });
+        return { ...item, price: inventory?.price || 0 };
+      }
+      return item;
+    }),
+  );
+
+  const subtotal = itemsWithPrices.reduce(
+    (sum, item) => sum + (item.price || 0) * (item.quantity || 0),
+    0,
+  );
+
   const order = await prisma.order.create({
     data: {
       vendorId: data.vendorId,
       orderNumber: `ORD-${Date.now()}`, // Simple unique number
-      items: data.items, // JSON array
+      items: itemsWithPrices, // JSON array with prices
+      subtotal,
       partialAllowed: data.partialAllowed,
       deliveryLocation: data.deliveryLocation,
       requiredDeliveryDate: data.requiredDeliveryDate,

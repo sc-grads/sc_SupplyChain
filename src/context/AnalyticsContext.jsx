@@ -19,9 +19,10 @@ export const useAnalytics = () => {
 
 export const AnalyticsProvider = ({ children }) => {
   const [analyticsData, setAnalyticsData] = useState(null);
+  const [supplierAnalytics, setSupplierAnalytics] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { token } = useAuth();
+  const { token, user } = useAuth();
 
   const API_BASE = "http://localhost:5000/api";
 
@@ -33,12 +34,17 @@ export const AnalyticsProvider = ({ children }) => {
   }, [token]);
 
   const fetchAnalytics = useCallback(async () => {
-    if (!token) return;
+    if (!token || !user) return;
 
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE}/analytics/vendor`, {
+      const endpoint =
+        user.role === "SUPPLIER"
+          ? `${API_BASE}/analytics/supplier`
+          : `${API_BASE}/analytics/vendor`;
+
+      const response = await fetch(endpoint, {
         headers: getHeaders(),
       });
 
@@ -47,14 +53,18 @@ export const AnalyticsProvider = ({ children }) => {
       }
 
       const data = await response.json();
-      setAnalyticsData(data);
+      if (user.role === "SUPPLIER") {
+        setSupplierAnalytics(data);
+      } else {
+        setAnalyticsData(data);
+      }
     } catch (err) {
       setError(err.message);
       console.error("Analytics fetch error:", err);
     } finally {
       setLoading(false);
     }
-  }, [token, getHeaders]);
+  }, [token, user, getHeaders]);
 
   // Auto-fetch on mount when token is available
   useEffect(() => {
@@ -67,6 +77,7 @@ export const AnalyticsProvider = ({ children }) => {
     <AnalyticsContext.Provider
       value={{
         analyticsData,
+        supplierAnalytics,
         loading,
         error,
         fetchAnalytics,

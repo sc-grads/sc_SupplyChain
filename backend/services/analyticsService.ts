@@ -36,6 +36,19 @@ interface VendorAnalytics {
   };
 }
 
+export interface SupplierAnalytics {
+  deliveredOrders: {
+    id: string;
+    orderNumber: string;
+    retailer: string;
+    date: string;
+    value: string;
+    leadTime: string;
+    stars: number;
+    placedAt: Date;
+  }[];
+}
+
 export async function getVendorAnalytics(
   vendorId: string,
 ): Promise<VendorAnalytics> {
@@ -62,13 +75,15 @@ export async function getVendorAnalytics(
     (o) => o.deliveryState === "DELIVERED",
   );
 
-  // Calculate Total Spend
+  // Calculate Total Spend (including 8% tax)
   const totalSpend = deliveredOrders.reduce((sum, order) => {
-    const orderTotal = (order.items as any[]).reduce(
-      (itemSum, item) => itemSum + (item.price || 0) * (item.quantity || 0),
-      0,
-    );
-    return sum + orderTotal;
+    const orderSubtotal =
+      order.subtotal ||
+      (order.items as any[]).reduce(
+        (itemSum, item) => itemSum + (item.price || 0) * (item.quantity || 0),
+        0,
+      );
+    return sum + orderSubtotal * 1.08;
   }, 0);
 
   // Calculate Supply Reliability %
@@ -143,11 +158,12 @@ export async function getVendorAnalytics(
     if (acceptedVisibility) {
       const supplierId = acceptedVisibility.supplierId;
       const supplierName = acceptedVisibility.supplier.name || "Unknown";
-
-      const orderTotal = (order.items as any[]).reduce(
-        (sum, item) => sum + (item.price || 0) * (item.quantity || 0),
-        0,
-      );
+      const orderTotalWithTax =
+        (order.subtotal ||
+          (order.items as any[]).reduce(
+            (sum, item) => sum + (item.price || 0) * (item.quantity || 0),
+            0,
+          )) * 1.08;
 
       if (!supplierSpend.has(supplierId)) {
         supplierSpend.set(supplierId, {
@@ -158,7 +174,7 @@ export async function getVendorAnalytics(
       }
 
       const data = supplierSpend.get(supplierId)!;
-      data.spend += orderTotal;
+      data.spend += orderTotalWithTax;
       if (order.rating) {
         data.scores.push(order.rating.score);
       }
@@ -231,10 +247,13 @@ export async function getVendorAnalytics(
       );
       const supplierName = acceptedVisibility?.supplier.name || "Unknown";
 
-      const orderTotal = (order.items as any[]).reduce(
-        (sum, item) => sum + (item.price || 0) * (item.quantity || 0),
-        0,
-      );
+      const orderSubtotal =
+        order.subtotal ||
+        (order.items as any[]).reduce(
+          (sum, item) => sum + (item.price || 0) * (item.quantity || 0),
+          0,
+        );
+      const orderTotalWithTax = orderSubtotal * 1.08;
 
       return {
         id: order.orderNumber,
@@ -247,7 +266,7 @@ export async function getVendorAnalytics(
               day: "numeric",
             })
           : "N/A",
-        value: `R${orderTotal.toFixed(2)}`,
+        value: `R${orderTotalWithTax.toFixed(2)}`,
         stars: order.rating?.score || 0,
       };
     },
@@ -270,19 +289,23 @@ export async function getVendorAnalytics(
   );
 
   const recentSpend = recentOrders.reduce((sum, order) => {
-    const orderTotal = (order.items as any[]).reduce(
-      (itemSum, item) => itemSum + (item.price || 0) * (item.quantity || 0),
-      0,
-    );
-    return sum + orderTotal;
+    const orderSubtotal =
+      order.subtotal ||
+      (order.items as any[]).reduce(
+        (itemSum, item) => itemSum + (item.price || 0) * (item.quantity || 0),
+        0,
+      );
+    return sum + orderSubtotal * 1.08;
   }, 0);
 
   const previousSpend = previousOrders.reduce((sum, order) => {
-    const orderTotal = (order.items as any[]).reduce(
-      (itemSum, item) => itemSum + (item.price || 0) * (item.quantity || 0),
-      0,
-    );
-    return sum + orderTotal;
+    const orderSubtotal =
+      order.subtotal ||
+      (order.items as any[]).reduce(
+        (itemSum, item) => itemSum + (item.price || 0) * (item.quantity || 0),
+        0,
+      );
+    return sum + orderSubtotal * 1.08;
   }, 0);
 
   const spendTrend =
@@ -325,5 +348,68 @@ export async function getVendorAnalytics(
       spendTrend,
       reliabilityTrend,
     },
+  };
+}
+
+export async function getSupplierAnalytics(
+  supplierId: string,
+): Promise<SupplierAnalytics> {
+  // Fetch all orders where this supplier HAS DELIVERED
+  const deliveredOrders = await prisma.order.findMany({
+    where: {
+      deliveryState: "DELIVERED",
+      visibility: {
+        some: {
+          supplierId,
+          status: "ACCEPTED",
+        },
+      },
+    },
+    include: {
+      vendor: { select: { name: true } },
+      rating: true,
+    },
+    orderBy: { actualDeliveredAt: "desc" },
+  });
+
+  const formattedOrders = deliveredOrders.map((order) => {
+    // Lead time calculation (Actual Delivery - Placed At)
+    let leadTimeStr = "-";
+    if (order.actualDeliveredAt && order.createdAt) {
+      const diffMs =
+        order.actualDeliveredAt.getTime() - order.createdAt.getTime();
+      const diffDays = (diffMs / (1000 * 60 * 60 * 24)).toFixed(1);
+      leadTimeStr = `${diffDays} Days`;
+    }
+
+    // Value calculation (with 8% tax)
+    const orderSubtotal =
+      order.subtotal ||
+      (order.items as any[]).reduce(
+        (sum, item) => sum + (item.price || 0) * (item.quantity || 0),
+        0,
+      );
+    const orderTotalWithTax = orderSubtotal * 1.08;
+
+    return {
+      id: order.id,
+      orderNumber: order.orderNumber,
+      retailer: order.vendor?.name || "Unknown Retailer",
+      date: order.actualDeliveredAt
+        ? new Date(order.actualDeliveredAt).toLocaleDateString("en-ZA", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })
+        : "N/A",
+      value: `R ${orderTotalWithTax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      leadTime: leadTimeStr,
+      stars: order.rating?.score || 0,
+      placedAt: order.createdAt,
+    };
+  });
+
+  return {
+    deliveredOrders: formattedOrders,
   };
 }
