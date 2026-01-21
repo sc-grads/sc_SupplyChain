@@ -130,8 +130,8 @@ const SmallBusinessInventory = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 px-4 h-10 bg-primary text-white rounded-lg text-sm font-bold hover:brightness-105 transition-colors shadow-sm">
-              <span className="material-symbols-outlined text-sm">add</span>
+            <button className="flex items-center justify-center gap-2 px-5 h-10 bg-primary text-white rounded-lg text-[10px] font-bold uppercase tracking-widest hover:brightness-105 transition-all shadow-sm">
+              <span className="material-symbols-outlined text-lg">add</span>
               Add Item
             </button>
           </div>
@@ -154,64 +154,88 @@ const SmallBusinessInventory = () => {
         </div>
 
         {/* Filter Chips */}
-        <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
-          <div
+        <div className="flex items-center gap-3 mb-10 overflow-x-auto pb-2 scrollbar-hide">
+          <button
             onClick={() => setActiveTab("all")}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold cursor-pointer transition-all ${activeTab === "all" ? "bg-primary text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200"}`}
+            className={`flex items-center gap-4 px-5 h-10 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap border ${
+              activeTab === "all"
+                ? "bg-primary text-white border-primary shadow-sm"
+                : "bg-white dark:bg-gray-900 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
+            }`}
           >
-            All Items{" "}
+            All Items
             <span
-              className={`px-1.5 rounded text-[10px] ${activeTab === "all" ? "bg-white/20" : "bg-gray-200 dark:bg-gray-700"}`}
+              className={`px-2 py-0.5 rounded-full text-[10px] items-center justify-center flex min-w-[24px] ${
+                activeTab === "all"
+                  ? "bg-white/20 text-white"
+                  : "bg-gray-50 dark:bg-gray-800 text-gray-400 border border-gray-100 dark:border-gray-700"
+              }`}
             >
               {inventory.length}
             </span>
-          </div>
-          <div
+          </button>
+          <button
             onClick={() => setActiveTab("low")}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold cursor-pointer transition-all ${activeTab === "low" ? "bg-amber-500 text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200"}`}
+            className={`flex items-center gap-4 px-5 h-10 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap border ${
+              activeTab === "low"
+                ? "bg-amber-500 text-white border-amber-500 shadow-sm"
+                : "bg-white dark:bg-gray-900 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
+            }`}
           >
-            Low Stock{" "}
+            Low Stock
             <span
-              className={`px-1.5 rounded text-[10px] ${activeTab === "low" ? "bg-white/20" : "bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300"}`}
+              className={`px-2 py-0.5 rounded-full text-[10px] items-center justify-center flex min-w-[24px] ${
+                activeTab === "low"
+                  ? "bg-white/20 text-white"
+                  : "bg-amber-50 dark:bg-amber-900/20 text-amber-600 border border-amber-100 dark:border-amber-900/30"
+              }`}
             >
               {lowStockCount}
             </span>
-          </div>
-          <div
+          </button>
+          <button
             onClick={() => setActiveTab("out")}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold cursor-pointer transition-all ${activeTab === "out" ? "bg-red-500 text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200"}`}
+            className={`flex items-center gap-4 px-5 h-10 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap border ${
+              activeTab === "out"
+                ? "bg-red-500 text-white border-red-500 shadow-sm"
+                : "bg-white dark:bg-gray-900 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
+            }`}
           >
-            Out of Stock{" "}
+            Out of Stock
             <span
-              className={`px-1.5 rounded text-[10px] ${activeTab === "out" ? "bg-white/20" : "bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300"}`}
+              className={`px-2 py-0.5 rounded-full text-[10px] items-center justify-center flex min-w-[24px] ${
+                activeTab === "out"
+                  ? "bg-white/20 text-white"
+                  : "bg-red-50 dark:bg-red-950/20 text-red-600 border border-red-100 dark:border-red-900/30"
+              }`}
             >
               {outOfStockCount}
             </span>
-          </div>
+          </button>
         </div>
 
         {/* Inventory Table */}
-        <div className="bg-white dark:bg-background-dark border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
-                  <th className="px-4 py-3 text-xs font-black text-gray-500 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-widest">
                     Product
                   </th>
-                  <th className="px-4 py-3 text-xs font-black text-gray-500 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-widest">
                     Category
                   </th>
-                  <th className="px-4 py-3 text-xs font-black text-gray-500 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-widest">
                     Current Stock
                   </th>
-                  <th className="px-4 py-3 text-xs font-black text-gray-500 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-widest">
                     Reorder Level
                   </th>
-                  <th className="px-4 py-3 text-xs font-black text-gray-500 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-widest">
                     Last Ordered
                   </th>
-                  <th className="px-4 py-3 text-xs font-black text-gray-500 uppercase tracking-widest text-right">
+                  <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-widest text-right">
                     Actions
                   </th>
                 </tr>
@@ -220,29 +244,29 @@ const SmallBusinessInventory = () => {
                 {currentItems.map((item) => (
                   <tr
                     key={item.id}
-                    className={`hover:bg-primary/5 transition-colors group ${item.currentStock <= 5 ? "bg-red-50/20 dark:bg-red-950/5" : item.currentStock <= item.reorderLevel ? "bg-amber-50/20 dark:bg-amber-950/5" : ""}`}
+                    className={`hover:bg-primary/5 transition-colors group border-b border-gray-100 dark:border-gray-800 last:border-0 ${item.currentStock <= 5 ? "bg-red-50/20 dark:bg-red-950/5" : item.currentStock <= item.reorderLevel ? "bg-amber-50/20 dark:bg-amber-950/5" : ""}`}
                   >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-4">
                         <div
-                          className={`size-10 rounded bg-gray-100 dark:bg-gray-800 flex-shrink-0 flex items-center justify-center overflow-hidden ${item.currentStock <= 5 ? "grayscale" : item.currentStock <= item.reorderLevel ? "border-2 border-amber-400/40" : ""}`}
+                          className={`h-11 w-11 rounded-lg bg-gray-50 dark:bg-gray-800 flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-100 dark:border-gray-700 ${item.currentStock <= 5 ? "grayscale opacity-50" : ""}`}
                         >
-                          <div
-                            className={`w-full h-full bg-gradient-to-br ${item.currentStock <= 5 ? "from-red-100 to-red-200 dark:from-red-900 dark:to-red-800" : item.currentStock <= item.reorderLevel ? "from-amber-100 to-amber-200 dark:from-amber-900 dark:to-amber-800" : "from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800"}`}
-                          ></div>
+                          <span className="material-symbols-outlined text-gray-400">
+                            inventory_2
+                          </span>
                         </div>
-                        <div>
+                        <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <p className="text-sm font-bold text-[#111418] dark:text-white leading-tight">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 leading-tight">
                               {item.name}
                             </p>
                             {item.currentStock <= item.reorderLevel && (
                               <span
-                                className={`size-2 rounded-full ${item.currentStock <= 5 ? "bg-red-500" : "bg-amber-500 animate-pulse"}`}
+                                className={`size-2 rounded-full ${item.currentStock <= 5 ? "bg-red-500" : "bg-status-amber animate-pulse"}`}
                               ></span>
                             )}
                             {item.autoReorderEnabled && (
-                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 ml-1">
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
                                 <span className="material-symbols-outlined text-[10px]">
                                   autorenew
                                 </span>
@@ -250,22 +274,22 @@ const SmallBusinessInventory = () => {
                               </span>
                             )}
                           </div>
-                          <p className="text-[11px] font-mono text-gray-400 mt-0.5">
+                          <p className="text-[10px] font-mono text-gray-400 uppercase tracking-widest mt-0.5">
                             SKU: {item.sku}
                           </p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-5">
                       <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[11px] font-bold text-gray-600 dark:text-gray-400 uppercase">
                         {item.category || "N/A"}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex items-end justify-between">
+                    <td className="px-6 py-5">
+                      <div className="flex flex-col gap-2 items-center">
+                        <div className="flex items-end justify-between w-full max-w-[128px]">
                           <span
-                            className={`text-sm font-black ${item.currentStock <= 5 ? "text-red-600" : item.currentStock <= item.reorderLevel ? "text-amber-600" : ""}`}
+                            className={`text-sm font-medium ${item.currentStock <= 5 ? "text-red-500" : item.currentStock <= item.reorderLevel ? "text-amber-600" : "text-gray-700 dark:text-gray-300"}`}
                           >
                             {item.currentStock}{" "}
                             <span className="text-gray-400 font-normal">
@@ -275,7 +299,7 @@ const SmallBusinessInventory = () => {
                         </div>
                         <div className="w-32 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                           <div
-                            className={`h-full ${getStockColor(item.currentStock, item.reorderLevel)}`}
+                            className={`h-full ${getStockColor(item.currentStock, item.reorderLevel)} transition-all duration-500`}
                             style={{
                               width: `${Math.min((item.currentStock / (item.reorderLevel * 2)) * 100, 100)}%`,
                             }}
@@ -283,24 +307,24 @@ const SmallBusinessInventory = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-5">
                       <span className="text-sm font-medium text-gray-500">
                         {item.reorderLevel} {item.unit || "units"}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-5">
                       <span className="text-sm text-gray-500">
                         {item.lastOrdered || "N/A"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-6 py-5 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => {
                             setEditingItem(item);
                             setIsEditModalOpen(true);
                           }}
-                          className="inline-flex items-center justify-center size-8 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-primary hover:text-white transition-all"
+                          className="inline-flex items-center justify-center h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-primary/10 hover:text-primary transition-all shadow-sm"
                         >
                           <span className="material-symbols-outlined text-lg">
                             edit
@@ -312,7 +336,7 @@ const SmallBusinessInventory = () => {
                               `/small-business/orders?action=new&item=${encodeURIComponent(item.name)}&quantity=${item.reorderLevel}`,
                             )
                           }
-                          className={`inline-flex items-center justify-center px-3 h-8 rounded text-white text-xs font-bold hover:brightness-105 transition-all ${item.currentStock <= 5 ? "bg-red-500" : item.currentStock <= item.reorderLevel ? "bg-amber-500" : "bg-primary"}`}
+                          className={`inline-flex items-center justify-center px-4 h-10 rounded-lg text-white text-[10px] font-bold uppercase tracking-widest hover:brightness-105 transition-all shadow-sm ${item.currentStock <= 5 ? "bg-red-500" : item.currentStock <= item.reorderLevel ? "bg-amber-500" : "bg-primary"}`}
                         >
                           {item.currentStock <= 5 ? "Order Now" : "Reorder"}
                         </button>

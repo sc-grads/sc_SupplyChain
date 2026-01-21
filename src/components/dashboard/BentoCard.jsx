@@ -15,7 +15,7 @@ const BentoCard = ({
 }) => {
   return (
     <div
-      className={`bento-card flex flex-col gap-4 rounded-xl p-6 bg-white dark:bg-gray-900 border ${borderColor} ${shadowColor ? `shadow-lg ${shadowColor}` : "shadow-sm"} cursor-pointer hover:shadow-md transition-shadow`}
+      className={`bento-card flex flex-col gap-4 rounded-xl p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-all`}
       onClick={onClick}
     >
       <div className="flex justify-between items-start">
@@ -23,16 +23,18 @@ const BentoCard = ({
           {icon}
         </span>
         <span
-          className={`text-xs font-bold px-2 py-1 rounded ${trendBg} ${trendColor}`}
+          className={`text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full ${trendBg} ${trendColor}`}
         >
           {trendLabel}
         </span>
       </div>
-      <div>
-        <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">
+      <div className="space-y-1">
+        <p className="text-gray-500 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-wider">
           {title}
         </p>
-        <p className="text-3xl font-bold leading-tight">{value}</p>
+        <p className="text-3xl font-bold tracking-tight leading-none text-gray-900 dark:text-white">
+          {value}
+        </p>
       </div>
     </div>
   );

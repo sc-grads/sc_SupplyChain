@@ -1,33 +1,36 @@
 import React from "react";
 
-const getStatusStyles = (status, type = "default") => {
+const getStatusStyles = (status) => {
   const styles = {
-    // Inventory Status
-    Available: "bg-status-green text-white border-status-green",
-    "Low Stock": "bg-status-amber text-white border-status-amber",
-    "Out of Stock": "bg-status-red text-white border-status-red",
+    // Inventory Status (Standardized Colors)
+    Available: "bg-primary/10 text-primary border-primary/20",
+    "Low Stock": "bg-risk-amber/10 text-risk-amber border-risk-amber/20",
+    "Out of Stock": "bg-red-50 text-red-600 border-red-100",
+    AVAILABLE: "bg-primary/10 text-primary border-primary/20",
+    LOW: "bg-risk-amber/10 text-risk-amber border-risk-amber/20",
+    UNAVAILABLE: "bg-red-50 text-red-600 border-red-100",
 
     // Order Status
-    New: "bg-new-blue/10 text-new-blue border-new-blue/20",
-    Pending:
-      "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800",
+    New: "bg-primary/10 text-primary border-primary/20",
+    Pending: "bg-risk-amber/10 text-risk-amber border-risk-amber/20",
+    DELIVERED: "bg-success/10 text-success border-success/20",
+    CANCELLED: "bg-red-50 text-red-600 border-red-100",
 
-    // General Tags
-    "DRY GOODS":
-      "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400",
-    CONDIMENTS: "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400",
-    ADDITIVES: "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400",
-    SEASONING: "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400",
-
-    // Fallback
-    default: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+    // General Tags (SaaS Neutral)
+    default:
+      "bg-gray-100/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700",
   };
 
-  return styles[status] || styles["default"];
+  const key = status?.toString().toUpperCase().replace(/ /g, "_") || "DEFAULT";
+  const normalizedKey =
+    Object.keys(styles).find((k) => k.toUpperCase() === key) || "default";
+
+  return styles[normalizedKey] || styles["default"];
 };
 
 const StatusBadge = ({ status, className = "", children }) => {
-  const baseStyles = "px-2 py-0.5 rounded text-[11px] font-bold border";
+  const baseStyles =
+    "px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest border transition-all";
   const statusStyles = getStatusStyles(status);
 
   return (

@@ -3,65 +3,92 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 16px;
-  background-color: #f9fafb;
+  padding: 24px;
+  background-color: #f8fafc;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(13, 148, 136, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(13, 148, 136, 0.05) 0px, transparent 50%);
 }
 
 .login-card {
   background: white;
-  padding: 40px;
-  border-radius: 12px;
+  padding: 48px;
+  border-radius: 24px;
   box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    0 10px 25px -5px rgba(0, 0, 0, 0.04),
+    0 8px 10px -6px rgba(0, 0, 0, 0.04);
   width: 100%;
   max-width: 440px;
-  text-align: center;
+  border: 1px border-gray-100;
 }
 
 .logo-section {
-  margin-bottom: 32px;
+  text-align: center;
+  margin-bottom: 40px;
 }
 
 .logo-placeholder {
-  font-weight: 700;
-  font-size: 24px;
-  color: #3b82f6;
-  margin-bottom: 8px;
+  font-weight: 900;
+  font-size: 28px;
+  letter-spacing: -0.05em;
+  color: #0d9488;
+  margin-bottom: 4px;
+  font-family: "Poppins", sans-serif;
 }
 
 h1 {
-  font-size: 24px;
-  color: #111827;
-  font-weight: 600;
+  font-size: 20px;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: "Poppins", sans-serif;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .input-group {
-  text-align: left;
-  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 8px;
+  font-size: 10px;
+  font-weight: 900;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  padding-left: 4px;
 }
 
 input {
   width: 100%;
-  padding: 10px 14px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 16px;
+  height: 48px;
+  padding: 0 16px;
+  background-color: #f1f5f9;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+input::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
 }
 
 input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background-color: white;
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.15);
+  background-clip: padding-box;
 }
 
 .password-input-wrapper {
@@ -73,69 +100,80 @@ input:focus {
 .password-toggle {
   position: absolute;
   right: 12px;
+  width: 32px;
+  height: 32px;
   background: none;
   border: none;
-  padding: 0;
-  color: #6b7280;
+  color: #94a3b8;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  user-select: none;
-  transition: color 0.15s ease;
+  border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
 .password-toggle:hover {
-  color: #374151;
+  color: #0d9488;
+  background-color: rgba(13, 148, 136, 0.05);
 }
 
 .password-toggle:focus {
   outline: none;
-  color: #3b82f6;
-}
-
-.password-toggle .material-symbols-outlined {
-  font-size: 20px;
+  color: #0d9488;
 }
 
 .primary-button {
-  width: 100%;
-  background-color: #3b82f6;
+  height: 48px;
+  background-color: #0d9488;
   color: white;
   border: none;
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
-  transition: background-color 0.15s ease;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.2);
+  margin-top: 8px;
 }
 
 .primary-button:hover {
-  background-color: #2563eb;
+  background-color: #0f766e;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 15px -3px rgba(13, 148, 136, 0.3);
 }
 
-.info-text {
-  margin-top: 24px;
-  font-size: 14px;
-  color: #6b7280;
-  line-height: 1.5;
+.primary-button:active {
+  transform: translateY(0);
+}
+
+.primary-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .create-account-section {
   margin-top: 32px;
-  padding-top: 24px;
-  border-top: 1px solid #e5e7eb;
-  font-size: 14px;
-  color: #6b7280;
+  padding-top: 32px;
+  border-top: 1px solid #f1f5f9;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  text-align: center;
 }
 
 .create-account-link {
-  color: #3b82f6;
+  color: #0d9488;
   text-decoration: none;
-  font-weight: 500;
-  margin-left: 4px;
+  font-weight: 700;
+  margin-left: 6px;
+  transition: color 0.2s ease;
 }
 
 .create-account-link:hover {
+  color: #0f766e;
   text-decoration: underline;
 }

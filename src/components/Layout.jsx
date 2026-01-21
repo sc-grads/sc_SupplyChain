@@ -53,9 +53,10 @@ const Layout = ({ children }) => {
   };
 
   return (
-    <div className="bg-background-light dark:bg-background-dark font-display text-[#121615] dark:text-white min-h-screen flex flex-row overflow-hidden">
+    <div className="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-white min-h-screen flex flex-row overflow-hidden">
       {/* Sidebar Navigation */}
-      <nav className="w-64 items-start px-4 transition-all duration-300 flex flex-col py-6 gap-2 border-r border-[#dde3e1] dark:border-gray-800 bg-white dark:bg-background-dark h-screen z-50">
+      <nav className="w-64 items-start px-4 transition-all duration-300 flex flex-col py-8 gap-1 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-background-dark h-screen z-50">
+        {/* Improved: font-black tracking-tight headings */}
         {/* Logo Area */}
         <div className="flex items-center gap-3 mb-8 w-full pl-2">
           <div className="flex items-center gap-3 text-primary">
@@ -77,52 +78,55 @@ const Layout = ({ children }) => {
                 />
               </svg>
             </div>
-            <h2 className="text-xl font-bold leading-tight tracking-[-0.015em] dark:text-white whitespace-nowrap">
+            <h2 className="text-xl font-bold leading-tight tracking-tight dark:text-white whitespace-nowrap">
               EasyStock
             </h2>
           </div>
         </div>
 
+        {/* Improved: consistent button height (h-10), padding, and rounded-lg */}
         <button
           onClick={() => navigate(`${baseRoute}/dashboard`)}
-          className={`p-2 rounded-lg flex items-center gap-3 w-full justify-start ${isActive(`${baseRoute}/dashboard`) ? "bg-primary/10 text-primary" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+          className={`h-10 px-4 rounded-lg flex items-center gap-3 w-full justify-start transition-all ${isActive(`${baseRoute}/dashboard`) ? "bg-primary/10 text-primary font-bold shadow-sm" : "text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"}`}
         >
-          <span className="material-symbols-outlined">dashboard</span>
-          <span className="font-medium whitespace-nowrap">Dashboard</span>
+          <span className="material-symbols-outlined text-xl">dashboard</span>
+          <span className="text-sm whitespace-nowrap">Dashboard</span>
         </button>
         <button
           onClick={() => navigate(`${baseRoute}/orders`)}
-          className={`p-2 rounded-lg flex items-center gap-3 w-full justify-start ${isActive(`${baseRoute}/orders`) ? "bg-primary/10 text-primary" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+          className={`h-10 px-4 rounded-lg flex items-center gap-3 w-full justify-start transition-all ${isActive(`${baseRoute}/orders`) ? "bg-primary/10 text-primary font-bold shadow-sm" : "text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"}`}
         >
-          <span className="material-symbols-outlined">local_shipping</span>
-          <span className="font-medium whitespace-nowrap">Orders</span>
+          <span className="material-symbols-outlined text-xl">
+            local_shipping
+          </span>
+          <span className="text-sm whitespace-nowrap">Orders</span>
         </button>
         <button
           onClick={() => navigate(`${baseRoute}/inventory`)}
-          className={`p-2 rounded-lg flex items-center gap-3 w-full justify-start ${isActive(`${baseRoute}/inventory`) ? "bg-primary/10 text-primary" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+          className={`h-10 px-4 rounded-lg flex items-center gap-3 w-full justify-start transition-all ${isActive(`${baseRoute}/inventory`) ? "bg-primary/10 text-primary font-bold shadow-sm" : "text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"}`}
         >
-          <span className="material-symbols-outlined">inventory_2</span>
-          <span className="font-medium whitespace-nowrap">Inventory</span>
+          <span className="material-symbols-outlined text-xl">inventory_2</span>
+          <span className="text-sm whitespace-nowrap">Inventory</span>
         </button>
         <button
           onClick={() => navigate(`${baseRoute}/analytics`)}
-          className={`p-2 rounded-lg flex items-center gap-3 w-full justify-start ${isActive(`${baseRoute}/analytics`) || isActive(`${baseRoute}/analytics/history`) ? "bg-primary/10 text-primary" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+          className={`h-10 px-4 rounded-lg flex items-center gap-3 w-full justify-start transition-all ${isActive(`${baseRoute}/analytics`) || isActive(`${baseRoute}/analytics/history`) ? "bg-primary/10 text-primary font-bold shadow-sm" : "text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"}`}
         >
-          <span className="material-symbols-outlined">history</span>
-          <span className="font-medium whitespace-nowrap">History</span>
+          <span className="material-symbols-outlined text-xl">history</span>
+          <span className="text-sm whitespace-nowrap">History</span>
         </button>
 
         <button
           onClick={handleLogout}
-          className="p-2 rounded-lg flex items-center gap-3 w-full justify-start text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 mt-auto"
+          className="h-10 px-4 rounded-lg flex items-center gap-3 w-full justify-start text-gray-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/10 transition-all mt-auto font-medium"
         >
-          <span className="material-symbols-outlined">logout</span>
-          <span className="font-medium whitespace-nowrap">Logout</span>
+          <span className="material-symbols-outlined text-xl">logout</span>
+          <span className="text-sm whitespace-nowrap">Logout</span>
         </button>
       </nav>
 
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="sticky top-0 z-40 flex items-center justify-end border-b border-solid border-[#dde3e1] dark:border-gray-800 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md px-6 py-3 lg:px-10 h-16">
+        <header className="sticky top-0 z-40 flex items-center justify-end border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md px-6 py-3 lg:px-10 h-16">
           <div className="flex items-center gap-4">
             <div className="relative">
               <button
@@ -138,7 +142,7 @@ const Layout = ({ children }) => {
               </button>
 
               {isNotifOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden z-[60] animate-in slide-in-from-top-2 duration-200">
+                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden z-[60] animate-in slide-in-from-top-2 duration-200">
                   <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
                     <h3 className="font-bold text-sm">Notifications</h3>
                     {unreadCount > 0 && (
@@ -164,7 +168,7 @@ const Layout = ({ children }) => {
                         >
                           <div className="flex justify-between items-start gap-2">
                             <span
-                              className={`text-xs font-black uppercase tracking-tight ${n.type === "delay" ? "text-risk-amber" : "text-primary"}`}
+                              className={`text-xs font-semibold uppercase tracking-tight ${n.type === "delay" ? "text-risk-amber" : "text-primary"}`}
                             >
                               {n.type === "delay" ? "⚠️ Delay Alert" : "Update"}
                             </span>
@@ -191,23 +195,25 @@ const Layout = ({ children }) => {
 
             <div className="flex items-center gap-3 pl-4 border-l border-gray-200 dark:border-gray-800">
               <div className="hidden sm:flex flex-col text-right">
-                <span className="text-sm font-bold">
+                <span className="text-sm font-bold text-gray-900 dark:text-white">
                   {user?.name || "User"}
                 </span>
-                <span className="text-xs text-gray-500">
+                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
                   {isSmallBusiness
                     ? "Small Business Account"
                     : "Supplier Account"}
                 </span>
               </div>
-              <div className="flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-full size-10 ring-2 ring-primary/20 text-gray-400">
-                <span className="material-symbols-outlined">person</span>
+              <div className="flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-full h-10 w-10 ring-2 ring-primary/20 text-gray-400">
+                <span className="material-symbols-outlined text-xl">
+                  person
+                </span>
               </div>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-6 py-8 lg:px-12 bg-background-light dark:bg-background-dark/50">
+        <main className="flex-1 overflow-y-auto px-6 py-10 lg:px-12 bg-background-light dark:bg-background-dark/50">
           {children}
         </main>
       </div>

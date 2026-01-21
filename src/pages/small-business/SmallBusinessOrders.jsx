@@ -364,87 +364,93 @@ const NewOrderForm = ({
     : 0;
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden max-w-2xl mx-auto shadow-xl">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden max-w-2xl mx-auto shadow-2xl">
       <div className="p-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-black text-[#121714] dark:text-white">
-            Place New Order
-          </h2>
+        <div className="flex justify-between items-center mb-8">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight leading-none">
+              Procurement Request
+            </h2>
+            <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-widest mt-2 px-0.5">
+              Digital Order Assignment
+            </p>
+          </div>
           <button
             onClick={onCancel}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+            className="h-10 w-10 flex items-center justify-center rounded-lg border border-gray-100 dark:border-gray-800 text-gray-400 hover:text-primary transition-all shadow-sm"
           >
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <label className="text-sm font-black uppercase tracking-widest text-gray-500">
-                Items to Order
-              </label>
-              {selectedProduct && (
-                <span className="text-sm font-bold text-primary bg-primary/10 px-2 py-1 rounded">
-                  Est. Total: R{(unitPrice * formData.quantity).toFixed(2)}
-                </span>
-              )}
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-2 col-span-2">
+              <div className="flex justify-between items-center px-1">
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+                  Select Product Documentation
+                </label>
+                {selectedProduct && (
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/5 px-3 py-1 rounded-full border border-primary/10">
+                    Est. R{(unitPrice * formData.quantity).toFixed(2)}
+                  </span>
+                )}
+              </div>
+              <select
+                value={formData.item}
+                onChange={(e) =>
+                  setFormData({ ...formData, item: e.target.value })
+                }
+                className="w-full h-11 px-5 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none cursor-pointer"
+                required
+              >
+                {catalog.map((product, idx) => (
+                  <option key={idx} value={product.skuName}>
+                    {product.skuName} ({product.supplierName})
+                  </option>
+                ))}
+              </select>
             </div>
-            <select
-              value={formData.item}
-              onChange={(e) =>
-                setFormData({ ...formData, item: e.target.value })
-              }
-              className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#121715] text-[#121714] dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-              required
-            >
-              {catalog.map((product, idx) => (
-                <option key={idx} value={product.skuName}>
-                  {product.skuName} ({product.supplierName})
-                </option>
-              ))}
-            </select>
-          </div>
 
-          <div>
-            <label className="block text-sm font-black uppercase tracking-widest text-gray-500 mb-2">
-              Quantity
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={formData.quantity}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  quantity: parseInt(e.target.value) || 1,
-                })
-              }
-              className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#121715] text-[#121714] dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-              required
-            />
-          </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 px-1">
+                Order Quantity
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={formData.quantity}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    quantity: parseInt(e.target.value) || 1,
+                  })
+                }
+                className="w-full h-11 px-5 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                required
+              />
+            </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-black uppercase tracking-widest text-gray-500 mb-2">
-                Urgency Level
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">
+                Priority Tier
               </label>
               <select
                 value={formData.urgency}
                 onChange={(e) =>
                   setFormData({ ...formData, urgency: e.target.value })
                 }
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#121715] text-[#121714] dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                className="w-full h-12 px-5 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-sm font-black text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none cursor-pointer"
               >
-                <option value="Normal">Normal</option>
-                <option value="Urgent">Urgent</option>
-                <option value="Critical">Critical</option>
+                <option value="Normal">Normal Handling</option>
+                <option value="Urgent">Urgent Delivery</option>
+                <option value="Critical">Critical Fulfillment</option>
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-black uppercase tracking-widest text-gray-500 mb-2">
-                Desired Delivery Date
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">
+                Fulfillment Deadline
               </label>
               <input
                 type="date"
@@ -452,16 +458,14 @@ const NewOrderForm = ({
                 onChange={(e) =>
                   setFormData({ ...formData, deliveryDate: e.target.value })
                 }
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#121715] text-[#121714] dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                className="w-full h-12 px-5 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-sm font-black text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                 required
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-black uppercase tracking-widest text-gray-500 mb-2">
-                Delivery Location (City/Area)
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">
+                Destination Zone
               </label>
               <input
                 type="text"
@@ -469,14 +473,15 @@ const NewOrderForm = ({
                 onChange={(e) =>
                   setFormData({ ...formData, deliveryLocation: e.target.value })
                 }
-                placeholder="e.g. Johannesburg CBD"
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#121715] text-[#121714] dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                placeholder="e.g. Pretoria North"
+                className="w-full h-12 px-5 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-sm font-black text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-black uppercase tracking-widest text-gray-500 mb-2">
-                Street Address
+
+            <div className="space-y-2 col-span-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">
+                Precise Street Address
               </label>
               <input
                 type="text"
@@ -484,34 +489,37 @@ const NewOrderForm = ({
                 onChange={(e) =>
                   setFormData({ ...formData, deliveryAddress: e.target.value })
                 }
-                placeholder="123 Main St"
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#121715] text-[#121714] dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                placeholder="123 Industrial Park Drive"
+                className="w-full h-12 px-5 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-sm font-black text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                 required
               />
             </div>
           </div>
 
-          <div className="flex gap-4 pt-4">
+          <div className="flex gap-4 pt-6">
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 h-12 rounded-lg border border-gray-200 dark:border-gray-700 text-[#121714] dark:text-white font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+              className="flex-1 h-11 rounded-lg border border-gray-100 dark:border-gray-800 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all shadow-sm"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`flex-1 h-12 rounded-lg bg-primary text-white font-bold shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 ${isSubmitting ? "opacity-70 cursor-not-allowed" : "hover:brightness-105"}`}
+              className={`flex-1 h-11 rounded-lg bg-primary text-white text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-3 ${isSubmitting ? "opacity-70 cursor-not-allowed" : "hover:brightness-105"}`}
             >
               {isSubmitting ? (
                 <>
-                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                   <span>Processing...</span>
                 </>
               ) : (
                 <>
-                  <span>Submit to Supplier</span>
+                  <span className="material-symbols-outlined text-lg">
+                    rocket_launch
+                  </span>
+                  <span>Authorize Order</span>
                 </>
               )}
             </button>

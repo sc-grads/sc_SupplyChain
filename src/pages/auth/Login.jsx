@@ -39,24 +39,14 @@ const Login = () => {
       <div className="login-card">
         <div className="logo-section">
           <div className="logo-placeholder">EasyStock</div>
-          <h1>Login Portal</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+            Login Portal
+          </h1>
         </div>
 
         <form onSubmit={handleSubmit}>
           {error && (
-            <div
-              className="error-message"
-              style={{
-                padding: "12px",
-                marginBottom: "16px",
-                backgroundColor: "#fee",
-                border: "1px solid #fcc",
-                borderRadius: "8px",
-                color: "#c33",
-                fontSize: "14px",
-                fontWeight: "500",
-              }}
-            >
+            <div className="p-4 mb-6 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-lg text-red-600 dark:text-red-400 text-sm font-medium">
               {error}
             </div>
           )}
