@@ -28,35 +28,37 @@ const InventoryTableRow = ({ item, onEdit }) => {
   if (derivedStatus === "UNAVAILABLE") progressColor = "bg-red-500";
 
   return (
-    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group border-b border-gray-100 dark:border-gray-800 last:border-0">
-      <td className="px-6 py-4">
+    <tr className="hover:bg-primary/5 transition-colors group border-b border-gray-100 dark:border-gray-800 last:border-0">
+      <td className="px-6 py-5">
         <div className="flex items-center gap-4">
           <div
-            className={`h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-100 dark:border-gray-700 ${derivedStatus === "UNAVAILABLE" ? "grayscale opacity-50" : ""}`}
+            className={`h-11 w-11 rounded-lg bg-gray-50 dark:bg-gray-800 flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-100 dark:border-gray-700 ${derivedStatus === "UNAVAILABLE" ? "grayscale opacity-50" : ""}`}
           >
             <span className="material-symbols-outlined text-gray-400">
               inventory_2
             </span>
           </div>
-          <div className="space-y-0.5">
-            <p className="text-sm font-bold tracking-tight text-gray-900 dark:text-white leading-tight">
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 leading-tight">
               {name}
             </p>
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+            <p className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">
               SKU: {skuCode}
             </p>
           </div>
         </div>
       </td>
-      <td className="px-6 py-4 text-center">
-        <StatusBadge status={category.toLowerCase()}>{category}</StatusBadge>
+      <td className="px-6 py-5">
+        <div className="flex justify-center">
+          <StatusBadge status={category.toLowerCase()}>{category}</StatusBadge>
+        </div>
       </td>
-      <td className="px-6 py-4 text-center">
-        <span className="text-sm font-bold tracking-tight text-gray-900 dark:text-white">
+      <td className="px-6 py-5 text-center">
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
           {price}
         </span>
       </td>
-      <td className="px-6 py-4">
+      <td className="px-6 py-5">
         <div className="flex flex-col gap-2 items-center">
           <div className="w-24 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
             <div
@@ -65,19 +67,19 @@ const InventoryTableRow = ({ item, onEdit }) => {
             ></div>
           </div>
           <span
-            className={`text-[10px] font-semibold uppercase tracking-widest ${currentStock === 0 ? "text-red-500" : "text-gray-400"}`}
+            className={`text-[10px] font-medium uppercase tracking-widest ${currentStock === 0 ? "text-red-500" : "text-gray-400"}`}
           >
             {currentStock} / {maxStock} Units
           </span>
         </div>
       </td>
-      <td className="px-6 py-4 text-center">
+      <td className="px-6 py-5 text-center">
         <StatusBadge status={derivedStatus} />
       </td>
-      <td className="px-6 py-4 text-right">
+      <td className="px-6 py-5 text-right">
         <button
           onClick={() => onEdit(item)}
-          className="inline-flex items-center justify-center h-8 px-3 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-400 hover:text-primary hover:bg-primary/10 transition-all font-semibold text-[10px] uppercase tracking-widest gap-2"
+          className="inline-flex items-center justify-center h-10 px-4 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-primary hover:text-white transition-all font-bold text-xs uppercase tracking-widest gap-2 shadow-sm"
         >
           <span className="material-symbols-outlined text-lg">edit_note</span>
           Manage

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Supplier Registration | Resilient Supply Chain</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#0D9488", // Teal color from the screenshot
+              "background-light": "#F9FAFB",
+              "background-dark": "#111827",
+            },
+            fontFamily: {
+              display: ["Inter", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+            },
+          },
+        },
+      };
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .strength-bar { transition: width 0.3s ease; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen">
+<div class="flex min-h-screen">
+<div class="w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-16 lg:px-24 py-12 bg-white dark:bg-slate-900 shadow-xl z-10">
+<div class="max-w-md mx-auto w-full">
+<a class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-primary transition-colors mb-8" href="#">
+<span class="material-icons-round text-lg mr-1">arrow_back</span>
+                    BACK
+                </a>
+<div class="mb-10">
+<h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Supplier Registration</h1>
+<p class="text-slate-600 dark:text-slate-400">Join our network of trusted suppliers and grow your reach.</p>
+</div>
+<form class="space-y-8">
+<section class="space-y-4">
+<div class="flex items-center space-x-2 mb-2">
+<span class="bg-primary/10 text-primary w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+<h2 class="text-xs font-bold tracking-widest uppercase text-slate-400 dark:text-slate-500">Account Credentials</h2>
+</div>
+<div>
+<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1.5 ml-1" for="email">Business Email</label>
+<input class="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" id="email" placeholder="contact@company.com" type="email"/>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase ml-1" for="password">Password</label>
+<input class="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" id="password" placeholder="••••••••" type="password"/>
+<div class="flex gap-1 px-1 mt-2">
+<div class="h-1 w-full bg-primary rounded-full"></div>
+<div class="h-1 w-full bg-primary rounded-full"></div>
+<div class="h-1 w-full bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+<div class="h-1 w-full bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+</div>
+<p class="text-[10px] text-slate-400 mt-1 italic">Strength: Medium</p>
+</div>
+<div class="space-y-1.5">
+<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase ml-1" for="confirm-password">Confirm Password</label>
+<input class="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" id="confirm-password" placeholder="••••••••" type="password"/>
+</div>
+</div>
+</section>
+<section class="space-y-4">
+<div class="flex items-center space-x-2 mb-2">
+<span class="bg-primary/10 text-primary w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+<h2 class="text-xs font-bold tracking-widest uppercase text-slate-400 dark:text-slate-500">Business Profile</h2>
+</div>
+<div>
+<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1.5 ml-1" for="company-name">Company Name</label>
+<input class="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" id="company-name" placeholder="e.g. Acme Supplies Ltd." type="text"/>
+</div>
+<div>
+<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1.5 ml-1" for="phone">Phone Number</label>
+<input class="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" id="phone" placeholder="+27 00 000 0000" type="tel"/>
+</div>
+<div>
+<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1.5 ml-1" for="address">Business Address</label>
+<textarea class="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none resize-none" id="address" placeholder="Street name, City, Postal Code" rows="3"></textarea>
+</div>
+<div class="relative">
+<label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1.5 ml-1" for="primary-goods">Primary Goods</label>
+<div class="relative">
+<select class="appearance-none w-full px-4 py-3 pr-10 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" id="primary-goods">
+<option disabled="" selected="" value="">Select your primary goods...</option>
+<option value="electronics">Consumer Electronics</option>
+<option value="raw-materials">Raw Construction Materials</option>
+<option value="industrial">Industrial Machinery</option>
+<option value="logistics">Logistics &amp; Freight</option>
+<option value="fmcg">FMCG &amp; Groceries</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+<span class="material-icons-round">unfold_more</span>
+</div>
+</div>
+</div>
+</section>
+<div class="pt-4">
+<button class="w-full bg-primary hover:bg-teal-700 text-white font-bold py-4 px-6 rounded-lg transition-all transform hover:scale-[1.01] active:scale-[0.99] shadow-lg shadow-teal-500/20 uppercase tracking-wider text-sm" type="submit">
+                            Create Supplier Account
+                        </button>
+</div>
+<p class="text-center text-sm text-slate-500 dark:text-slate-400 pt-4">
+                        ALREADY HAVE AN ACCOUNT? <a class="text-primary font-bold hover:underline" href="#">LOG IN</a>
+</p>
+</form>
+</div>
+</div>
+<div class="hidden lg:block lg:w-1/2 relative">
+<img alt="Modern bright logistics warehouse with organized shelves" class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-Dy20B8jWXs8KBwZDABcHsL8F0fn71TQ00mfib2dJHfPZ2oQiRmBt3JJWk1A462gJHHLrF3aMHpFR9fmzCg2siaBDBl4ndCSaDUulfWEBsXk0O__jynwaiXp48-i32rue5It_FaRKZes789W3sD5rEYiW1gu_UkSWZHqFLYDmDQ0zw8cDaD9KARNCTnM1gSUfJjkjeX14xbA2vSXEVvb6ABUKGvRJRU6Gf77fApsaMwdubFeqAkKwVRlUap6Xa4Znv9ptB8iyxCNC"/>
+<div class="absolute inset-0 bg-gradient-to-br from-teal-900/80 to-slate-900/40 flex flex-col justify-end p-20">
+<div class="max-w-md">
+<div class="flex items-center space-x-2 mb-6">
+<div class="flex -space-x-3">
+<img alt="User avatar" class="w-10 h-10 rounded-full border-2 border-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdQbIuK-49xbRTlczbXvfYDzelW_GXmrdDUWjGXihKps5DlCpp8HyZcWqQqDqwA0ncIRk4M5AjbQw_IB9PkUzd5aKVb3_D2qSeEKMjPteh9ZtHSeY9snxUG3FyifyITqrU-rMoNrPhGnxKEDpfVXR4vXPpNUuwaKZIgrMRH3F_XNh4pL9xooE7LsLsjqgpD7FJwv4u5nJ3iRIQTSFBlJupIUt7SgvuiWb0OHpk-QGwIxTmblvDh4sR5m2guTYaJemArplsejyvyJ7N"/>
+<img alt="User avatar" class="w-10 h-10 rounded-full border-2 border-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIzUl3VDdihg4YtGHagtkWSvr8cSq9qPI1a5dGKL1bFeGQAIp9qDpMgZsagrpUgEfJYfpbjVJsfKnTFT8w0PkervbtqDi0jQOVS4zZGXs3oqV61uovO6N7NE2NndPTLFhAhLZTUlR9AK_Hcw4Y-bSYScoPeCFCe3SKIppn3vBFudIiEoxUuOHD45wxEBAXHqlX4y3OV02Q9z7S_EoLAhw_Lb0JQ6jobwd6t3vlMXF4wQwgfUgRiBk6sv8aGlGzxkP_xfxuUkj2jE1F"/>
+<img alt="User avatar" class="w-10 h-10 rounded-full border-2 border-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbVfdw4UAEHoTodEnZcsB_zPDzwjjX9doviUWFegBvJe6spQFA5eskNRpTrNwbBaZupJ18FJbkRKY07mDeVwaMLFykJhO-X2kW4i4MH-j07n7D_7VUoGTzLZV9eQlu_LOHOMcSye8PZWr3gdpTJHW-FtGp7LJDvjRM_2Im1JYB_Q2L2VQ3tQjv-dUoeoWYaIQbfipSkz0bU-WIptTr2ZRimFheIkYN8dme9CLRWvM5zU2q50j01sDcYaVRcU4_NNYjYBqExAgMgCM1"/>
+</div>
+<span class="text-white text-sm font-medium">Join 500+ trusted suppliers</span>
+</div>
+<h2 class="text-4xl font-bold text-white mb-4 leading-tight">Stabilize your distribution today.</h2>
+<p class="text-teal-50/80 text-lg leading-relaxed">Access real-time inventory tools, streamlined invoicing, and a network of verified global buyers.</p>
+<div class="mt-12 grid grid-cols-2 gap-8">
+<div>
+<div class="text-3xl font-bold text-white">98%</div>
+<div class="text-teal-100/60 text-sm">Delivery Rate</div>
+</div>
+<div>
+<div class="text-3xl font-bold text-white">24/7</div>
+<div class="text-teal-100/60 text-sm">Support Access</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</body></html>

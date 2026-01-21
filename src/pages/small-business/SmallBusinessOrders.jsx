@@ -365,13 +365,13 @@ const NewOrderForm = ({
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden max-w-2xl mx-auto shadow-2xl">
-      <div className="p-10">
-        <div className="flex justify-between items-center mb-10">
+      <div className="p-8">
+        <div className="flex justify-between items-center mb-8">
           <div className="space-y-1">
-            <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-none">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight leading-none">
               Procurement Request
             </h2>
-            <p className="text-gray-400 text-xs font-black uppercase tracking-widest">
+            <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-widest mt-2 px-0.5">
               Digital Order Assignment
             </p>
           </div>
@@ -387,11 +387,11 @@ const NewOrderForm = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-2 col-span-2">
               <div className="flex justify-between items-center px-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
                   Select Product Documentation
                 </label>
                 {selectedProduct && (
-                  <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/5 px-3 py-1 rounded-full border border-primary/10">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/5 px-3 py-1 rounded-full border border-primary/10">
                     Est. R{(unitPrice * formData.quantity).toFixed(2)}
                   </span>
                 )}
@@ -401,7 +401,7 @@ const NewOrderForm = ({
                 onChange={(e) =>
                   setFormData({ ...formData, item: e.target.value })
                 }
-                className="w-full h-12 px-5 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-sm font-black text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none cursor-pointer"
+                className="w-full h-11 px-5 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none cursor-pointer"
                 required
               >
                 {catalog.map((product, idx) => (
@@ -413,7 +413,7 @@ const NewOrderForm = ({
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">
+              <label className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 px-1">
                 Order Quantity
               </label>
               <input
@@ -426,7 +426,7 @@ const NewOrderForm = ({
                     quantity: parseInt(e.target.value) || 1,
                   })
                 }
-                className="w-full h-12 px-5 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-sm font-black text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                className="w-full h-11 px-5 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                 required
               />
             </div>
@@ -500,14 +500,14 @@ const NewOrderForm = ({
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 h-12 rounded-xl border border-gray-100 dark:border-gray-800 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all shadow-sm"
+              className="flex-1 h-11 rounded-lg border border-gray-100 dark:border-gray-800 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all shadow-sm"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`flex-1 h-12 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-3 ${isSubmitting ? "opacity-70 cursor-not-allowed" : "hover:brightness-105"}`}
+              className={`flex-1 h-11 rounded-lg bg-primary text-white text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-3 ${isSubmitting ? "opacity-70 cursor-not-allowed" : "hover:brightness-105"}`}
             >
               {isSubmitting ? (
                 <>

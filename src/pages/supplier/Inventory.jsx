@@ -36,8 +36,8 @@ const EditInventoryModal = ({ item, isOpen, onClose, onSave }) => {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-all duration-300">
       <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-lg shadow-sm overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="p-10">
-          <div className="flex justify-between items-center mb-10">
+        <div className="p-8">
+          <div className="flex justify-between items-center mb-8">
             <div className="space-y-1">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight leading-none">
                 Inventory Control
@@ -83,7 +83,7 @@ const EditInventoryModal = ({ item, isOpen, onClose, onSave }) => {
                   type="number"
                   step="0.01"
                   required
-                  className="w-full h-11 px-5 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                  className="w-full h-11 px-5 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                 />
@@ -96,7 +96,7 @@ const EditInventoryModal = ({ item, isOpen, onClose, onSave }) => {
                   type="number"
                   required
                   max="1000"
-                  className={`w-full h-11 px-5 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all ${parseInt(quantity) > 1000 ? "ring-2 ring-red-500/50" : ""}`}
+                  className={`w-full h-11 px-5 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all ${parseInt(quantity) > 1000 ? "ring-2 ring-red-500/50" : ""}`}
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
                 />
@@ -107,14 +107,14 @@ const EditInventoryModal = ({ item, isOpen, onClose, onSave }) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 h-11 rounded-lg border border-gray-100 dark:border-gray-800 text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all shadow-sm"
+                className="flex-1 h-11 rounded-lg border border-gray-100 dark:border-gray-800 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all shadow-sm"
               >
                 Abort Changes
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-[1.5] h-11 bg-primary text-white rounded-lg text-[10px] font-semibold uppercase tracking-widest hover:brightness-105 shadow-sm shadow-primary/20 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                className="flex-[1.5] h-11 bg-primary text-white rounded-lg text-[10px] font-bold uppercase tracking-widest hover:brightness-105 shadow-sm shadow-primary/20 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
               >
                 {loading ? (
                   <>
@@ -200,21 +200,21 @@ const Inventory = () => {
     <Layout>
       <div className="max-w-[1400px] mx-auto w-full">
         {/* Page Heading & Controls */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white leading-none uppercase">
+            <h1 className="text-3xl font-black tracking-tight text-[#111418] dark:text-white">
               Supplier Inventory
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">
+            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mt-1">
               Real-time stock control for Warehouse Section B-14
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               disabled
-              className="opacity-100 flex items-center justify-center gap-2 px-6 h-11 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 shadow-sm transition-all"
+              className="flex items-center justify-center gap-2 px-4 h-10 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-bold text-gray-400 dark:text-gray-500 shadow-sm transition-all"
             >
-              <span className="material-symbols-outlined text-lg">
+              <span className="material-symbols-outlined text-sm">
                 cloud_download
               </span>
               Export Manifest
@@ -234,23 +234,23 @@ const Inventory = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
-                  <th className="px-6 py-4 text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+                <tr className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
+                  <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-widest">
                     Product / SKU
                   </th>
-                  <th className="px-6 py-4 text-[10px] font-semibold text-gray-400 uppercase tracking-widest text-center">
+                  <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-widest text-center">
                     Category
                   </th>
-                  <th className="px-6 py-4 text-[10px] font-semibold text-gray-400 uppercase tracking-widest text-center">
+                  <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-widest text-center">
                     Price
                   </th>
-                  <th className="px-6 py-4 text-[10px] font-semibold text-gray-400 uppercase tracking-widest text-center">
+                  <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-widest text-center">
                     Stock Level
                   </th>
-                  <th className="px-6 py-4 text-[10px] font-semibold text-gray-400 uppercase tracking-widest text-center">
+                  <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-widest text-center">
                     Live Status
                   </th>
-                  <th className="px-6 py-4 text-[10px] font-semibold text-gray-400 uppercase tracking-widest text-right">
+                  <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-widest text-right">
                     Actions
                   </th>
                 </tr>
